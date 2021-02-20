@@ -20,7 +20,7 @@ public class Test : MonoBehaviour
     [Multiline(10)]
     public string testParse;
 
-    public PxPre.WASM.Session session = null;
+    public PxPre.WASM.Module session = null;
     
     void Start()
     {
@@ -37,7 +37,7 @@ public class Test : MonoBehaviour
         if(GUILayout.Button("Test Binary Empty") == true)
         {
             byte[] rb = System.IO.File.ReadAllBytes(this.loadTargetSimple);
-            this.session = PxPre.WASM.Session.LoadBinary(rb);
+            this.session = PxPre.WASM.Module.LoadBinary(rb);
 
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.session);
             Debug.Log("Loaded Empty");
@@ -46,7 +46,7 @@ public class Test : MonoBehaviour
         if(GUILayout.Button("Test Binary addTwo(10, 25)") == true)
         { 
             byte [] rb = System.IO.File.ReadAllBytes(this.loadTargetSimple);
-            this.session = PxPre.WASM.Session.LoadBinary(rb);
+            this.session = PxPre.WASM.Module.LoadBinary(rb);
 
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.session);
             List<PxPre.Datum.Val> values = 
@@ -62,7 +62,7 @@ public class Test : MonoBehaviour
         if(GUILayout.Button("Test Binary fac(9)") == true)
         {
             byte[] rb = System.IO.File.ReadAllBytes(this.loadTargetFactorial);
-            this.session = PxPre.WASM.Session.LoadBinary(rb);
+            this.session = PxPre.WASM.Module.LoadBinary(rb);
 
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.session);
             List<PxPre.Datum.Val> values =

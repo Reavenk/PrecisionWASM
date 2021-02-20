@@ -25,8 +25,9 @@ using System.Collections.Generic;
 
 namespace PxPre.WASM
 {
-    public class Session
+    public class Module
     {
+        // TODO: Check if can be removed.
         public Dictionary<string, PxPre.Datum.Val> exposed = 
             new Dictionary<string, PxPre.Datum.Val>();
 
@@ -64,7 +65,7 @@ namespace PxPre.WASM
 
         public uint startFnIndex = 0xFFFFFFFF;
 
-        unsafe public static Session LoadBinary(byte [] rb)
+        unsafe public static Module LoadBinary(byte [] rb)
         { 
             fixed(byte * pb = rb)
             { 
@@ -73,7 +74,7 @@ namespace PxPre.WASM
             }
         }
 
-        unsafe public static Session LoadBinary(byte * pb, ref uint idx)
+        unsafe public static Module LoadBinary(byte * pb, ref uint idx)
         {
             // https://www.reddit.com/r/WebAssembly/comments/9vq019/is_anyone_learning_webassembly_in_binary_im_stuck/
             // https://webassembly.github.io/wabt/demo/wat2wasm/
@@ -88,7 +89,7 @@ namespace PxPre.WASM
 
             idx += 4;
 
-            Session ret = new Session();
+            Module ret = new Module();
 
             while(true)
             {
@@ -253,7 +254,7 @@ namespace PxPre.WASM
                             for(int k = 0; k < localTyCt; ++k)
                             {
                                 FunctionType.DataOrgInfo doi = new FunctionType.DataOrgInfo();
-                                doi.type = (Session.TypeID)type;
+                                doi.type = (Module.TypeID)type;
                                 function.localTypes.Add(doi);
                             }
                         }

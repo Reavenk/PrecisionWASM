@@ -37,11 +37,11 @@ namespace PxPre.WASM
         const int initialStackPos = 1024 * 1024;
         public byte[] stack = new byte[initialStackPos];
 
-        public readonly Session session;
+        public readonly Module session;
 
         int stackPos = initialStackPos;
 
-        public ExecutionContext(Session session)
+        public ExecutionContext(Module session)
         { 
             this.session = session;
         }

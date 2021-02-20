@@ -29,7 +29,7 @@ namespace PxPre.WASM
         public struct DataOrgInfo
         {
             public string refName;
-            public Session.TypeID type;
+            public Module.TypeID type;
             public bool isFloat;
             public uint size;
             public uint offset;
@@ -82,22 +82,22 @@ namespace PxPre.WASM
 
             switch (doi.type)
             {
-                case Session.TypeID.Float32:
+                case Module.TypeID.Float32:
                     doi.isFloat = true;
                     doi.size = 4;
                     break;
 
-                case Session.TypeID.Float64:
+                case Module.TypeID.Float64:
                     doi.isFloat = true;
                     doi.size = 8;
                     break;
 
-                case Session.TypeID.Int32:
+                case Module.TypeID.Int32:
                     doi.isFloat = false;
                     doi.size = 4;
                     break;
 
-                case Session.TypeID.Int64:
+                case Module.TypeID.Int64:
                     doi.isFloat = false;
                     doi.size = 8;
                     break;

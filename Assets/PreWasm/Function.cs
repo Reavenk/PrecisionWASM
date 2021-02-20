@@ -38,6 +38,8 @@ namespace PxPre.WASM
 
         public uint typeidx;
 
+        //public readonly Module parentModule;
+
         public FunctionType fnType;
 
         /// <summary>
@@ -50,6 +52,11 @@ namespace PxPre.WASM
 
         public byte [] expression;
 
+        //public Function(Module parentModule)
+        //{
+        //    this.parentModule = parentModule;
+        //}
+        //
         public void InitializeOrganization()
         {
             // This function requires the FunctionType fnType to already be organized with
@@ -65,20 +72,20 @@ namespace PxPre.WASM
             }
         }
 
-        public static Opd_Stack ConvertToStackType(Session.TypeID tyid)
+        public static Opd_Stack ConvertToStackType(Module.TypeID tyid)
         { 
             switch(tyid)
             {
-                case Session.TypeID.Float32:
+                case Module.TypeID.Float32:
                     return Opd_Stack.f32;
 
-                case Session.TypeID.Float64:
+                case Module.TypeID.Float64:
                     return Opd_Stack.f64;
 
-                case Session.TypeID.Int32:
+                case Module.TypeID.Int32:
                     return Opd_Stack.i32;
 
-                case Session.TypeID.Int64:
+                case Module.TypeID.Int64:
                     return Opd_Stack.i64;
             }
 
@@ -270,22 +277,22 @@ namespace PxPre.WASM
             {
                 switch (pb[idx])
                 {
-                    case (int)Session.TypeID.Int32:
+                    case (int)Module.TypeID.Int32:
                         stk.Add(Opd_Stack.i32);
                         ++idx;
                         break;
 
-                    case (int)Session.TypeID.Int64:
+                    case (int)Module.TypeID.Int64:
                         stk.Add(Opd_Stack.i64);
                         ++idx;
                         break;
 
-                    case (int)Session.TypeID.Float32:
+                    case (int)Module.TypeID.Float32:
                         stk.Add(Opd_Stack.f32);
                         ++idx;
                         break;
 
-                    case (int)Session.TypeID.Float64:
+                    case (int)Module.TypeID.Float64:
                         stk.Add(Opd_Stack.f64);
                         ++idx;
                         break;
@@ -335,7 +342,7 @@ namespace PxPre.WASM
         // Given an encoding, convert it to be usable. The biggest impeding factor
         // is the LEB decoding required if we didn't do this. And since that changes
         // alignment, indices may also need to be changed.
-        unsafe public void ExpandExpressionToBeUsable(Session session, int index)
+        unsafe public void ExpandExpressionToBeUsable(Module session, int index)
         { 
             List<byte> expanded = new List<byte>();
 
@@ -346,7 +353,7 @@ namespace PxPre.WASM
             List<Opd_Stack> startFrameCtrl = new List<Opd_Stack>();
             foreach(FunctionType.DataOrgInfo doi in this.fnType.resultTypes)
             {
-                startFrameCtrl.Add(ConvertToStackType((Session.TypeID)doi.type));
+                startFrameCtrl.Add(ConvertToStackType((Module.TypeID)doi.type));
             }
             vu.PushCtrl(Instruction.nop, new List<Opd_Stack>(), startFrameCtrl);
 
@@ -437,7 +444,7 @@ namespace PxPre.WASM
 
                         case Instruction.br:
                             {
-                                int n = (int)Session.LoadUnsignedLEB32(pb, ref idx);
+                                int n = (int)Module.LoadUnsignedLEB32(pb, ref idx);
                                 if (vu.ctrls.Count < n)
                                     vu.EmitValidationError("Stack mismatch for br");
 
@@ -449,7 +456,7 @@ namespace PxPre.WASM
 
                         case Instruction.br_if:
                             {
-                                int n = (int)Session.LoadUnsignedLEB32(pb, ref idx);
+                                int n = (int)Module.LoadUnsignedLEB32(pb, ref idx);
                                 if(vu.ctrls.Count < n)
                                     vu.EmitValidationError("Stack mismatch for br_if");
 
@@ -462,8 +469,8 @@ namespace PxPre.WASM
 
                         case Instruction.br_table:
                             { 
-                                int n = (int)Session.LoadUnsignedLEB32(pb, ref idx);
-                                int m = (int)Session.LoadUnsignedLEB32(pb, ref idx);
+                                int n = (int)Module.LoadUnsignedLEB32(pb, ref idx);
+                                int m = (int)Module.LoadUnsignedLEB32(pb, ref idx);
 
                                 if(vu.ctrls.Count < m)
                                     vu.EmitValidationError("");
@@ -490,7 +497,7 @@ namespace PxPre.WASM
                             {
                                 TransferInstruction(expanded, instr);
 
-                                uint fnidx = Session.LoadUnsignedLEB32(pb, ref idx);
+                                uint fnidx = Module.LoadUnsignedLEB32(pb, ref idx);
                                 TransferInt32u(expanded, fnidx);
                             }
                             break;
@@ -515,7 +522,7 @@ namespace PxPre.WASM
 
                         case Instruction.local_get:
                             {
-                                uint paramIdx = Session.LoadUnsignedLEB32(pb, ref idx);
+                                uint paramIdx = Module.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
 
                                 vu.PushOpd(ConvertToStackType(ty.type));
@@ -538,7 +545,7 @@ namespace PxPre.WASM
                             break;
                         case Instruction.local_set:
                             {
-                                uint paramIdx = Session.LoadUnsignedLEB32(pb, ref idx);
+                                uint paramIdx = Module.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
 
                                 vu.PopOpd(ConvertToStackType(ty.type));
@@ -555,7 +562,7 @@ namespace PxPre.WASM
                             break;
                         case Instruction.local_tee:
                             {
-                                uint paramIdx = Session.LoadUnsignedLEB32(pb, ref idx);
+                                uint paramIdx = Module.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
 
                                 vu.PopOpd(ConvertToStackType(ty.type));
@@ -575,7 +582,7 @@ namespace PxPre.WASM
                                 // This function is incorrect in that it's a duplicate of local_get.
                                 // this eventually needs to pull from the global varable source.
 
-                                uint paramIdx = Session.LoadUnsignedLEB32(pb, ref idx);
+                                uint paramIdx = Module.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = ft.paramTypes[(int)paramIdx];
 
                                 vu.PushOpd(ConvertToStackType(ty.type));
@@ -594,7 +601,7 @@ namespace PxPre.WASM
                                 // This function is incorrect in that it's a duplicate of local_set.
                                 // this eventually needs to pull from the global varable source.
 
-                                uint paramIdx = Session.LoadUnsignedLEB32(pb, ref idx);
+                                uint paramIdx = Module.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = ft.paramTypes[(int)paramIdx];
 
                                 vu.PopOpd(ConvertToStackType(ty.type));
@@ -639,7 +646,7 @@ namespace PxPre.WASM
                         case Instruction.i32_load16_s:
                         case Instruction.i32_load16_u:
                             {
-                                uint val = Session.LoadUnsignedLEB32(pb, ref idx);
+                                uint val = Module.LoadUnsignedLEB32(pb, ref idx);
                                 vu.PushOpd(Opd_Stack.i32);
                                 TransferInstruction(expanded, instr);
                             }
@@ -651,38 +658,38 @@ namespace PxPre.WASM
                         case Instruction.i64_load16_u:
                         case Instruction.i64_load32_s:
                         case Instruction.i64_load32_u:
-                            Session.LoadUnsignedLEB32(pb, ref idx);
+                            Module.LoadUnsignedLEB32(pb, ref idx);
                             vu.PushOpd(Opd_Stack.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_store:
-                            Session.LoadUnsignedLEB32(pb, ref idx);
+                            Module.LoadUnsignedLEB32(pb, ref idx);
                             vu.PopOpd(Opd_Stack.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i64_store:
-                            Session.LoadUnsignedLEB32(pb, ref idx);
+                            Module.LoadUnsignedLEB32(pb, ref idx);
                             vu.PopOpd(Opd_Stack.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f32_store:
-                            Session.LoadUnsignedLEB32(pb, ref idx);
+                            Module.LoadUnsignedLEB32(pb, ref idx);
                             vu.PopOpd(Opd_Stack.f32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f64_store:
-                            Session.LoadUnsignedLEB32(pb, ref idx);
+                            Module.LoadUnsignedLEB32(pb, ref idx);
                             vu.PopOpd(Opd_Stack.f64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_store8:
                         case Instruction.i32_store16:
-                            Session.LoadUnsignedLEB32(pb, ref idx);
+                            Module.LoadUnsignedLEB32(pb, ref idx);
                             vu.PopOpd(Opd_Stack.i32);
                             TransferInstruction(expanded, instr);
                             break;
@@ -690,7 +697,7 @@ namespace PxPre.WASM
                         case Instruction.i64_store8:
                         case Instruction.i64_store16:
                         case Instruction.i64_store32:
-                            Session.LoadUnsignedLEB32(pb, ref idx);
+                            Module.LoadUnsignedLEB32(pb, ref idx);
                             vu.PopOpd(Opd_Stack.i64);
                             TransferInstruction(expanded, instr);
                             break;
@@ -704,7 +711,7 @@ namespace PxPre.WASM
                                 vu.PushOpd(Opd_Stack.i32);
                                 TransferInstruction(expanded, instr);
 
-                                uint cval = Session.LoadUnsignedLEB32(pb, ref idx);
+                                uint cval = Module.LoadUnsignedLEB32(pb, ref idx);
                                 TransferInt32u(expanded, cval);
 
                             }
@@ -715,7 +722,7 @@ namespace PxPre.WASM
                                 vu.PushOpd(Opd_Stack.i64);
                                 TransferInstruction(expanded, instr);
 
-                                ulong cval = Session.LoadUnsignedLEB64(pb, ref idx);
+                                ulong cval = Module.LoadUnsignedLEB64(pb, ref idx);
                                 TransferInt64u(expanded, cval);
                             }
                             break;
@@ -1046,7 +1053,7 @@ namespace PxPre.WASM
 
                         case Instruction.trunc_sat:
                             { 
-                                int subop = Session.LoadSignedLEB32(pb, ref idx);
+                                int subop = Module.LoadSignedLEB32(pb, ref idx);
                                 switch(subop)
                                 { 
                                     case 0:
@@ -1094,7 +1101,7 @@ namespace PxPre.WASM
                                         vu.PopOpd(Opd_Stack.i32);
                                         vu.PopOpd(Opd_Stack.i32);
                                         TransferInstruction(expanded, Instruction._memory_fill);
-                                        Session.LoadSignedLEB32(pb, ref idx); // Eat unused placeholder number
+                                        Module.LoadSignedLEB32(pb, ref idx); // Eat unused placeholder number
                                         break;
                                 }
                             }
