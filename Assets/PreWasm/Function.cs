@@ -136,20 +136,20 @@ namespace PxPre.WASM
             }
         }
 
-        public static Opd_Stack ConvertToStackType(Module.TypeID tyid)
+        public static Opd_Stack ConvertToStackType(Bin.TypeID tyid)
         { 
             switch(tyid)
             {
-                case Module.TypeID.Float32:
+                case Bin.TypeID.Float32:
                     return Opd_Stack.f32;
 
-                case Module.TypeID.Float64:
+                case Bin.TypeID.Float64:
                     return Opd_Stack.f64;
 
-                case Module.TypeID.Int32:
+                case Bin.TypeID.Int32:
                     return Opd_Stack.i32;
 
-                case Module.TypeID.Int64:
+                case Bin.TypeID.Int64:
                     return Opd_Stack.i64;
             }
 
@@ -341,22 +341,22 @@ namespace PxPre.WASM
             {
                 switch (pb[idx])
                 {
-                    case (int)Module.TypeID.Int32:
+                    case (int)Bin.TypeID.Int32:
                         stk.Add(Opd_Stack.i32);
                         ++idx;
                         break;
 
-                    case (int)Module.TypeID.Int64:
+                    case (int)Bin.TypeID.Int64:
                         stk.Add(Opd_Stack.i64);
                         ++idx;
                         break;
 
-                    case (int)Module.TypeID.Float32:
+                    case (int)Bin.TypeID.Float32:
                         stk.Add(Opd_Stack.f32);
                         ++idx;
                         break;
 
-                    case (int)Module.TypeID.Float64:
+                    case (int)Bin.TypeID.Float64:
                         stk.Add(Opd_Stack.f64);
                         ++idx;
                         break;
@@ -417,7 +417,7 @@ namespace PxPre.WASM
             List<Opd_Stack> startFrameCtrl = new List<Opd_Stack>();
             foreach(FunctionType.DataOrgInfo doi in this.fnType.resultTypes)
             {
-                startFrameCtrl.Add(ConvertToStackType((Module.TypeID)doi.type));
+                startFrameCtrl.Add(ConvertToStackType((Bin.TypeID)doi.type));
             }
             vu.PushCtrl(Instruction.nop, new List<Opd_Stack>(), startFrameCtrl);
 

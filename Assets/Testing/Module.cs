@@ -31,31 +31,6 @@ namespace PxPre.WASM
         public Dictionary<string, PxPre.Datum.Val> exposed = 
             new Dictionary<string, PxPre.Datum.Val>();
 
-        public enum Section
-        { 
-            CustomSec   = 0,
-            TypeSec     = 1,
-            ImportSec   = 2,
-            FunctionSec = 3,
-            TableSec    = 4,
-            MemorySec   = 5,
-            GlobalSec   = 6,
-            ExportSec   = 7,
-            StartSec    = 8,
-            ElementSec  = 9,
-            CodeSec     = 10,
-            DataSec     = 11
-        }
-
-        public enum TypeID
-        { 
-            Function    = 0x60, 
-            Int32       = 0x7F,
-            Int64       = 0x7E,
-            Float32     = 0x7D,
-            Float64     = 0x7C
-        }
-
          public const uint UnloadedStartIndex = unchecked((uint)~0);
 
         public List<FunctionType> types = new List<FunctionType>();
@@ -95,12 +70,12 @@ namespace PxPre.WASM
 
             while(true)
             {
-                Section sectionCode = (Section)pb[idx];
+                Bin.Section sectionCode = (Bin.Section)pb[idx];
                 ++idx;
 
                 uint sectionSize = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                if(sectionCode == Section.CustomSec)
+                if(sectionCode == Bin.Section.CustomSec)
                 { 
                     uint end = idx + sectionSize;
 
@@ -117,13 +92,13 @@ namespace PxPre.WASM
                         // uint subSize = LoadUnsignedLEB32(pb, ref idx);
                     }
                 }
-                else if(sectionCode == Section.TypeSec)
+                else if(sectionCode == Bin.Section.TypeSec)
                 { 
                     uint numTypes = BinParse.LoadUnsignedLEB32(pb, ref idx);
                     for(uint i = 0; i < numTypes; ++i)
                     {
-                        TypeID type = (TypeID)BinParse.LoadUnsignedLEB32(pb, ref idx);
-                        if(type == TypeID.Function)
+                        Bin.TypeID type = (Bin.TypeID)BinParse.LoadUnsignedLEB32(pb, ref idx);
+                        if(type == Bin.TypeID.Function)
                         {
                             FunctionType fty = new FunctionType();
                             fty.typeid = (uint)type;
@@ -133,7 +108,7 @@ namespace PxPre.WASM
                             for(uint j = 0; j < numParams; ++j)
                             {
                                 FunctionType.DataOrgInfo paramInfo = new FunctionType.DataOrgInfo();
-                                paramInfo.type = (TypeID)BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                paramInfo.type = (Bin.TypeID)BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 fty.paramTypes.Add(paramInfo);
                             }
 
@@ -141,7 +116,7 @@ namespace PxPre.WASM
                             for(uint j = 0; j < numResults; ++j)
                             {
                                 FunctionType.DataOrgInfo resultInfo = new FunctionType.DataOrgInfo();
-                                resultInfo.type = (TypeID)BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                resultInfo.type = (Bin.TypeID)BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 fty.resultTypes.Add(resultInfo);
                             }
 
@@ -155,10 +130,10 @@ namespace PxPre.WASM
                         }
                     }
                 }
-                else if(sectionCode == Section.ImportSec)
+                else if(sectionCode == Bin.Section.ImportSec)
                 { 
                 }
-                else if(sectionCode == Section.FunctionSec)
+                else if(sectionCode == Bin.Section.FunctionSec)
                 {
                     uint numFunctions = BinParse.LoadUnsignedLEB32(pb, ref idx);
                     for (uint i = 0; i < numFunctions; ++i)
@@ -171,10 +146,10 @@ namespace PxPre.WASM
                         ret.functions.Add(function);
                     }
                 }
-                else if(sectionCode == Section.TableSec)
+                else if(sectionCode == Bin.Section.TableSec)
                 { 
                 }
-                else if(sectionCode == Section.MemorySec)
+                else if(sectionCode == Bin.Section.MemorySec)
                 {
                     // Prepare the declaration of memory regions.
                     //
@@ -207,10 +182,10 @@ namespace PxPre.WASM
                         ret.memories.Add(newMem);
                     }
                 }
-                else if(sectionCode == Section.GlobalSec)
+                else if(sectionCode == Bin.Section.GlobalSec)
                 { 
                 }
-                else if(sectionCode == Section.ExportSec)
+                else if(sectionCode == Bin.Section.ExportSec)
                 { 
                     uint numExports = BinParse.LoadUnsignedLEB32(pb, ref idx);
                     for(uint i = 0; i < numExports; ++i)
@@ -227,14 +202,14 @@ namespace PxPre.WASM
                         ret.exports.Add(export);
                     }
                 }
-                else if(sectionCode == Section.StartSec)
+                else if(sectionCode == Bin.Section.StartSec)
                 {
                     ret.startFnIndex = BinParse.LoadUnsignedLEB32(pb, ref idx);
                 }
-                else if(sectionCode == Section.ElementSec) 
+                else if(sectionCode == Bin.Section.ElementSec) 
                 { 
                 }
-                else if(sectionCode == Section.CodeSec)
+                else if(sectionCode == Bin.Section.CodeSec)
                 { 
                     uint numFunctions = BinParse.LoadUnsignedLEB32(pb, ref idx);
                     for(uint i = 0; i < numFunctions; ++i)
@@ -256,7 +231,7 @@ namespace PxPre.WASM
                             for(int k = 0; k < localTyCt; ++k)
                             {
                                 FunctionType.DataOrgInfo doi = new FunctionType.DataOrgInfo();
-                                doi.type = (Module.TypeID)type;
+                                doi.type = (Bin.TypeID)type;
                                 function.localTypes.Add(doi);
                             }
                         }
@@ -283,7 +258,7 @@ namespace PxPre.WASM
                     for (uint i = 0; i < numFunctions; ++i)
                         ret.functions[(int)i].ExpandExpressionToBeUsable(ret, (int)i);
                 }
-                else if(sectionCode == Section.DataSec)
+                else if(sectionCode == Bin.Section.DataSec)
                 {
                     uint numData = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
