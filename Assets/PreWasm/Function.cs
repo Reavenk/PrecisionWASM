@@ -444,7 +444,7 @@ namespace PxPre.WASM
 
                         case Instruction.br:
                             {
-                                int n = (int)Module.LoadUnsignedLEB32(pb, ref idx);
+                                int n = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 if (vu.ctrls.Count < n)
                                     vu.EmitValidationError("Stack mismatch for br");
 
@@ -456,7 +456,7 @@ namespace PxPre.WASM
 
                         case Instruction.br_if:
                             {
-                                int n = (int)Module.LoadUnsignedLEB32(pb, ref idx);
+                                int n = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 if(vu.ctrls.Count < n)
                                     vu.EmitValidationError("Stack mismatch for br_if");
 
@@ -469,8 +469,8 @@ namespace PxPre.WASM
 
                         case Instruction.br_table:
                             { 
-                                int n = (int)Module.LoadUnsignedLEB32(pb, ref idx);
-                                int m = (int)Module.LoadUnsignedLEB32(pb, ref idx);
+                                int n = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                int m = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
 
                                 if(vu.ctrls.Count < m)
                                     vu.EmitValidationError("");
@@ -497,7 +497,7 @@ namespace PxPre.WASM
                             {
                                 TransferInstruction(expanded, instr);
 
-                                uint fnidx = Module.LoadUnsignedLEB32(pb, ref idx);
+                                uint fnidx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 TransferInt32u(expanded, fnidx);
                             }
                             break;
@@ -522,7 +522,7 @@ namespace PxPre.WASM
 
                         case Instruction.local_get:
                             {
-                                uint paramIdx = Module.LoadUnsignedLEB32(pb, ref idx);
+                                uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
 
                                 vu.PushOpd(ConvertToStackType(ty.type));
@@ -545,7 +545,7 @@ namespace PxPre.WASM
                             break;
                         case Instruction.local_set:
                             {
-                                uint paramIdx = Module.LoadUnsignedLEB32(pb, ref idx);
+                                uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
 
                                 vu.PopOpd(ConvertToStackType(ty.type));
@@ -562,7 +562,7 @@ namespace PxPre.WASM
                             break;
                         case Instruction.local_tee:
                             {
-                                uint paramIdx = Module.LoadUnsignedLEB32(pb, ref idx);
+                                uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
 
                                 vu.PopOpd(ConvertToStackType(ty.type));
@@ -582,7 +582,7 @@ namespace PxPre.WASM
                                 // This function is incorrect in that it's a duplicate of local_get.
                                 // this eventually needs to pull from the global varable source.
 
-                                uint paramIdx = Module.LoadUnsignedLEB32(pb, ref idx);
+                                uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = ft.paramTypes[(int)paramIdx];
 
                                 vu.PushOpd(ConvertToStackType(ty.type));
@@ -601,7 +601,7 @@ namespace PxPre.WASM
                                 // This function is incorrect in that it's a duplicate of local_set.
                                 // this eventually needs to pull from the global varable source.
 
-                                uint paramIdx = Module.LoadUnsignedLEB32(pb, ref idx);
+                                uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = ft.paramTypes[(int)paramIdx];
 
                                 vu.PopOpd(ConvertToStackType(ty.type));
@@ -646,7 +646,7 @@ namespace PxPre.WASM
                         case Instruction.i32_load16_s:
                         case Instruction.i32_load16_u:
                             {
-                                uint val = Module.LoadUnsignedLEB32(pb, ref idx);
+                                uint val = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 vu.PushOpd(Opd_Stack.i32);
                                 TransferInstruction(expanded, instr);
                             }
@@ -658,38 +658,38 @@ namespace PxPre.WASM
                         case Instruction.i64_load16_u:
                         case Instruction.i64_load32_s:
                         case Instruction.i64_load32_u:
-                            Module.LoadUnsignedLEB32(pb, ref idx);
+                            BinParse.LoadUnsignedLEB32(pb, ref idx);
                             vu.PushOpd(Opd_Stack.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_store:
-                            Module.LoadUnsignedLEB32(pb, ref idx);
+                            BinParse.LoadUnsignedLEB32(pb, ref idx);
                             vu.PopOpd(Opd_Stack.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i64_store:
-                            Module.LoadUnsignedLEB32(pb, ref idx);
+                            BinParse.LoadUnsignedLEB32(pb, ref idx);
                             vu.PopOpd(Opd_Stack.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f32_store:
-                            Module.LoadUnsignedLEB32(pb, ref idx);
+                            BinParse.LoadUnsignedLEB32(pb, ref idx);
                             vu.PopOpd(Opd_Stack.f32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f64_store:
-                            Module.LoadUnsignedLEB32(pb, ref idx);
+                            BinParse.LoadUnsignedLEB32(pb, ref idx);
                             vu.PopOpd(Opd_Stack.f64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_store8:
                         case Instruction.i32_store16:
-                            Module.LoadUnsignedLEB32(pb, ref idx);
+                            BinParse.LoadUnsignedLEB32(pb, ref idx);
                             vu.PopOpd(Opd_Stack.i32);
                             TransferInstruction(expanded, instr);
                             break;
@@ -697,7 +697,7 @@ namespace PxPre.WASM
                         case Instruction.i64_store8:
                         case Instruction.i64_store16:
                         case Instruction.i64_store32:
-                            Module.LoadUnsignedLEB32(pb, ref idx);
+                            BinParse.LoadUnsignedLEB32(pb, ref idx);
                             vu.PopOpd(Opd_Stack.i64);
                             TransferInstruction(expanded, instr);
                             break;
@@ -711,7 +711,7 @@ namespace PxPre.WASM
                                 vu.PushOpd(Opd_Stack.i32);
                                 TransferInstruction(expanded, instr);
 
-                                uint cval = Module.LoadUnsignedLEB32(pb, ref idx);
+                                uint cval = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 TransferInt32u(expanded, cval);
 
                             }
@@ -722,7 +722,7 @@ namespace PxPre.WASM
                                 vu.PushOpd(Opd_Stack.i64);
                                 TransferInstruction(expanded, instr);
 
-                                ulong cval = Module.LoadUnsignedLEB64(pb, ref idx);
+                                ulong cval = BinParse.LoadUnsignedLEB64(pb, ref idx);
                                 TransferInt64u(expanded, cval);
                             }
                             break;
@@ -1053,7 +1053,7 @@ namespace PxPre.WASM
 
                         case Instruction.trunc_sat:
                             { 
-                                int subop = Module.LoadSignedLEB32(pb, ref idx);
+                                int subop = BinParse.LoadSignedLEB32(pb, ref idx);
                                 switch(subop)
                                 { 
                                     case 0:
@@ -1101,7 +1101,7 @@ namespace PxPre.WASM
                                         vu.PopOpd(Opd_Stack.i32);
                                         vu.PopOpd(Opd_Stack.i32);
                                         TransferInstruction(expanded, Instruction._memory_fill);
-                                        Module.LoadSignedLEB32(pb, ref idx); // Eat unused placeholder number
+                                        BinParse.LoadSignedLEB32(pb, ref idx); // Eat unused placeholder number
                                         break;
                                 }
                             }

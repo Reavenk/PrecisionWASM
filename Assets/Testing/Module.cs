@@ -98,7 +98,7 @@ namespace PxPre.WASM
                 Section sectionCode = (Section)pb[idx];
                 ++idx;
 
-                uint sectionSize = LoadUnsignedLEB32(pb, ref idx);
+                uint sectionSize = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
                 if(sectionCode == Section.CustomSec)
                 { 
@@ -119,29 +119,29 @@ namespace PxPre.WASM
                 }
                 else if(sectionCode == Section.TypeSec)
                 { 
-                    uint numTypes = LoadUnsignedLEB32(pb, ref idx);
+                    uint numTypes = BinParse.LoadUnsignedLEB32(pb, ref idx);
                     for(uint i = 0; i < numTypes; ++i)
                     {
-                        TypeID type = (TypeID)LoadUnsignedLEB32(pb, ref idx);
+                        TypeID type = (TypeID)BinParse.LoadUnsignedLEB32(pb, ref idx);
                         if(type == TypeID.Function)
                         {
                             FunctionType fty = new FunctionType();
                             fty.typeid = (uint)type;
                             ret.types.Add(fty);
 
-                            uint numParams = LoadUnsignedLEB32(pb, ref idx);
+                            uint numParams = BinParse.LoadUnsignedLEB32(pb, ref idx);
                             for(uint j = 0; j < numParams; ++j)
                             {
                                 FunctionType.DataOrgInfo paramInfo = new FunctionType.DataOrgInfo();
-                                paramInfo.type = (TypeID)LoadUnsignedLEB32(pb, ref idx);
+                                paramInfo.type = (TypeID)BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 fty.paramTypes.Add(paramInfo);
                             }
 
-                            uint numResults = LoadUnsignedLEB32(pb, ref idx);
+                            uint numResults = BinParse.LoadUnsignedLEB32(pb, ref idx);
                             for(uint j = 0; j < numResults; ++j)
                             {
                                 FunctionType.DataOrgInfo resultInfo = new FunctionType.DataOrgInfo();
-                                resultInfo.type = (TypeID)LoadUnsignedLEB32(pb, ref idx);
+                                resultInfo.type = (TypeID)BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 fty.resultTypes.Add(resultInfo);
                             }
 
@@ -160,11 +160,11 @@ namespace PxPre.WASM
                 }
                 else if(sectionCode == Section.FunctionSec)
                 {
-                    uint numFunctions = LoadUnsignedLEB32(pb, ref idx);
+                    uint numFunctions = BinParse.LoadUnsignedLEB32(pb, ref idx);
                     for (uint i = 0; i < numFunctions; ++i)
                     {
                         Function function = new Function();
-                        uint fnType = LoadUnsignedLEB32(pb, ref idx);
+                        uint fnType = BinParse.LoadUnsignedLEB32(pb, ref idx);
                         function.typeidx = fnType;
                         function.fnType = ret.types[(int)fnType];
 
@@ -180,7 +180,7 @@ namespace PxPre.WASM
                     //
                     // Note that this is only prepping for the data payloads, actual
                     // parsing of that data happens in the Data section.
-                    uint numMems = LoadUnsignedLEB32(pb, ref idx); // Right now this is assumed to be 1
+                    uint numMems = BinParse.LoadUnsignedLEB32(pb, ref idx); // Right now this is assumed to be 1
                     
                     for (uint i = 0; i < numMems; ++i)
                     {
@@ -190,7 +190,7 @@ namespace PxPre.WASM
                         ++idx;
 
                         // This should be the initial size, but I'm assuming it's also the minimum size.
-                        newMem.minSize = LoadUnsignedLEB32(pb, ref idx); 
+                        newMem.minSize = BinParse.LoadUnsignedLEB32(pb, ref idx); 
                         newMem.memory = new byte [newMem.minSize * Memory.PageSize];
                         fixed(byte * pmem = newMem.memory)
                         { 
@@ -201,7 +201,7 @@ namespace PxPre.WASM
                         for(int j = 0; j < newMem.memory.Length; ++j)
                             newMem.memory[j] = 0;
 
-                        newMem.maxSize = LoadUnsignedLEB32(pb, ref idx);
+                        newMem.maxSize = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
 
                         ret.memories.Add(newMem);
@@ -212,13 +212,13 @@ namespace PxPre.WASM
                 }
                 else if(sectionCode == Section.ExportSec)
                 { 
-                    uint numExports = LoadUnsignedLEB32(pb, ref idx);
+                    uint numExports = BinParse.LoadUnsignedLEB32(pb, ref idx);
                     for(uint i = 0; i < numExports; ++i)
                     { 
-                        uint strLen = LoadUnsignedLEB32(pb, ref idx);
+                        uint strLen = BinParse.LoadUnsignedLEB32(pb, ref idx);
                         string name = LoadString(pb, strLen, ref idx);
-                        uint kind = LoadUnsignedLEB32(pb, ref idx);
-                        uint index = LoadUnsignedLEB32(pb, ref idx);
+                        uint kind = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                        uint index = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
                         Export export   = new Export();
                         export.name     = name;
@@ -229,29 +229,29 @@ namespace PxPre.WASM
                 }
                 else if(sectionCode == Section.StartSec)
                 {
-                    ret.startFnIndex = LoadUnsignedLEB32(pb, ref idx);
+                    ret.startFnIndex = BinParse.LoadUnsignedLEB32(pb, ref idx);
                 }
                 else if(sectionCode == Section.ElementSec) 
                 { 
                 }
                 else if(sectionCode == Section.CodeSec)
                 { 
-                    uint numFunctions = LoadUnsignedLEB32(pb, ref idx);
+                    uint numFunctions = BinParse.LoadUnsignedLEB32(pb, ref idx);
                     for(uint i = 0; i < numFunctions; ++i)
                     {
                         Function function = ret.functions[(int)i];
 
-                        uint bodySize = LoadUnsignedLEB32(pb, ref idx);
+                        uint bodySize = BinParse.LoadUnsignedLEB32(pb, ref idx);
                         uint end = idx + bodySize;
 
-                        uint localsCount = LoadUnsignedLEB32(pb, ref idx); 
+                        uint localsCount = BinParse.LoadUnsignedLEB32(pb, ref idx); 
                         for(int j = 0; j < localsCount; ++j)
                         { 
                             // The number of consecutive occurences of this type
-                            uint localTyCt  = LoadUnsignedLEB32(pb, ref idx);
+                            uint localTyCt  = BinParse.LoadUnsignedLEB32(pb, ref idx);
                             // The type to place on the stack. The quantity of how many
                             // is specified in localTyCt.
-                            uint type = LoadUnsignedLEB32(pb, ref idx);
+                            uint type = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
                             for(int k = 0; k < localTyCt; ++k)
                             {
@@ -285,7 +285,7 @@ namespace PxPre.WASM
                 }
                 else if(sectionCode == Section.DataSec)
                 {
-                    uint numData = LoadUnsignedLEB32(pb, ref idx);
+                    uint numData = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
                     // This check might not be correct - especially if other things are putting data
                     // in this section instead of just the memory.
@@ -309,7 +309,7 @@ namespace PxPre.WASM
 
                         Memory mem = ret.memories[(int)i];
 
-                        uint dataSz = LoadUnsignedLEB32(pb, ref idx);
+                        uint dataSz = BinParse.LoadUnsignedLEB32(pb, ref idx);
                         if(mem.memory.Length < dataSz)
                             throw new System.Exception();   // TODO: Error msg
 
@@ -336,119 +336,7 @@ namespace PxPre.WASM
             return ret;
         }
 
-        unsafe static public uint LoadUnsignedLEB32(byte * pb, ref uint idx)
-        { 
-            uint ret = 0;
-
-            const uint mask = (1 << 8) - 1;
-            const uint flag = (1 << 8);
-
-            int shift = 0;
-            for(int i = 0; i < 4; ++i)
-            { 
-                uint u = pb[idx];
-                uint mag = u & mask;
-
-                ret |= mag << shift;
-                shift += 7;
-
-                ++idx;
-
-                if((u & flag) == 0)
-                    break;
-            }
-            return ret;
-
-        }
-
-        unsafe static public int LoadSignedLEB32(byte * pb, ref uint idx)
-        {
-            // https://en.wikipedia.org/wiki/LEB128
-
-            int ret = -1;
-
-            const int mask = (1 << 8) - 1;
-            const int flag = (1 << 8);
-
-            int shift = 0;
-            for(int i = 0; i < 4; ++i)
-            {
-                int u = pb[idx];
-                int mag = u & mask;
-
-                ret |= mag << shift;
-                shift += 7;
-
-                ++idx;
-
-                if ((u & flag) == 0)
-                    break;
-            }
-
-            if((shift < 32) && (ret & shift) != 0)
-            { 
-                // Sign extend for negative
-                ret |= (~0 << shift);
-            }
-            return ret;
-        }
-
-        unsafe static public ulong LoadUnsignedLEB64(byte* pb, ref uint idx)
-        {
-            uint ret = 0;
-
-            const uint mask = (1 << 8) - 1;
-            const uint flag = (1 << 8);
-
-            int shift = 0;
-            for (int i = 0; i < 8; ++i)
-            {
-                uint u = pb[idx];
-                uint mag = u & mask;
-
-                ret |= mag << shift;
-                shift += 7;
-
-                ++idx;
-
-                if ((u & flag) == 0)
-                    break;
-            }
-            return ret;
-
-        }
-
-        unsafe static public long LoadSignedLEB64(byte* pb, ref uint idx)
-        {
-            // https://en.wikipedia.org/wiki/LEB128
-
-            int ret = -1;
-
-            const int mask = (1 << 8) - 1;
-            const int flag = (1 << 8);
-
-            int shift = 0;
-            for (int i = 0; i < 8; ++i)
-            {
-                int u = pb[idx];
-                int mag = u & mask;
-
-                ret |= mag << shift;
-                shift += 7;
-
-                ++idx;
-
-                if ((u & flag) == 0)
-                    break;
-            }
-
-            if ((shift < 64) && (ret & shift) != 0)
-            {
-                // Sign extend for negative
-                ret |= (~0 << shift);
-            }
-            return ret;
-        }
+        
 
         unsafe static string LoadString(byte * pb, uint len, ref uint idx)
         { 
