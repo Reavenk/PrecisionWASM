@@ -37,14 +37,6 @@ namespace PxPre.WASM
         const int initialStackPos = 1024 * 1024;
         public byte[] stack = new byte[initialStackPos];
 
-        public struct CallStack
-        {
-            public Program program;
-            public int idx;
-        }
-
-        List<CallStack> callstack = new List<CallStack>();
-
         public readonly Session session;
 
         int stackPos = initialStackPos;
