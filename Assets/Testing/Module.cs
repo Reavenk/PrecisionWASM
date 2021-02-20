@@ -81,12 +81,12 @@ namespace PxPre.WASM
             // https://www.reddit.com/r/WebAssembly/comments/9vq019/is_anyone_learning_webassembly_in_binary_im_stuck/
             // https://webassembly.github.io/wabt/demo/wat2wasm/
 
-            if (*((int*)(&pb[idx])) != WASM.WASM_BINARY_MAGIC)
+            if (*((int*)(&pb[idx])) != BinParse.WASM_BINARY_MAGIC)
                 return null;
 
             idx += 4;
 
-            if(*(int*)&pb[idx] != WASM.WASM_BINARY_VERSION)
+            if(*(int*)&pb[idx] != BinParse.WASM_BINARY_VERSION)
                 return null;
 
             idx += 4;

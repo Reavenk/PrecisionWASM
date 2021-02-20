@@ -24,6 +24,13 @@ namespace PxPre.WASM
 {
     public static class BinParse
     {
+        // Some references of parsing WASMs (and WATs)
+        // https://developer.mozilla.org/en-US/docs/WebAssembly/Understanding_the_text_format
+        // https://webassembly.github.io/spec/core/_download/WebAssembly.pdf
+
+        public const int WASM_BINARY_MAGIC = 0x6d736100;
+        public const int WASM_BINARY_VERSION = 0x00000001;
+
         /// <summary>
         /// Implement LEB128 decoding for unsigned 32bit unsigned integers.
         /// https://en.wikipedia.org/wiki/LEB128
