@@ -44,7 +44,7 @@ namespace PxPre.WASM
         // may be needed.
         // (wleu 02/19/2021)
         public byte [] memory = null;
-        public byte * pmemory; // point to memory
+        public byte * pmemory; // point to memory. Should always be reset if memory is reset
 
         public uint CalculatePageSize()
         { 

@@ -27,36 +27,100 @@ namespace PxPre.WASM
 {
     public class Function
     {
+        /// <summary>
+        /// The various values used to track and validate execution, matching
+        /// the unique values in the WASM spec - for the reference algorithm in
+        /// the appendix.
+        /// 
+        /// See type opd_stack in https://webassembly.github.io/spec/core/appendix/algorithm.html
+        /// for more details.
+        /// </summary>
         public enum Opd_Stack
         { 
+            /// <summary>
+            /// The type is a 32 bit integer.
+            /// </summary>
             i32,
+
+            /// <summary>
+            /// The type is a 64 bit integer.
+            /// </summary>
             i64,
+
+            /// <summary>
+            /// The type is a 32 bit (single precision) float.
+            /// </summary>
             f32,
+
+            /// <summary>
+            /// The type is a 64 bit (double precision) float.
+            /// </summary>
             f64,
+
+            /// <summary>
+            /// The type is unknown.
+            /// </summary>
             Unknown
         }
 
+        /// <summary>
+        /// The function signature. This will point to the type in the parentModule's 
+        /// types list.
+        /// </summary>
+        /// <remarks>The dereferenced will be cached in fnType.</remarks>
         public uint typeidx;
 
+        /// <summary>
+        /// The cached FunctionType, which is the result to retrieving the typeidx from 
+        /// types list in the parentModule.
+        /// </summary>
+        public FunctionType fnType;
+
+        /// <summary>
+        /// The Module that this function belongs to.
+        /// </summary>
         public readonly Module parentModule;
 
-        public FunctionType fnType;
 
         /// <summary>
         /// A listing of the types for the function's local working space
         /// on the stack. These will appear on the stack after the parameters.
         /// </summary>
-        public List<FunctionType.DataOrgInfo> localTypes = new List<FunctionType.DataOrgInfo>();
+        public List<FunctionType.DataOrgInfo> localTypes = 
+            new List<FunctionType.DataOrgInfo>();
 
+        /// <summary>
+        /// A cached counter of how much stack memory should be allocated for 
+        /// the program. This includes both memory for initializing the function
+        /// parameters, as well as the local variables.
+        /// </summary>
         public uint totalStackSize;
 
+        /// <summary>
+        /// The bytecode for the function.
+        /// 
+        /// When first set, it will be the binary from the WASM file. The execution engine 
+        /// needs to process it and change the binary because it can be run as a PrecisionWASM
+        /// program (it transpiles it into a slightly different binary). This is done by calling
+        /// ExpandExpressionToBeUsable() once after it's been loaded. Afterwards it will contain
+        /// the executable processed bytecode.
+        /// </summary>
         public byte [] expression;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="parentModule">The parent Module.</param>
         public Function(Module parentModule)
         {
             this.parentModule = parentModule;
         }
-        
+
+        /// <summary>
+        /// This function will be called once when loading and processing the function
+        /// bytecode to correctly set values and cache totalStackSize after all the 
+        /// basic stack data has been loaded.
+        /// </summary>
         public void InitializeOrganization()
         {
             // This function requires the FunctionType fnType to already be organized with

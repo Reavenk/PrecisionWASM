@@ -34,12 +34,29 @@ namespace PxPre.WASM
             f64
         }
 
-        // TODO: Capitalize the const & comment on size
-        const int initialStackPos = 1024 * 1024;
-        public byte[] stack = new byte[initialStackPos];
+        /// <summary>
+        /// The size of the stack for code execution. It's given a default of a megabyte.
+        /// </summary>
+        const int InitialStackPos = 1024 * 1024;
 
-        public int stackPos = initialStackPos;
+        /// <summary>
+        /// Working stack memory.
+        /// </summary>
+        public byte[] stack = new byte[InitialStackPos];
 
+        /// <summary>
+        /// Instead of starting at the beginning and using the stack by incrementing it, it's
+        /// more efficient to point at the very end and use the stack by decrementing. 
+        /// 
+        /// This (counter-intuitively) means the beginning of the stack is at the end of the 
+        /// array - and the end of the stack is at the beginning of the arrow. This also means
+        /// to push memory, we subtract the stackPos; and we add to pop memory.
+        /// </summary>
+        public int stackPos = InitialStackPos;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
         public ExecutionContext()
         { }
 
