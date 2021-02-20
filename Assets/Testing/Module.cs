@@ -56,6 +56,8 @@ namespace PxPre.WASM
             Float64     = 0x7C
         }
 
+         public const uint UnloadedStartIndex = unchecked((uint)~0);
+
         public List<FunctionType> types = new List<FunctionType>();
         public List<Export> exports = new List<Export>();
         public List<Function> functions = new List<Function>();
@@ -63,7 +65,7 @@ namespace PxPre.WASM
 
         public GlobalDirectory globals = new GlobalDirectory();
 
-        public uint startFnIndex = 0xFFFFFFFF;
+        public uint startFnIndex = UnloadedStartIndex;
 
         unsafe public static Module LoadBinary(byte [] rb)
         { 
