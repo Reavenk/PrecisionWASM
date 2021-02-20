@@ -208,16 +208,6 @@ namespace PxPre.WASM
             }
         }
 
-        public class ASTExpander
-        {
-            public Instruction instr;
-
-            public Opd_Stack type;
-            public byte [] rb;
-
-            List<ASTExpander> children = new List<ASTExpander>();
-        }
-
         public class ValidatorUtil
         {
             public List<Opd_Stack> opds = new List<Opd_Stack>();
