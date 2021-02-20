@@ -26,14 +26,6 @@ namespace PxPre.WASM
 {
     public class ExecutionContext
     {
-        public enum StackOperandType
-        { 
-            i32,
-            i64,
-            f32,
-            f64
-        }
-
         /// <summary>
         /// The size of the stack for code execution. It's given a default of a megabyte.
         /// </summary>
