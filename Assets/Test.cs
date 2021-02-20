@@ -50,7 +50,8 @@ public class Test : MonoBehaviour
 
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.session);
             List<PxPre.Datum.Val> values = 
-                ex.RunFunction(
+                ex.Invoke(
+                    ex.session, // TODO: Correct this when session gets removed from ExecutionContexts
                     "addTwo", 
                     new PxPre.Datum.ValInt(10),
                     new PxPre.Datum.ValInt(25));
@@ -66,7 +67,8 @@ public class Test : MonoBehaviour
 
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.session);
             List<PxPre.Datum.Val> values =
-                ex.RunFunction(
+                ex.Invoke(
+                    ex.session, // TODO: Correct this when session gets removed from ExecutionContexts
                     "fac",
                     new PxPre.Datum.ValInt(9));
 

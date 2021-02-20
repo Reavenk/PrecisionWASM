@@ -34,109 +34,17 @@ namespace PxPre.WASM
             f64
         }
 
+        // TODO: Capitalize the const & comment on size
         const int initialStackPos = 1024 * 1024;
         public byte[] stack = new byte[initialStackPos];
 
         public readonly Module session;
 
-        int stackPos = initialStackPos;
+        public int stackPos = initialStackPos;
 
         public ExecutionContext(Module session)
         { 
             this.session = session;
-        }
-
-        unsafe public List<PxPre.Datum.Val> RunFunction(string fnName, params PxPre.Datum.Val[] ps)
-        { 
-            int fnIdx = this.session.GetExportedFunctionID(fnName);
-            if(fnIdx == -1)
-                return null;
-
-            return RunFunction(fnIdx, ps);
-        }
-
-        unsafe public List<PxPre.Datum.Val> RunFunction(int index, params PxPre.Datum.Val[] ps)
-        {
-            Function fn = this.session.functions[index];
-            return RunFunction(fn, ps);
-        }
-
-        unsafe public List<PxPre.Datum.Val> RunFunction(Function fn, params PxPre.Datum.Val [] ps)
-        {
-            FunctionType fnty = this.session.types[(int)fn.typeidx];
-
-            if (ps.Length < fnty.paramTypes.Count)
-                throw new System.Exception("Invalid parameters");
-
-
-            int origStackPos = this.stackPos;
-
-            List<PxPre.Datum.Val> ret = new List<PxPre.Datum.Val>();
-
-            // Move the stack position right past where the parameters were written to.
-            this.stackPos -= (int)fn.totalStackSize;
-
-            // Transfer parameters to a native version the bytecode works on
-            fixed (byte* pb = fn.expression, pstk = this.stack)
-            {
-                for (int i = 0; i < fnty.paramTypes.Count; ++i)
-                { 
-                    FunctionType.DataOrgInfo doi = fnty.paramTypes[i];
-
-                    if(doi.size == 4)
-                    { 
-                        if(doi.isFloat == true)
-                            *(float*)(&pstk[this.stackPos + doi.offset]) = ps[i].GetFloat();
-                        else
-                            *(int*)(&pstk[this.stackPos + doi.offset]) = ps[i].GetInt();
-                    }
-                    else if(doi.size == 8)
-                    {
-                        if (doi.isFloat == true)
-                            *(double*)(&pstk[this.stackPos + doi.offset]) = (double)ps[i].GetFloat();
-                        else
-                            *(long*)(&pstk[this.stackPos + doi.offset]) = ps[i].GetInt();
-                    }
-                    else
-                    { } // TODO: Error
-
-                }
-
-                this.RunFunction(fn);
-
-                // extract the output variables.
-                for(int i = 0; i < fnty.resultTypes.Count; ++i)
-                {
-                    FunctionType.DataOrgInfo doi = fnty.resultTypes[i];
-
-                    PxPre.Datum.Val v = null;
-                    if (doi.size == 4)
-                    {
-                        if (doi.isFloat == true)
-                            v = new PxPre.Datum.ValFloat( *(float*)(&pstk[this.stackPos + doi.offset]) );
-                        else
-                            v = new PxPre.Datum.ValInt(*(int*)(&pstk[this.stackPos + doi.offset]));
-                    }
-                    else if (doi.size == 8)
-                    {
-                        if (doi.isFloat == true)
-                            v = new PxPre.Datum.ValFloat((float)*(double*)(&pstk[this.stackPos + doi.offset]));
-                        else
-                            v = new PxPre.Datum.ValInt((int)*(long*)(&pstk[this.stackPos + doi.offset]));
-                    }
-                    else
-                    { } // TODO: Error
-
-                    if(v != null)
-                        ret.Add(v);
-                }
-
-
-                // Move the stack before the parameter positioning.
-                this.stackPos = origStackPos;
-            }
-
-            return ret;
         }
 
         unsafe public void RunFunction(int index)
