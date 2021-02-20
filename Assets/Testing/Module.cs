@@ -163,7 +163,7 @@ namespace PxPre.WASM
                     uint numFunctions = BinParse.LoadUnsignedLEB32(pb, ref idx);
                     for (uint i = 0; i < numFunctions; ++i)
                     {
-                        Function function = new Function();
+                        Function function = new Function(ret);
                         uint fnType = BinParse.LoadUnsignedLEB32(pb, ref idx);
                         function.typeidx = fnType;
                         function.fnType = ret.types[(int)fnType];

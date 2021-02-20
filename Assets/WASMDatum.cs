@@ -36,7 +36,7 @@ public static class WASMDatum
         PxPre.WASM.Module module,
         string fnName, params PxPre.Datum.Val[] ps)
     {
-        int fnIdx = ex.session.GetExportedFunctionID(fnName);
+        int fnIdx = module.GetExportedFunctionID(fnName);
 
         if (fnIdx == -1)
             return null;
@@ -59,14 +59,10 @@ public static class WASMDatum
         PxPre.WASM.Function fn, 
         params PxPre.Datum.Val[] ps)
     {
-
-        // TODO: Take module from function once it's cached in Function
-        Module m = ex.session;
-        FunctionType fnty = ex.session.types[(int)fn.typeidx];
+        FunctionType fnty = fn.parentModule.types[(int)fn.typeidx];
 
         if (ps.Length < fnty.paramTypes.Count)
             throw new System.Exception("Invalid parameters");
-
 
         int origStackPos = ex.stackPos;
 

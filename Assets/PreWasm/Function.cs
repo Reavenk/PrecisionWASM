@@ -38,7 +38,7 @@ namespace PxPre.WASM
 
         public uint typeidx;
 
-        //public readonly Module parentModule;
+        public readonly Module parentModule;
 
         public FunctionType fnType;
 
@@ -52,11 +52,11 @@ namespace PxPre.WASM
 
         public byte [] expression;
 
-        //public Function(Module parentModule)
-        //{
-        //    this.parentModule = parentModule;
-        //}
-        //
+        public Function(Module parentModule)
+        {
+            this.parentModule = parentModule;
+        }
+        
         public void InitializeOrganization()
         {
             // This function requires the FunctionType fnType to already be organized with

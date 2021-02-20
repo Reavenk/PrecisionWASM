@@ -38,18 +38,14 @@ namespace PxPre.WASM
         const int initialStackPos = 1024 * 1024;
         public byte[] stack = new byte[initialStackPos];
 
-        public readonly Module session;
-
         public int stackPos = initialStackPos;
 
-        public ExecutionContext(Module session)
-        { 
-            this.session = session;
-        }
+        public ExecutionContext()
+        { }
 
-        unsafe public void RunFunction(int index)
+        unsafe public void RunFunction(Module module, int index)
         {
-            Function fn = this.session.functions[index];
+            Function fn = module.functions[index];
 
             this.RunFunction(fn);
         }
@@ -146,7 +142,7 @@ namespace PxPre.WASM
                                 uint fnid = *(uint*)&pb[ip];
                                 ip += 4;
 
-                                RunFunction(this.session.functions[(int)fnid]);
+                                RunFunction(fn.parentModule, (int)fnid);
                             }
                             break;
 
@@ -250,7 +246,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
-                                *(int*)&pstk[this.stackPos] = *(int*)&this.session.memories[0].pmemory[memid];
+                                *(int*)&pstk[this.stackPos] = *(int*)&fn.parentModule.memories[0].pmemory[memid];
                             }
                             break;
 
@@ -258,7 +254,7 @@ namespace PxPre.WASM
                             { 
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(long*)&pstk[this.stackPos] = *(long*)&this.session.memories[0].pmemory[memid];
+                                *(long*)&pstk[this.stackPos] = *(long*)&fn.parentModule.memories[0].pmemory[memid];
                             }
                             break;
 
@@ -266,7 +262,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
-                                *(float*)&pstk[this.stackPos] = *(float*)&this.session.memories[0].pmemory[memid];
+                                *(float*)&pstk[this.stackPos] = *(float*)&fn.parentModule.memories[0].pmemory[memid];
                             }
                             break;
 
@@ -274,7 +270,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(double*)&pstk[this.stackPos] = *(double*)&this.session.memories[0].pmemory[memid];
+                                *(double*)&pstk[this.stackPos] = *(double*)&fn.parentModule.memories[0].pmemory[memid];
                             }
                             break;
 
@@ -282,7 +278,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
-                                *(int*)&pstk[this.stackPos] = (sbyte)this.session.memories[0].pmemory[memid];
+                                *(int*)&pstk[this.stackPos] = (sbyte)fn.parentModule.memories[0].pmemory[memid];
                             }
                             break;
 
@@ -290,7 +286,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
-                                *(int*)&pstk[this.stackPos] = this.session.memories[0].pmemory[memid];
+                                *(int*)&pstk[this.stackPos] = fn.parentModule.memories[0].pmemory[memid];
                             }
                             break;
 
@@ -298,7 +294,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
-                                *(int*)&pstk[this.stackPos] = *(short*)&this.session.memories[0].pmemory[memid];
+                                *(int*)&pstk[this.stackPos] = *(short*)&fn.parentModule.memories[0].pmemory[memid];
                             }
                             break;
 
@@ -306,7 +302,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
-                                *(uint*)&pstk[this.stackPos] = *(ushort*)&this.session.memories[0].pmemory[memid];
+                                *(uint*)&pstk[this.stackPos] = *(ushort*)&fn.parentModule.memories[0].pmemory[memid];
                             }
                             break;
 
@@ -314,7 +310,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(long*)&pstk[this.stackPos] = *(sbyte*)&this.session.memories[0].pmemory[memid];
+                                *(long*)&pstk[this.stackPos] = *(sbyte*)&fn.parentModule.memories[0].pmemory[memid];
                             }
                             break;
 
@@ -322,7 +318,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(ulong*)&pstk[this.stackPos] = (byte)this.session.memories[0].pmemory[memid];
+                                *(ulong*)&pstk[this.stackPos] = (byte)fn.parentModule.memories[0].pmemory[memid];
                             }
                             break;
 
@@ -330,7 +326,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(long*)&pstk[this.stackPos] = *(short*)&this.session.memories[0].pmemory[memid];
+                                *(long*)&pstk[this.stackPos] = *(short*)&fn.parentModule.memories[0].pmemory[memid];
                             }
                             break;
 
@@ -338,7 +334,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(ulong*)&pstk[this.stackPos] = *(ushort*)&this.session.memories[0].pmemory[memid];
+                                *(ulong*)&pstk[this.stackPos] = *(ushort*)&fn.parentModule.memories[0].pmemory[memid];
                             }
                             break;
 
@@ -346,7 +342,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(long*)&pstk[this.stackPos] = *(int*)&this.session.memories[0].pmemory[memid];
+                                *(long*)&pstk[this.stackPos] = *(int*)&fn.parentModule.memories[0].pmemory[memid];
                             }
                             break;
 
@@ -354,7 +350,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(ulong*)&pstk[this.stackPos] = *(uint*)&this.session.memories[0].pmemory[memid];
+                                *(ulong*)&pstk[this.stackPos] = *(uint*)&fn.parentModule.memories[0].pmemory[memid];
                             }
                             break;
 
@@ -363,7 +359,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                *(int*)this.session.memories[0].pmemory[memid] = *(int*)&pstk[this.stackPos];
+                                *(int*)fn.parentModule.memories[0].pmemory[memid] = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
                             }
                             break;
@@ -373,7 +369,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                *(long*)this.session.memories[0].pmemory[memid] = *(long*)&pstk[this.stackPos];
+                                *(long*)fn.parentModule.memories[0].pmemory[memid] = *(long*)&pstk[this.stackPos];
                                 this.stackPos += 8;
                             }
                             break;
@@ -383,7 +379,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                *(float*)this.session.memories[0].pmemory[memid] = *(float*)&pstk[this.stackPos];
+                                *(float*)fn.parentModule.memories[0].pmemory[memid] = *(float*)&pstk[this.stackPos];
                                 this.stackPos += 4;
                             }
                             break;
@@ -393,7 +389,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                *(double*)this.session.memories[0].pmemory[memid] = *(double*)&pstk[this.stackPos];
+                                *(double*)fn.parentModule.memories[0].pmemory[memid] = *(double*)&pstk[this.stackPos];
                                 this.stackPos += 8;
                             }
                             break;
@@ -403,7 +399,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                this.session.memories[0].pmemory[memid] = pstk[this.stackPos]; // Not known if correct
+                                fn.parentModule.memories[0].pmemory[memid] = pstk[this.stackPos]; // Not known if correct
                                 this.stackPos += 4;
                             }
                             break;
@@ -413,7 +409,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                *(uint*)this.session.memories[0].pmemory[memid] = *(ushort*)&pstk[this.stackPos];
+                                *(uint*)fn.parentModule.memories[0].pmemory[memid] = *(ushort*)&pstk[this.stackPos];
                                 this.stackPos += 4;
                             }
                             break;
@@ -423,7 +419,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                this.session.memories[0].pmemory[memid] = pstk[this.stackPos];
+                                fn.parentModule.memories[0].pmemory[memid] = pstk[this.stackPos];
                                 this.stackPos += 8;
                             }
                             break;
@@ -433,7 +429,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                *(ushort*)&this.session.memories[0].pmemory[memid] = *(ushort*)&pstk[this.stackPos];
+                                *(ushort*)&fn.parentModule.memories[0].pmemory[memid] = *(ushort*)&pstk[this.stackPos];
                                 this.stackPos += 8;
                             }
                             break;
@@ -443,7 +439,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                *(uint*)&this.session.memories[0].pmemory[memid] = *(uint*)&pstk[this.stackPos];
+                                *(uint*)&fn.parentModule.memories[0].pmemory[memid] = *(uint*)&pstk[this.stackPos];
                                 this.stackPos += 4;
                             }
                             break;
@@ -455,13 +451,13 @@ namespace PxPre.WASM
                                 // But we also push a return value as a 32 bit int (-4)
                                 //this.stackPos += 0; 
 
-                                if (this.session.memories.Count == 0 || this.session.memories[0].memory.Length == 0)
+                                if (fn.parentModule.memories.Count == 0 || fn.parentModule.memories[0].memory.Length == 0)
                                     *(int*)pstk[this.stackPos] = -1;
                                 else
                                 {
                                     // The return is a page size, and we're following the rule that the memory size is always
                                     // a multiple of the page size.
-                                    *(int*)pstk[this.stackPos] = this.session.memories[0].memory.Length / Memory.PageSize;
+                                    *(int*)pstk[this.stackPos] = fn.parentModule.memories[0].memory.Length / Memory.PageSize;
                                 }
                             }
                             break;
@@ -474,21 +470,21 @@ namespace PxPre.WASM
 
                                 // The stackpop is popped, but another 32 bit values is put on the stack. No stack modification.
                                 uint oldPageSz = 0;
-                                if (this.session.memories.Count == 0 || this.session.memories[0].memory.Length == 0)
+                                if (fn.parentModule.memories.Count == 0 || fn.parentModule.memories[0].memory.Length == 0)
                                     oldPageSz = 0;
                                 else
-                                    oldPageSz = this.session.memories[0].CalculatePageSize();
+                                    oldPageSz = fn.parentModule.memories[0].CalculatePageSize();
 
-                                if(this.session.memories == null)
-                                    this.session.memories = new List<Memory>();
+                                if(fn.parentModule.memories == null)
+                                    fn.parentModule.memories = new List<Memory>();
 
-                                if(this.session.memories.Count == 0)
+                                if(fn.parentModule.memories.Count == 0)
                                 { 
                                     Memory mem = new Memory();
-                                    this.session.memories.Add(mem);
+                                    fn.parentModule.memories.Add(mem);
                                 }
 
-                                bool suc = this.session.memories[0].Resize((int)(oldPageSz + newPages));
+                                bool suc = fn.parentModule.memories[0].Resize((int)(oldPageSz + newPages));
                                 if(suc == true)
                                     *(uint*)&pstk[this.stackPos] = oldPageSz;
                                 else
@@ -1577,7 +1573,7 @@ namespace PxPre.WASM
                                 this.stackPos += 12;
 
                                 for(uint i = 0; i < count; ++i)
-                                    ((uint*)session.memories[0].pmemory)[start + i] = val;
+                                    ((uint*)fn.parentModule.memories[0].pmemory)[start + i] = val;
                             }
                             break;
 

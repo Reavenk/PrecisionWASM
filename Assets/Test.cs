@@ -39,7 +39,7 @@ public class Test : MonoBehaviour
             byte[] rb = System.IO.File.ReadAllBytes(this.loadTargetSimple);
             this.session = PxPre.WASM.Module.LoadBinary(rb);
 
-            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.session);
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext();
             Debug.Log("Loaded Empty");
         }
 
@@ -48,10 +48,10 @@ public class Test : MonoBehaviour
             byte [] rb = System.IO.File.ReadAllBytes(this.loadTargetSimple);
             this.session = PxPre.WASM.Module.LoadBinary(rb);
 
-            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.session);
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext();
             List<PxPre.Datum.Val> values = 
                 ex.Invoke(
-                    ex.session, // TODO: Correct this when session gets removed from ExecutionContexts
+                    this.session, // TODO: Correct this when session gets removed from ExecutionContexts
                     "addTwo", 
                     new PxPre.Datum.ValInt(10),
                     new PxPre.Datum.ValInt(25));
@@ -65,10 +65,10 @@ public class Test : MonoBehaviour
             byte[] rb = System.IO.File.ReadAllBytes(this.loadTargetFactorial);
             this.session = PxPre.WASM.Module.LoadBinary(rb);
 
-            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.session);
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext();
             List<PxPre.Datum.Val> values =
                 ex.Invoke(
-                    ex.session, // TODO: Correct this when session gets removed from ExecutionContexts
+                    this.session,
                     "fac",
                     new PxPre.Datum.ValInt(9));
 
