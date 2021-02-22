@@ -53,18 +53,17 @@ namespace PxPre.WASM
         
 
         public uint totalParamSize = 0;
-        public uint totalResultsSize = 0;
         public uint totalResultSize = 0;
 
         public void InitializeOrganization()
         {
-            this.totalResultsSize = 0;
+            this.totalParamSize = 0;
             this.totalResultSize = 0;
 
             for(int i = 0; i < this.paramTypes.Count; ++i)
             { 
                 DataOrgInfo doi = this.paramTypes[i];
-                FillInOrg(ref doi, ref this.totalResultsSize);
+                FillInOrg(ref doi, ref this.totalParamSize);
                 this.paramTypes[i] = doi;
             }
 
