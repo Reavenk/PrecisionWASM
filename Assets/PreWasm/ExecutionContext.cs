@@ -1590,5 +1590,41 @@ namespace PxPre.WASM
                 }
             }
         }
+
+        /// <summary>
+        /// Call to run the mo
+        /// </summary>
+        /// <returns></returns>
+        public bool InvokeStart(Module module, bool recursive = true)
+        { 
+            HashSet<Module> ignoreList = new HashSet<Module>();
+            InvokeStart(module, ignoreList, recursive);
+            return true;
+        }
+
+        public bool InvokeStart(Module module, HashSet<Module> ignore, bool recursive = true)
+        { 
+            if(ignore.Contains(module) == true)
+                return false;
+
+            ignore.Add(module);
+            if(module.startFnIndex == 0xFFFFFFFF)
+                return false;
+
+            if(recursive == true)
+            { 
+                // TODO: Call InvokeStart() on dependent modules.
+            }
+
+            // TODO: I'm missing something, but from the sample we're matching, 
+            // the index was off by 1. 
+            Function startFn = module.functions[(int)module.startFnIndex - 1];
+            if(startFn.fnType.resultTypes.Count > 0 || startFn.fnType.paramTypes.Count > 0)
+                throw new System.Exception(); // TODO: Error message
+            
+            this.Invoke(startFn);
+
+            return true;
+        }
     }
 }
