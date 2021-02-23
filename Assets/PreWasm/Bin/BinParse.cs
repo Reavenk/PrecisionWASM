@@ -42,8 +42,8 @@ namespace PxPre.WASM
         {
             uint ret = 0;
 
-            const uint mask = (1 << 8) - 1;
-            const uint flag = (1 << 8);
+            const uint mask = (1 << 7) - 1;
+            const uint flag = (1 << 7);
 
             int shift = 0;
             for (int i = 0; i < 4; ++i)
@@ -76,8 +76,8 @@ namespace PxPre.WASM
 
             int ret = -1;
 
-            const int mask = (1 << 8) - 1;
-            const int flag = (1 << 8);
+            const int mask = (1 << 7) - 1;
+            const int flag = (1 << 7);
 
             int shift = 0;
             for (int i = 0; i < 4; ++i)
@@ -113,8 +113,8 @@ namespace PxPre.WASM
         {
             uint ret = 0;
 
-            const uint mask = (1 << 8) - 1;
-            const uint flag = (1 << 8);
+            const uint mask = (1 << 7) - 1;
+            const uint flag = (1 << 7);
 
             int shift = 0;
             for (int i = 0; i < 8; ++i)
@@ -147,8 +147,8 @@ namespace PxPre.WASM
 
             int ret = -1;
 
-            const int mask = (1 << 8) - 1;
-            const int flag = (1 << 8);
+            const int mask = (1 << 7) - 1;
+            const int flag = (1 << 7);
 
             int shift = 0;
             for (int i = 0; i < 8; ++i)
