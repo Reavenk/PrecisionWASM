@@ -24,9 +24,69 @@
 
 namespace PxPre.WASM
 {
-    public class Table
+    // TODO: Possibly merge with memories storage
+    unsafe public class Table
     {
-        int type;
-        byte [] data;
+        public Bin.TypeID type;
+        public byte [] data = null;
+        public byte * pdata = null;
+        public uint max;
+
+        public void Resize(int elementCount)
+        { 
+            if(elementCount == 0)
+            { 
+                this.data = null;
+                this.pdata = null;
+            }
+
+            int es = this.ElementSize();
+            int byteSz = es * elementCount;
+
+            if(this.data == null)
+            {
+                this.data = new byte[byteSz];
+                for(int i = 0; i < byteSz; ++i)
+                    this.data[i] = 0;
+            }
+            else
+            { 
+                int oldSz = this.data.Length;
+                byte [] oldRB = data;
+                this.data = new byte[byteSz];
+
+                int transferSz = oldSz < byteSz ? oldSz : byteSz;
+                for(int i = 0; i < transferSz; ++i)
+                    this.data[i] = oldRB[i];
+
+                for(int i = transferSz; i < byteSz; ++i)
+                    this.data[i] = 0;
+            }
+
+            fixed(byte * pb = this.data)
+                this.pdata = pb;
+        }
+
+        public int ElementSize()
+        { 
+            switch(this.type)
+            { 
+                case Bin.TypeID.Float32:
+                    return 4;
+
+                case Bin.TypeID.Float64:
+                    return 8;
+
+                case Bin.TypeID.Int32:
+                    return 4;
+
+                case Bin.TypeID.Int64:
+                    return 8;
+
+                case Bin.TypeID.FuncRef:
+                    return 4;
+            }
+            throw new System.Exception("Asking for Table element size of unknown type.");
+        }
     }
 }

@@ -37,10 +37,26 @@ namespace PxPre.WASM
         public List<Export> exports = new List<Export>();
         public List<Function> functions = new List<Function>();
         public List<Memory> memories = new List<Memory>();
+        public List<Table> tables = new List<Table>();
 
-        public GlobalDirectory globals = new GlobalDirectory();
+        public Dictionary<string, ImportModule> imports = 
+            new Dictionary<string, ImportModule>();
+
+        List<ImportModule.GlobalTypeEntry> globals = new List<ImportModule.GlobalTypeEntry>();
+
+        //public GlobalDirectory globals = new GlobalDirectory();
 
         public uint startFnIndex = UnloadedStartIndex;
+
+        // TODO: Remove elsewhere - possibly into Bin?
+        public enum ImportType
+        {
+            // https://webassembly.github.io/spec/core/binary/modules.html#import-section
+            TypeIndex   = 0x00, // A function type index
+            TableType   = 0x01, // A table type
+            MemType     = 0x02, // A mem type
+            GlobalType  = 0x03  // A global type 
+        }
 
         unsafe public static Module LoadBinary(byte [] rb)
         { 
@@ -132,6 +148,81 @@ namespace PxPre.WASM
                 }
                 else if(sectionCode == Bin.Section.ImportSec)
                 { 
+                    uint numImports = BinParse.LoadUnsignedLEB32(pb, ref idx);
+
+                    for(uint i = 0; i < numImports; ++i)
+                    { 
+                        uint modnameLen = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                        string modName = LoadString(pb, modnameLen, ref idx);
+
+                        uint fieldnameLen = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                        string fieldName = LoadString(pb, fieldnameLen, ref idx);
+
+                        ImportType importTy = (ImportType)BinParse.LoadUnsignedLEB32(pb, ref idx);
+                        switch(importTy)
+                        {
+                            case ImportType.TypeIndex: 
+                                {
+                                    uint fnTyIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                    ImportModule imod;
+                                    if(ret.imports.TryGetValue(modName, out imod) == false)
+                                    {
+                                        imod = new ImportModule();
+                                        ret.imports.Add(modName, imod);
+                                    }
+
+                                    // TODO: What if it already exists, or if we want to override
+                                    // the same type with a new value?
+                                    imod.importedMembers.Add( 
+                                        fieldName, 
+                                        new ImportModule.FunctionImportEntry(null));
+                                }
+                                break;
+
+                            case ImportType.TableType:
+                                {
+                                    uint tableIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                    // TODO:
+                                }
+                                break;
+
+                            case ImportType.MemType:
+                                {
+                                    uint memIdx = BinParse.LoadUnsignedLEB32(pb, ref idx); 
+                                    // TODO:
+                                }
+                                break;
+
+                            case ImportType.GlobalType:
+                                {
+                                    uint globalIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                    uint mutability = BinParse.LoadUnsignedLEB32(pb, ref idx);
+
+                                    ImportModule imod;
+                                    if(ret.imports.TryGetValue(modName, out imod) == false)
+                                    {
+                                        imod = new ImportModule();
+                                        ret.imports.Add(modName, imod);
+                                    }
+
+                                    ImportModule.GlobalTypeEntry globalEnt = 
+                                        new ImportModule.GlobalTypeEntry();
+
+                                    globalEnt.mutable = mutability != 0;
+                                    globalEnt.type = (Bin.TypeID)globalIdx;
+
+                                    imod.importedMembers.Add(
+                                        fieldName,
+                                        globalEnt);
+
+                                    ret.globals.Add(globalEnt);
+                                    // TODO:
+                                }
+                                break;
+                        }
+
+                        
+                    }
                 }
                 else if(sectionCode == Bin.Section.FunctionSec)
                 {
@@ -148,6 +239,30 @@ namespace PxPre.WASM
                 }
                 else if(sectionCode == Bin.Section.TableSec)
                 { 
+                    uint numTables = BinParse.LoadUnsignedLEB32(pb, ref idx);
+
+                    for(uint i = 0; i < numTables; ++i)
+                    { 
+                        Bin.TypeID ty = (Bin.TypeID)BinParse.LoadUnsignedLEB32(pb, ref idx);
+
+                        uint flags = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                        uint initial = BinParse.LoadUnsignedLEB32(pb, ref idx); 
+                        uint max = BinParse.LoadUnsignedLEB32(pb, ref idx);
+
+                        Table table = new Table();
+                        table.max = max;
+                        table.type = ty;
+                        table.Resize((int)initial);
+                        ret.tables.Add(table);
+
+                        // TODO: Transfer table values
+                        // if (ty == Bin.TypeID.FuncRef)
+                        // {
+                        // }
+                        // else
+                        // { 
+                        // }
+                    }
                 }
                 else if(sectionCode == Bin.Section.MemorySec)
                 {

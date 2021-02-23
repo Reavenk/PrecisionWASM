@@ -26,12 +26,17 @@ using UnityEngine;
 
 namespace PxPre.WASM.Bin
 {
+    /// <summary>
+    /// https://webassembly.github.io/spec/core/appendix/index-types.html
+    /// </summary>
     public enum TypeID
     {
-        Function = 0x60,
-        Int32 = 0x7F,
-        Int64 = 0x7E,
-        Float32 = 0x7D,
-        Float64 = 0x7C
+        Result      = 0x40,
+        Function    = 0x60,
+        FuncRef     = 0x70,
+        Int32       = 0x7F,
+        Int64       = 0x7E,
+        Float32     = 0x7D,
+        Float64     = 0x7C
     }
 }

@@ -655,18 +655,10 @@ namespace PxPre.WASM
                                 // This function is incorrect in that it's a duplicate of local_set.
                                 // this eventually needs to pull from the global varable source.
 
-                                uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                FunctionType.DataOrgInfo ty = ft.paramTypes[(int)paramIdx];
+                                uint globalIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                TransferInt32u(expanded, globalIdx);
 
-                                vu.PopOpd(ConvertToStackType(ty.type));
-                                if (ty.size == 4)
-                                    TransferInstruction(expanded, Instruction._global_set32);
-                                else if (ty.size == 8)
-                                    TransferInstruction(expanded, Instruction._global_set64);
-                                else
-                                    vu.EmitValidationError("Setting parameter of illegal size.");
-
-                                TransferInt32u(expanded, ty.offset);
+                                vu.PopOpd(ConvertToStackType(session.globals[(int)globalIdx].type));
                             }
                         
                             break;
