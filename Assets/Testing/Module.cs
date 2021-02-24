@@ -249,10 +249,8 @@ namespace PxPre.WASM
                         uint initial = BinParse.LoadUnsignedLEB32(pb, ref idx); 
                         uint max = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                        Table table = new Table();
-                        table.max = max;
-                        table.type = ty;
-                        table.Resize((int)initial);
+                        Table table = new Table(ty, (int)initial, (int)max);
+                        table.flags = flags;
                         ret.tables.Add(table);
 
                         // TODO: Transfer table values
@@ -274,25 +272,18 @@ namespace PxPre.WASM
                     
                     for (uint i = 0; i < numMems; ++i)
                     {
-                        Memory newMem = new Memory();
 
-                        newMem.flags = pb[idx];
-                        ++idx;
+                        uint memFlags           = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                        uint memInitialPageCt   = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                        uint memMaxPageCt       = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                        // This should be the initial size, but I'm assuming it's also the minimum size.
-                        newMem.minSize = BinParse.LoadUnsignedLEB32(pb, ref idx); 
-                        newMem.memory = new byte [newMem.minSize * Memory.PageSize];
-                        fixed(byte * pmem = newMem.memory)
-                        { 
-                            newMem.pmemory = pmem;
-                        }
+                        Memory newMem = 
+                            new Memory(
+                                (int)memInitialPageCt, 
+                                (int)memInitialPageCt, 
+                                (int)memMaxPageCt);
 
-                        // Zero out the memory (the spec says so)
-                        for(int j = 0; j < newMem.memory.Length; ++j)
-                            newMem.memory[j] = 0;
-
-                        newMem.maxSize = BinParse.LoadUnsignedLEB32(pb, ref idx);
-
+                        newMem.flags = memFlags;
 
                         ret.memories.Add(newMem);
                     }
@@ -400,7 +391,7 @@ namespace PxPre.WASM
                         Memory mem = ret.memories[(int)i];
 
                         uint dataSz = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                        if(mem.memory.Length < dataSz)
+                        if(mem.CurByteSize < dataSz)
                             throw new System.Exception();   // TODO: Error msg
 
                         // Copy into runtime memory block.
@@ -409,7 +400,7 @@ namespace PxPre.WASM
                         // low-level copy function that also does this, that would be 
                         // prefered.
                         for(uint j = 0; j < dataSz; ++j)
-                            mem.memory[(int)j] = pb[idx + j];
+                            mem.data[(int)j] = pb[idx + j];
 
                         idx += dataSz;
                     }

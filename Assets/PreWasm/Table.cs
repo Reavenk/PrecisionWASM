@@ -25,52 +25,36 @@
 namespace PxPre.WASM
 {
     // TODO: Possibly merge with memories storage
-    unsafe public class Table
+    unsafe public class Table : DataStore
     {
         public Bin.TypeID type;
-        public byte [] data = null;
-        public byte * pdata = null;
         public uint max;
+        public uint flags;
 
-        public void Resize(int elementCount)
+        public Table(Bin.TypeID type, int elementCount, int elementMax)
+            : base(
+                  ElementSize(type) * elementCount, 
+                  ElementSize(type) * elementMax)
         { 
-            if(elementCount == 0)
-            { 
-                this.data = null;
-                this.pdata = null;
-            }
-
-            int es = this.ElementSize();
-            int byteSz = es * elementCount;
-
-            if(this.data == null)
-            {
-                this.data = new byte[byteSz];
-                for(int i = 0; i < byteSz; ++i)
-                    this.data[i] = 0;
-            }
-            else
-            { 
-                int oldSz = this.data.Length;
-                byte [] oldRB = data;
-                this.data = new byte[byteSz];
-
-                int transferSz = oldSz < byteSz ? oldSz : byteSz;
-                for(int i = 0; i < transferSz; ++i)
-                    this.data[i] = oldRB[i];
-
-                for(int i = transferSz; i < byteSz; ++i)
-                    this.data[i] = 0;
-            }
-
-            fixed(byte * pb = this.data)
-                this.pdata = pb;
+            this.type = type;
         }
 
-        public int ElementSize()
+        public Table(Bin.TypeID type, int elementCount)
+            : base(ElementSize(type))
         { 
-            switch(this.type)
-            { 
+            this.type = type;
+        }
+
+        public ExpandRet ExpandElements(int elementCount)
+        { 
+            int newByteSize = this.ElementSize() * elementCount;
+            return this.ExpandSize(newByteSize);
+        }
+
+        protected static int ElementSize(Bin.TypeID ty)
+        {
+            switch (ty)
+            {
                 case Bin.TypeID.Float32:
                     return 4;
 
@@ -87,6 +71,11 @@ namespace PxPre.WASM
                     return 4;
             }
             throw new System.Exception("Asking for Table element size of unknown type.");
+        }
+
+        public int ElementSize()
+        { 
+            return ElementSize(this.type);
         }
     }
 }

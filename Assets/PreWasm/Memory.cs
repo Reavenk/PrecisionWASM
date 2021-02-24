@@ -26,66 +26,45 @@ using System.Collections.Generic;
 namespace PxPre.WASM
 {
     // https://webassembly.github.io/spec/core/syntax/modules.html#syntax-mem
-    public unsafe class Memory
+    public unsafe class Memory : DataStore
     {
         public const int PageSize = 64 * 1024;
 
-        public byte flags;
-        public uint minSize = 0;
-        public uint maxSize = int.MaxValue;
+        public uint flags;
+        public int minPageCt = 0;
+        public int maxPageCt = int.MaxValue;
 
-        // The memory. While pmemory is the pointer that's suggested 
-        // for use, pmemory is used to make sure the memory target isn't
-        // garbage collected - as well as giving access to properties
-        // such as the array size.
-        //
-        // If this turns out to be too dangerous or unreliable on certain
-        // builds/compilers, alternative implementations with a preprocessor
-        // may be needed.
-        // (wleu 02/19/2021)
-        public byte [] memory = null;
-        public byte * pmemory; // point to memory. Should always be reset if memory is reset
-
-        public uint CalculatePageSize()
-        { 
-            if(this.memory == null)
-                return 0;
-
-            return (uint)(this.memory.Length / PageSize);
+        public new int CurByteSize
+        {
+            get => this.data != null ? this.data.Length : 0;
         }
 
-        public bool Resize(int newPageSize)
+        public new int MaxByteSize
+        {
+            get => this.MaxByteSize;
+        }
+
+        public Memory(int initPageCt, int minPageCt, int maxPageCt)
+            : base(initPageCt * PageSize, maxPageCt * PageSize)
+        {
+            this.minPageCt = minPageCt;
+            this.maxPageCt = maxPageCt;
+        }
+
+        public Memory(int initialPageCt)
+            : base(PageSize * initialPageCt)
+        {
+        }
+
+        public uint CalculatePageCt()
         { 
-            uint origPageSize = this.CalculatePageSize();
-            if(origPageSize > newPageSize)
-                return false;
+            return (uint)(this.CurByteSize / PageSize);
+        }
 
-            if(newPageSize > this.maxSize)
-                return false;
-
-            uint oldEnd = origPageSize * PageSize;
-
-            if(memory == null)
-                this.memory = new byte[newPageSize * PageSize];
-            else
-            {
-                byte [] oldMem = this.memory;
-                this.memory = new byte[newPageSize * PageSize];
-
-                for(int i = 0; i < oldEnd; ++i)
-                    this.memory[i] = oldMem[i];
-            }
-
-            uint newPageByteCt = (uint)(newPageSize * PageSize);
-            for(uint i = origPageSize; i < newPageByteCt; ++i)
-                this.memory[i] = 0;
-
-            fixed(byte * pb = this.memory)
-            {
-                this.pmemory = pb;
-            }
-
-            return true;
+        public ExpandRet ExpandPageCt(int newPageSize)
+        {
+            int newPageByteCt = (int)(newPageSize * PageSize);
+            return this.ExpandSize(newPageByteCt);
         }
 
     }

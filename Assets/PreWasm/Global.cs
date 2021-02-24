@@ -25,7 +25,7 @@ using System.Collections.Generic;
 
 namespace PxPre.WASM
 {
-    public struct Global
+    public class Global : DataStore
     {
         public enum Mutability
         { 
@@ -34,6 +34,14 @@ namespace PxPre.WASM
         }
         public Mutability mut;
         public ValueType valueType;
-        public byte [] data;
+
+        public Global(int initialSize, int maxSize)
+            : base(initialSize, maxSize)
+        {}
+
+        public Global(int initialSize)
+            : base(initialSize)
+        {}
+
     }
 }
