@@ -329,6 +329,12 @@ MonoBehaviour:
   loadTargetEmpty: TestSamples\empty.wasm
   loadTargetSimple: TestSamples\simple.wasm
   loadTargetFactorial: TestSamples\factorial.wasm
+  loadTargetStuff: TestSamples\stuff.wasm
+  loadTargetMutableGlobals: TestSamples\mutable_globals.wasm
+  loadTargetSaturatingFloatToInt: TestSamples\saturatingfloattoint.wasm
+  loadTargetSignExtension: TestSamples\signextension.wasm
+  loadTargetMultiValue: TestSamples\multivalue.wasm
+  loadTargetBulkMemory: TestSamples\bulkmemory.wasm
   testParse: "(module\r\n  (func $fac (export \"fac\") (param f64) (result f64)\r\n   
     local.get 0\r\n    f64.const 1\r\n    f64.lt\r\n    if (result f64)\r\n     
     f64.const 1\r\n    else \r\n      local.get 0\r\n      local.get 0\r\n      f64.const
