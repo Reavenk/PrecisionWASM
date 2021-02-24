@@ -176,6 +176,11 @@ namespace PxPre.WASM
 
     public abstract class ImportFunction
     {
+        // Encapsulate better
+        //
+        // Also, should this be readonly?
+        public FunctionType functionType; 
+
         public abstract byte [] InvokeImpl(ImportFunctionUtil utils);
     }
 }

@@ -1609,13 +1609,33 @@ namespace PxPre.WASM
                 // TODO: Call InvokeStart() on dependent modules.
             }
 
-            // TODO: I'm missing something, but from the sample we're matching, 
-            // the index was off by 1. 
-            Function startFn = module.functions[(int)module.startFnIndex - 1];
-            if(startFn.fnType.resultTypes.Count > 0 || startFn.fnType.paramTypes.Count > 0)
+            FunctionIndexEntry fie = module.functionIndexing[(int)module.startFnIndex];
+
+            if(fie.type == FunctionIndexEntry.FnIdxType.Local)
+            {
+                Function startFn = module.functions[fie.index];
+
+                // TODO: Check this earlier during compile
+                if (startFn.fnType.resultTypes.Count > 0 || startFn.fnType.paramTypes.Count > 0)
+                    throw new System.Exception("Start function is invalid function type."); // TODO: Error message
+
+                this.Invoke(startFn);
+            }
+            else if(fie.type == FunctionIndexEntry.FnIdxType.Import)
+            { 
+                ImportFunction startIFn = module.importedFunctions[fie.index].importFn;
+                if(startIFn == null)
+                    throw new System.Exception("Imported start function not set.");
+
+                // TODO: Check this earlier during compile
+                if(startIFn.functionType.resultTypes.Count > 0 || startIFn.functionType.paramTypes.Count > 0)
+                    throw new System.Exception("Start function is invalid function type.");
+
+                ImportFunctionUtil ifn = new ImportFunctionUtil(startIFn.functionType, this, this.stackPos);
+                startIFn.InvokeImpl(ifn);
+            }
+            else
                 throw new System.Exception(); // TODO: Error message
-            
-            this.Invoke(startFn);
 
             return true;
         }

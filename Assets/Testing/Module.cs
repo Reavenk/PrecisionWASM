@@ -31,12 +31,20 @@ namespace PxPre.WASM
         public Dictionary<string, PxPre.Datum.Val> exposed = 
             new Dictionary<string, PxPre.Datum.Val>();
 
-         public const uint UnloadedStartIndex = unchecked((uint)~0);
+        public List<FunctionIndexEntry> functionIndexing = 
+            new List<FunctionIndexEntry>();
+
+        public const uint UnloadedStartIndex = unchecked((uint)~0);
 
         public List<FunctionType> types = new List<FunctionType>();
+
         public List<Export> exports = new List<Export>();
+
         public List<Function> functions = new List<Function>();
+        public List<ImportModule.FunctionImportEntry> importedFunctions = new List<ImportModule.FunctionImportEntry>();
+
         public List<Memory> memories = new List<Memory>();
+
         public List<Table> tables = new List<Table>();
 
         public Dictionary<string, ImportModule> imports = 
@@ -171,11 +179,20 @@ namespace PxPre.WASM
                                         ret.imports.Add(modName, imod);
                                     }
 
-                                    // TODO: What if it already exists, or if we want to override
-                                    // the same type with a new value?
+                                    ImportModule.FunctionImportEntry functionSlot = 
+                                        new ImportModule.FunctionImportEntry(null);
+
                                     imod.importedMembers.Add( 
-                                        fieldName, 
-                                        new ImportModule.FunctionImportEntry(null));
+                                        fieldName,
+                                        functionSlot);
+
+                                    ret.functionIndexing.Add(
+                                        FunctionIndexEntry.CreateImport( 
+                                            ret.importedFunctions.Count,
+                                            modName,
+                                            fieldName));
+
+                                    ret.importedFunctions.Add(functionSlot);
                                 }
                                 break;
 
@@ -234,7 +251,11 @@ namespace PxPre.WASM
                         function.typeidx = fnType;
                         function.fnType = ret.types[(int)fnType];
 
+                        ret.functionIndexing.Add( 
+                            FunctionIndexEntry.CreateLocal(ret.functions.Count));
+
                         ret.functions.Add(function);
+
                     }
                 }
                 else if(sectionCode == Bin.Section.TableSec)
@@ -376,8 +397,7 @@ namespace PxPre.WASM
                     for(uint i = 0; i < numData; ++i)
                     { 
                         // TODO: Figure out header
-                        byte segHeaderFlags = pb[idx];
-                        ++idx;
+                        uint segHeaderFlags = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
                         // TODO: What are these types for?
                         List<byte> types = new List<byte>();
