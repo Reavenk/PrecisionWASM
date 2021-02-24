@@ -42,7 +42,7 @@ namespace PxPre.WASM
         public Dictionary<string, ImportModule> imports = 
             new Dictionary<string, ImportModule>();
 
-        List<ImportModule.GlobalTypeEntry> globals = new List<ImportModule.GlobalTypeEntry>();
+        public List<ImportModule.GlobalTypeEntry> globals = new List<ImportModule.GlobalTypeEntry>();
 
         //public GlobalDirectory globals = new GlobalDirectory();
 
