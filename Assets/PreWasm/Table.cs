@@ -20,8 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// TODO: Remove if not used
-
 namespace PxPre.WASM
 {
     // TODO: Possibly merge with memories storage
