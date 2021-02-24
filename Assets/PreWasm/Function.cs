@@ -549,10 +549,18 @@ namespace PxPre.WASM
 
                         case Instruction.call:
                             {
-                                TransferInstruction(expanded, instr);
-
                                 uint fnidx = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                TransferInt32u(expanded, fnidx);
+                                FunctionIndexEntry fie = parentModule.functionIndexing[(int)fnidx];
+                                if(fie.type == FunctionIndexEntry.FnIdxType.Local)
+                                { 
+                                    TransferInstruction(expanded, Instruction._call_local);
+                                    TransferInt32u(expanded, (uint)fie.index);
+                                }
+                                else
+                                {
+                                    TransferInstruction(expanded, Instruction._call_import);
+                                    TransferInt32u(expanded, (uint)fie.index);
+                                }
                             }
                             break;
 

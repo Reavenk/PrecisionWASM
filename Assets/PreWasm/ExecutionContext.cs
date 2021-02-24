@@ -53,9 +53,40 @@ namespace PxPre.WASM
         { }
 
         unsafe public void RunFunction(Module module, int index)
-        {
-            Function fn = module.functions[index];
+        { 
+            FunctionIndexEntry fie = module.functionIndexing[index];
+            if(fie.type == FunctionIndexEntry.FnIdxType.Local)
+            { 
+                this.RunLocalFunction(module, fie.index);
+            }
+            else if(fie.type == FunctionIndexEntry.FnIdxType.Import)
+            { 
+                this.RunFunction( module.importedFunctions[fie.index]);
+            }
+            else
+                throw new System.Exception(); // TODO: Error msg
+        }
 
+        public void RunFunction(ImportFunction ifn)
+        { 
+            
+            ImportFunctionUtil ifu = 
+                new ImportFunctionUtil(ifn.functionType, this, this.stackPos);
+
+            ifn.InvokeImpl(ifu);
+        }
+
+        public void RunFunction(ImportModule.FunctionImportEntry fie)
+        { 
+            if(fie.importFn == null)
+                throw new System.Exception(); // TODO: Error msg
+
+            this.RunFunction(fie.importFn);
+        }
+
+        unsafe public void RunLocalFunction(Module module, int localIndex)
+        {
+            Function fn = module.functions[localIndex];
             this.RunFunction(fn);
         }
 
@@ -146,12 +177,21 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.call:
+                        case Instruction._call_local:
                             {
                                 uint fnid = *(uint*)&pb[ip];
                                 ip += 4;
 
-                                RunFunction(fn.parentModule, (int)fnid);
+                                RunLocalFunction(fn.parentModule, (int)fnid);
+                            }
+                            break;
+
+                        case Instruction._call_import:
+                            {
+                                uint fnid = *(uint*)&pb[ip];
+                                ip += 4;
+
+                                RunFunction(fn.parentModule.importedFunctions[(int)fnid]);
                             }
                             break;
 

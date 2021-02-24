@@ -39,6 +39,8 @@ namespace PxPre.WASM
         returnblock     = 0x0F,
 
         call            = 0x10,
+        _call_local     = (0x10 << 8) | 0,
+        _call_import    = (0x10 << 8) | 1,
         call_indirect   = 0x11,
 
         _ifblock        = (ifblock << 8),
