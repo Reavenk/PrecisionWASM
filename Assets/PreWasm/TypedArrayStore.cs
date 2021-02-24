@@ -20,20 +20,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System.Collections;
+using System.Collections.Generic;
+
 namespace PxPre.WASM
 {
-    // TODO: Possibly merge with memories storage
-    unsafe public class Table : TypedArrayStore
+    public class TypedArrayStore : DataStore
     {
-        public uint max;
-        public uint flags;
+        public readonly Bin.TypeID type;
 
-        public Table(Bin.TypeID type, int elementCt, int elementMax)
-            : base(type, elementCt, elementMax)
-        { }
+        public TypedArrayStore(Bin.TypeID type, int elements, int maxElements)
+            : base(GetTypeIDSize(type) * elements, GetTypeIDSize(type) * maxElements)
+        {
+            this.type = type;
+        }
 
-        public Table(Bin.TypeID type, int elementCt)
-            : base(type, elementCt)
-        { }
+        public TypedArrayStore(Bin.TypeID type, int elements)
+            : base(GetTypeIDSize(type) * elements)
+        {
+            this.type = type;
+        }
+
+        public ExpandRet ExpandElements(int elementCount)
+        {
+            int newByteSize = this.ElementSize() * elementCount;
+            return this.ExpandSize(newByteSize);
+        }
+
+        public int ElementSize()
+        {
+            return GetTypeIDSize(this.type);
+        }
     }
 }

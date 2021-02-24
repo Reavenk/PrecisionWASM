@@ -41,6 +41,8 @@ namespace PxPre.WASM
         public List<Export> exports = new List<Export>();
 
         public List<Function> functions = new List<Function>();
+        // TODO: These should be definitions. And actual instance slots should
+        // be attached to the ExecutionContext
         public List<ImportModule.FunctionImportEntry> importedFunctions = new List<ImportModule.FunctionImportEntry>();
 
         public List<Memory> memories = new List<Memory>();
@@ -50,6 +52,8 @@ namespace PxPre.WASM
         public Dictionary<string, ImportModule> imports = 
             new Dictionary<string, ImportModule>();
 
+        // TODO: These should be definitions. And actual instance slots should
+        // be attached to the ExecutionContext
         public List<ImportModule.GlobalTypeEntry> globals = new List<ImportModule.GlobalTypeEntry>();
 
         //public GlobalDirectory globals = new GlobalDirectory();
@@ -225,8 +229,8 @@ namespace PxPre.WASM
                                     ImportModule.GlobalTypeEntry globalEnt = 
                                         new ImportModule.GlobalTypeEntry();
 
-                                    globalEnt.mutable = mutability != 0;
-                                    globalEnt.type = (Bin.TypeID)globalIdx;
+                                    globalEnt.global = 
+                                        new Global((Bin.TypeID)globalIdx, 1, mutability != 0);
 
                                     imod.importedMembers.Add(
                                         fieldName,

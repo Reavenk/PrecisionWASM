@@ -280,15 +280,54 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction._global_get32:
+                            {
+                                int globalIdx = *(int*)&pb[ip];
+                                ip += 4;
+
+                                // Push 4 bytes
+                                this.stackPos -= 4;
+                                * (int*)&pstk[this.stackPos] =
+                                    *(int*)(fn.parentModule.globals[globalIdx].global.pdata);
+
+
+                            }
                             break;
 
                         case Instruction._global_get64:
+                            {
+                                int globalIdx = *(int*)&pb[ip];
+                                ip += 4;
+
+                                // Push 8 bytes
+                                this.stackPos -= 8;
+                                *(int*)&pstk[this.stackPos]  = 
+                                    *(int*)(fn.parentModule.globals[globalIdx].global.pdata);
+
+                            }
                             break;
 
                         case Instruction._global_set32:
+                            {
+                                int globalIdx = *(int*)&pb[ip];
+                                ip += 4;
+
+                                *(int*)(fn.parentModule.globals[globalIdx].global.pdata) =
+                                    *(int*)&pstk[this.stackPos];
+
+                                this.stackPos += 4;
+                            }
                             break;
 
                         case Instruction._global_set64:
+                            {
+                                int globalIdx = *(int*)&pb[ip];
+                                ip += 4;
+
+                                *(long*)(fn.parentModule.globals[globalIdx].global.pdata) =
+                                    *(long*)&pstk[this.stackPos];
+
+                                this.stackPos += 8;
+                            }
                             break;
 
                         case Instruction.i32_load:

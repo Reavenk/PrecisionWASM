@@ -67,13 +67,7 @@ namespace PxPre.WASM
 
         public class GlobalTypeEntry : ImportEntry
         {
-            public Bin.TypeID type;
-            public bool mutable;
-
-            // TODO: Data payload
-
-            public override GlobalTypeEntry CastToGlobalImport()
-            { return this; }
+            public Global global;
         }
 
         public class MemoryTypeEntry : ImportEntry

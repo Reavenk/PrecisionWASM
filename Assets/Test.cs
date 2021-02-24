@@ -102,6 +102,9 @@ public class Test : MonoBehaviour
         {
             byte[] rb = System.IO.File.ReadAllBytes(this.loadTargetMutableGlobals);
             this.session = PxPre.WASM.Module.LoadBinary(rb);
+
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext();
+            ex.Invoke(this.session, "f");
         }
 
         if(GUILayout.Button("Test Binary saturating float-to-int") == true)

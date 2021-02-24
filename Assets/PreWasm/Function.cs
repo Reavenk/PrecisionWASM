@@ -644,18 +644,20 @@ namespace PxPre.WASM
                                 // This function is incorrect in that it's a duplicate of local_get.
                                 // this eventually needs to pull from the global varable source.
 
-                                uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                FunctionType.DataOrgInfo ty = ft.paramTypes[(int)paramIdx];
+                                uint globalIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                Bin.TypeID type = parentModule.globals[(int)globalIdx].global.type;
 
-                                vu.PushOpd(ConvertToStackType(ty.type));
-                                if (ty.size == 4)
+                                vu.PushOpd(ConvertToStackType(type));
+
+                                int typeSize = Memory.GetTypeIDSize(type);
+                                if (typeSize == 4)
                                     TransferInstruction(expanded, Instruction._global_get32);
-                                else if (ty.size == 8)
+                                else if (typeSize == 8)
                                     TransferInstruction(expanded, Instruction._global_get64);
                                 else
-                                    vu.EmitValidationError("Setting parameter of illegal size.");
+                                    vu.EmitValidationError("Getting global value of illegal size.");
 
-                                TransferInt32u(expanded, ty.offset);
+                                TransferInt32u(expanded, globalIdx);
                             }
                             break;
                         case Instruction.global_set:
@@ -664,9 +666,20 @@ namespace PxPre.WASM
                                 // this eventually needs to pull from the global varable source.
 
                                 uint globalIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                Bin.TypeID type = parentModule.globals[(int)globalIdx].global.type;
+
+                                vu.PopOpd(ConvertToStackType(session.globals[(int)globalIdx].global.type));
+
+                                int typeSize = Memory.GetTypeIDSize(type);
+                                if (typeSize == 4)
+                                    TransferInstruction(expanded, Instruction._global_set32);
+                                else if (typeSize == 8)
+                                    TransferInstruction(expanded, Instruction._global_set64);
+                                else
+                                    vu.EmitValidationError("Setting global value of illegal size.");
+
                                 TransferInt32u(expanded, globalIdx);
 
-                                vu.PopOpd(ConvertToStackType(session.globals[(int)globalIdx].type));
                             }
                         
                             break;

@@ -134,5 +134,23 @@ namespace PxPre.WASM
 
             return ExpandRet.Successful;
         }
+
+        public static int GetTypeIDSize(Bin.TypeID type)
+        { 
+            switch(type)
+            { 
+                case Bin.TypeID.Int32:
+                case Bin.TypeID.Float32:
+                case Bin.TypeID.FuncRef:
+                case Bin.TypeID.Function:
+                    return 4;
+
+                case Bin.TypeID.Float64:
+                case Bin.TypeID.Int64:
+                    return 8;
+            }
+
+            throw new System.Exception(); // TODO: Error message
+        }
     }
 }
