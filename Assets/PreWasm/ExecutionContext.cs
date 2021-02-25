@@ -46,22 +46,32 @@ namespace PxPre.WASM
         /// </summary>
         public int stackPos = InitialStackPos;
 
+        public List<Memory> memories = new List<Memory>();
+        public List<Global> globals = new List<Global>();
+        public List<Table> tables = new List<Table>();
+
+        public readonly Module instancer;
+        public ImportModule importData;
+
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ExecutionContext()
-        { }
+        public ExecutionContext(Module module)
+        { 
+            this.instancer = module;
+            this.importData = new ImportModule(module.imports);
+        }
 
         unsafe public void RunFunction(Module module, int index)
-        { 
-            FunctionIndexEntry fie = module.functionIndexing[index];
-            if(fie.type == FunctionIndexEntry.FnIdxType.Local)
+        {
+            IndexEntry fie = module.indexingFunction[index];
+            if(fie.type == IndexEntry.FnIdxType.Local)
             { 
                 this.RunLocalFunction(module, fie.index);
             }
-            else if(fie.type == FunctionIndexEntry.FnIdxType.Import)
+            else if(fie.type == IndexEntry.FnIdxType.Import)
             { 
-                this.RunFunction( module.importedFunctions[fie.index]);
+                this.RunFunction( this.importData.importFn[fie.index]);
             }
             else
                 throw new System.Exception(); // TODO: Error msg
@@ -69,19 +79,14 @@ namespace PxPre.WASM
 
         public void RunFunction(ImportFunction ifn)
         { 
-            
+            if(ifn == null)
+                throw new System.Exception(); // TODO: Error msg
+
+
             ImportFunctionUtil ifu = 
                 new ImportFunctionUtil(ifn.functionType, this, this.stackPos);
 
             ifn.InvokeImpl(ifu);
-        }
-
-        public void RunFunction(ImportModule.FunctionImportEntry fie)
-        { 
-            if(fie.importFn == null)
-                throw new System.Exception(); // TODO: Error msg
-
-            this.RunFunction(fie.importFn);
         }
 
         unsafe public void RunLocalFunction(Module module, int localIndex)
@@ -92,10 +97,14 @@ namespace PxPre.WASM
 
         unsafe public void RunFunction(Function fn)
         { 
-        
+
             int ip = 0;
 
             int startStack = this.stackPos;
+
+            byte * pbGlob = null;
+            byte * pbMem = null;
+            byte * pbTable = null;
 
             fixed(byte * pb = fn.expression, pstk = this.stack)
             {
@@ -191,7 +200,7 @@ namespace PxPre.WASM
                                 uint fnid = *(uint*)&pb[ip];
                                 ip += 4;
 
-                                RunFunction(fn.parentModule.importedFunctions[(int)fnid]);
+                                RunFunction(this.importData.importFn[(int)fnid]);
                             }
                             break;
 
@@ -279,53 +288,54 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction._global_get32:
+                        case Instruction._global_chStoreImp:
                             {
-                                int globalIdx = *(int*)&pb[ip];
+                                // Take an i32 off the instructions and set that as the index of the 
+                                // import's global store to set/get from.
+                                int importIdx = *(int*)&pb[ip];
                                 ip += 4;
 
+                                pbGlob = this.importData.globals[importIdx].pdata;
+                            }
+                            break;
+
+                        case Instruction._global_chStoreLoc:
+                            { 
+                                // Take an i32 off the instructions and set that as the index of the 
+                                // ExecutionContent's global store to set/get from.
+                                int localIdx = *(int*)&pb[ip];
+                                ip += 4;
+
+                                pbGlob = this.globals[localIdx].pdata;
+                            }
+                            break;
+
+                        case Instruction._global_get32:
+                            {
                                 // Push 4 bytes
                                 this.stackPos -= 4;
-                                * (int*)&pstk[this.stackPos] =
-                                    *(int*)(fn.parentModule.globals[globalIdx].global.pdata);
-
-
+                                * (int*)&pstk[this.stackPos] = *(int*)pbGlob;
                             }
                             break;
 
                         case Instruction._global_get64:
                             {
-                                int globalIdx = *(int*)&pb[ip];
-                                ip += 4;
-
                                 // Push 8 bytes
                                 this.stackPos -= 8;
-                                *(int*)&pstk[this.stackPos]  = 
-                                    *(int*)(fn.parentModule.globals[globalIdx].global.pdata);
-
+                                *(int*)&pstk[this.stackPos] = *(int*)pbGlob;
                             }
                             break;
 
                         case Instruction._global_set32:
                             {
-                                int globalIdx = *(int*)&pb[ip];
-                                ip += 4;
-
-                                *(int*)(fn.parentModule.globals[globalIdx].global.pdata) =
-                                    *(int*)&pstk[this.stackPos];
-
+                                *(int*)pbGlob = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
                             }
                             break;
 
                         case Instruction._global_set64:
                             {
-                                int globalIdx = *(int*)&pb[ip];
-                                ip += 4;
-
-                                *(long*)(fn.parentModule.globals[globalIdx].global.pdata) =
-                                    *(long*)&pstk[this.stackPos];
-
+                                *(long*)pbGlob = *(long*)&pstk[this.stackPos];
                                 this.stackPos += 8;
                             }
                             break;
@@ -334,7 +344,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
-                                *(int*)&pstk[this.stackPos] = *(int*)&fn.parentModule.memories[0].pdata[memid];
+                                *(int*)&pstk[this.stackPos] = *(int*)&this.memories[0].pdata[memid];
                             }
                             break;
 
@@ -342,7 +352,7 @@ namespace PxPre.WASM
                             { 
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(long*)&pstk[this.stackPos] = *(long*)&fn.parentModule.memories[0].pdata[memid];
+                                *(long*)&pstk[this.stackPos] = *(long*)&this.memories[0].pdata[memid];
                             }
                             break;
 
@@ -350,7 +360,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
-                                *(float*)&pstk[this.stackPos] = *(float*)&fn.parentModule.memories[0].pdata[memid];
+                                *(float*)&pstk[this.stackPos] = *(float*)&this.memories[0].pdata[memid];
                             }
                             break;
 
@@ -358,7 +368,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(double*)&pstk[this.stackPos] = *(double*)&fn.parentModule.memories[0].pdata[memid];
+                                *(double*)&pstk[this.stackPos] = *(double*)&this.memories[0].pdata[memid];
                             }
                             break;
 
@@ -366,7 +376,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
-                                *(int*)&pstk[this.stackPos] = (sbyte)fn.parentModule.memories[0].pdata[memid];
+                                *(int*)&pstk[this.stackPos] = (sbyte)this.memories[0].pdata[memid];
                             }
                             break;
 
@@ -374,7 +384,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
-                                *(int*)&pstk[this.stackPos] = fn.parentModule.memories[0].pdata[memid];
+                                *(int*)&pstk[this.stackPos] = this.memories[0].pdata[memid];
                             }
                             break;
 
@@ -382,7 +392,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
-                                *(int*)&pstk[this.stackPos] = *(short*)&fn.parentModule.memories[0].pdata[memid];
+                                *(int*)&pstk[this.stackPos] = *(short*)&this.memories[0].pdata[memid];
                             }
                             break;
 
@@ -390,7 +400,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
-                                *(uint*)&pstk[this.stackPos] = *(ushort*)&fn.parentModule.memories[0].pdata[memid];
+                                *(uint*)&pstk[this.stackPos] = *(ushort*)&this.memories[0].pdata[memid];
                             }
                             break;
 
@@ -398,7 +408,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(long*)&pstk[this.stackPos] = *(sbyte*)&fn.parentModule.memories[0].pdata[memid];
+                                *(long*)&pstk[this.stackPos] = *(sbyte*)&this.memories[0].pdata[memid];
                             }
                             break;
 
@@ -406,7 +416,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(ulong*)&pstk[this.stackPos] = (byte)fn.parentModule.memories[0].pdata[memid];
+                                *(ulong*)&pstk[this.stackPos] = (byte)this.memories[0].pdata[memid];
                             }
                             break;
 
@@ -414,7 +424,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(long*)&pstk[this.stackPos] = *(short*)&fn.parentModule.memories[0].pdata[memid];
+                                *(long*)&pstk[this.stackPos] = *(short*)&this.memories[0].pdata[memid];
                             }
                             break;
 
@@ -422,7 +432,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(ulong*)&pstk[this.stackPos] = *(ushort*)&fn.parentModule.memories[0].pdata[memid];
+                                *(ulong*)&pstk[this.stackPos] = *(ushort*)&this.memories[0].pdata[memid];
                             }
                             break;
 
@@ -430,7 +440,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(long*)&pstk[this.stackPos] = *(int*)&fn.parentModule.memories[0].pdata[memid];
+                                *(long*)&pstk[this.stackPos] = *(int*)&this.memories[0].pdata[memid];
                             }
                             break;
 
@@ -438,7 +448,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
-                                *(ulong*)&pstk[this.stackPos] = *(uint*)&fn.parentModule.memories[0].pdata[memid];
+                                *(ulong*)&pstk[this.stackPos] = *(uint*)&this.memories[0].pdata[memid];
                             }
                             break;
 
@@ -447,7 +457,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                *(int*)fn.parentModule.memories[0].pdata[memid] = *(int*)&pstk[this.stackPos];
+                                *(int*)this.memories[0].pdata[memid] = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
                             }
                             break;
@@ -457,7 +467,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                *(long*)fn.parentModule.memories[0].pdata[memid] = *(long*)&pstk[this.stackPos];
+                                *(long*)this.memories[0].pdata[memid] = *(long*)&pstk[this.stackPos];
                                 this.stackPos += 8;
                             }
                             break;
@@ -467,7 +477,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                *(float*)fn.parentModule.memories[0].pdata[memid] = *(float*)&pstk[this.stackPos];
+                                *(float*)this.memories[0].pdata[memid] = *(float*)&pstk[this.stackPos];
                                 this.stackPos += 4;
                             }
                             break;
@@ -477,7 +487,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                *(double*)fn.parentModule.memories[0].pdata[memid] = *(double*)&pstk[this.stackPos];
+                                *(double*)this.memories[0].pdata[memid] = *(double*)&pstk[this.stackPos];
                                 this.stackPos += 8;
                             }
                             break;
@@ -487,7 +497,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                fn.parentModule.memories[0].pdata[memid] = pstk[this.stackPos]; // Not known if correct
+                                this.memories[0].pdata[memid] = pstk[this.stackPos]; // Not known if correct
                                 this.stackPos += 4;
                             }
                             break;
@@ -497,7 +507,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                *(uint*)fn.parentModule.memories[0].pdata[memid] = *(ushort*)&pstk[this.stackPos];
+                                *(uint*)this.memories[0].pdata[memid] = *(ushort*)&pstk[this.stackPos];
                                 this.stackPos += 4;
                             }
                             break;
@@ -507,7 +517,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                fn.parentModule.memories[0].pdata[memid] = pstk[this.stackPos];
+                                this.memories[0].pdata[memid] = pstk[this.stackPos];
                                 this.stackPos += 8;
                             }
                             break;
@@ -517,7 +527,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                *(ushort*)&fn.parentModule.memories[0].pdata[memid] = *(ushort*)&pstk[this.stackPos];
+                                *(ushort*)&this.memories[0].pdata[memid] = *(ushort*)&pstk[this.stackPos];
                                 this.stackPos += 8;
                             }
                             break;
@@ -527,7 +537,7 @@ namespace PxPre.WASM
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 4;
 
-                                *(uint*)&fn.parentModule.memories[0].pdata[memid] = *(uint*)&pstk[this.stackPos];
+                                *(uint*)&this.memories[0].pdata[memid] = *(uint*)&pstk[this.stackPos];
                                 this.stackPos += 4;
                             }
                             break;
@@ -539,13 +549,13 @@ namespace PxPre.WASM
                                 // But we also push a return value as a 32 bit int (-4)
                                 //this.stackPos += 0; 
 
-                                if (fn.parentModule.memories.Count == 0 || fn.parentModule.memories[0].CalculatePageCt() == 0)
+                                if (this.memories.Count == 0 || this.memories[0].CalculatePageCt() == 0)
                                     *(int*)pstk[this.stackPos] = -1;
                                 else
                                 {
                                     // The return is a page size, and we're following the rule that the memory size is always
                                     // a multiple of the page size.
-                                    *(uint*)pstk[this.stackPos] = fn.parentModule.memories[0].CalculatePageCt();
+                                    *(uint*)pstk[this.stackPos] = this.memories[0].CalculatePageCt();
                                 }
                             }
                             break;
@@ -557,13 +567,13 @@ namespace PxPre.WASM
                                 // I don't even know if we should allow adding a memory if one wasn't
                                 // defined. While we're trying to gracefully what's arguably an error
                                 // condition, we may need to just throw an exception/trap.
-                                if (fn.parentModule.memories.Count == 0)
-                                    fn.parentModule.memories.Add(new Memory(0, 0, 1));
+                                if (this.memories.Count == 0)
+                                    this.memories.Add(new Memory(0, 0, 1));
 
                                 // The stackpop is popped, but another 32 bit values is put on the stack. No stack modification.
-                                uint oldPageSz = fn.parentModule.memories[0].CalculatePageCt();
+                                uint oldPageSz = this.memories[0].CalculatePageCt();
 
-                                DataStore.ExpandRet expRet = fn.parentModule.memories[0].ExpandPageCt((int)(oldPageSz + newPages));
+                                DataStore.ExpandRet expRet = this.memories[0].ExpandPageCt((int)(oldPageSz + newPages));
 
                                 // NOTE: This probably isn't to-spec.
                                 if(expRet == DataStore.ExpandRet.Successful)
@@ -1648,13 +1658,13 @@ namespace PxPre.WASM
                             {
                                 ip += 4; // Skip unused parameter
 
-                                uint start  = *(uint*)&pstk[this.stackPos + 0];
+                                uint start  = *(uint*)&pstk[this.stackPos + 8];
                                 uint val    = *(uint*)&pstk[this.stackPos + 4];
-                                uint count  = *(uint*)&pstk[this.stackPos + 8];
+                                uint count  = *(uint*)&pstk[this.stackPos + 0];
                                 this.stackPos += 12;
 
                                 for(uint i = 0; i < count; ++i)
-                                    ((uint*)fn.parentModule.memories[0].pdata)[start + i] = val;
+                                    this.importData.memories[0].pdata[start + i] = (byte)val;
                             }
                             break;
 
@@ -1688,9 +1698,9 @@ namespace PxPre.WASM
                 // TODO: Call InvokeStart() on dependent modules.
             }
 
-            FunctionIndexEntry fie = module.functionIndexing[(int)module.startFnIndex];
+            IndexEntry fie = module.indexingFunction[(int)module.startFnIndex];
 
-            if(fie.type == FunctionIndexEntry.FnIdxType.Local)
+            if(fie.type == IndexEntry.FnIdxType.Local)
             {
                 Function startFn = module.functions[fie.index];
 
@@ -1700,9 +1710,9 @@ namespace PxPre.WASM
 
                 this.Invoke(startFn);
             }
-            else if(fie.type == FunctionIndexEntry.FnIdxType.Import)
+            else if(fie.type == IndexEntry.FnIdxType.Import)
             { 
-                ImportFunction startIFn = module.importedFunctions[fie.index].importFn;
+                ImportFunction startIFn = this.importData.importFn[fie.index];
                 if(startIFn == null)
                     throw new System.Exception("Imported start function not set.");
 

@@ -25,7 +25,8 @@ using System.Collections.Generic;
 
 namespace PxPre.WASM
 {
-    public class FunctionIndexEntry
+    // TODO: Comment
+    public class IndexEntry
     {
         public enum FnIdxType
         { 
@@ -38,7 +39,7 @@ namespace PxPre.WASM
         public string module;
         public string fieldname;
 
-        protected FunctionIndexEntry(FnIdxType type, int index, string module, string fieldname)
+        protected IndexEntry(FnIdxType type, int index, string module, string fieldname)
         { 
             this.type = type;
             this.index = index;
@@ -46,16 +47,16 @@ namespace PxPre.WASM
             this.fieldname = fieldname;
         }
 
-        public static FunctionIndexEntry CreateLocal(int index)
+        public static IndexEntry CreateLocal(int index)
         {
             return 
-                new FunctionIndexEntry(FnIdxType.Local, index, string.Empty, string.Empty);
+                new IndexEntry(FnIdxType.Local, index, string.Empty, string.Empty);
         }
 
-        public static FunctionIndexEntry CreateImport(int index, string module, string fieldname)
+        public static IndexEntry CreateImport(int index, string module, string fieldname)
         {
             return 
-                new FunctionIndexEntry(FnIdxType.Import, index, module, fieldname);
+                new IndexEntry(FnIdxType.Import, index, module, fieldname);
         }
     }
 }

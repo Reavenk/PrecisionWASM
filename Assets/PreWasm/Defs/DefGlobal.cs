@@ -20,13 +20,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Collections;
-using System.Collections.Generic;
-
 namespace PxPre.WASM
 {
-    public class GlobalSpace
-    { 
-        public Dictionary<string, Global> globals = new Dictionary<string, Global>();
+    public struct DefGlobal
+    {
+        public readonly Bin.TypeID type;
+        public readonly int elements;
+        public readonly Global.Mutability mut;
+
+        public DefGlobal(Bin.TypeID type, int elements, bool mutable)
+        { 
+            this.type = type;
+            this.elements = elements;
+            this.mut = mutable ? Global.Mutability.Variable : Global.Mutability.Const;
+        }
     }
 }

@@ -20,13 +20,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-namespace PxPre.SynthSyn
+using System.Collections;
+using System.Collections.Generic;
+
+namespace PxPre.WASM
 {
-    public enum Values
+    public struct DefMem
     {
-        Int32,
-        Int64,
-        Float32,
-        Float64
+        public readonly uint flags;
+
+        public readonly uint initialPages;
+        public readonly uint minPages;
+        public readonly uint maxPages;
+        public byte [] defaultData;
+
+        public DefMem(uint initialPages, uint minPages, uint maxPages, uint flags)
+        { 
+            this.initialPages = initialPages;
+            this.minPages = minPages;
+            this.maxPages = maxPages;
+            this.flags = flags;
+            this.defaultData = null;
+        }
     }
 }

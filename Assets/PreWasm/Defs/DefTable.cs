@@ -20,10 +20,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// TODO: Remove if not used
-public class ValueType
+namespace PxPre.WASM
 {
-    public string name;
-    public string min;
-    public string max;
+    public struct DefTable
+    {
+        public Bin.TypeID type;
+        public uint elements;
+        public uint maxElements;
+        public uint flags;
+
+        public DefTable(Bin.TypeID type, uint initialElements, uint maxElements, uint flags)
+        { 
+            this.type = type;
+            this.elements = initialElements;
+            this.maxElements = maxElements;
+            this.flags = flags;
+        }
+    }
 }

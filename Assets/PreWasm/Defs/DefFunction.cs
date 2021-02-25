@@ -20,18 +20,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// TODO: Remove if not used.
 namespace PxPre.WASM
 {
-    public class Program
-    {
-        public struct VarRecord
-        { 
-            public string name;
-            public int offset;
-            public int type;
-        }
+    public struct DefFunction
+    { 
+        public readonly FunctionType fnType;
 
-        public byte [] program;
+        public DefFunction(FunctionType fnType)
+        { 
+            this.fnType = fnType;
+        }
     }
 }

@@ -29,7 +29,7 @@ public class Test : MonoBehaviour
     [Multiline(10)]
     public string testParse;
 
-    public PxPre.WASM.Module session = null;
+    public PxPre.WASM.Module module = null;
     
     void Start()
     {
@@ -50,21 +50,21 @@ public class Test : MonoBehaviour
         if (GUILayout.Button("Test Binary Empty") == true)
         {
             byte[] rb = System.IO.File.ReadAllBytes(this.loadTargetSimple);
-            this.session = PxPre.WASM.Module.LoadBinary(rb);
+            this.module = PxPre.WASM.Module.LoadBinary(rb);
 
-            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext();
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.module);
             Debug.Log("Loaded Empty");
         }
 
         if(GUILayout.Button("Test Binary addTwo(10, 25)") == true)
         { 
             byte [] rb = System.IO.File.ReadAllBytes(this.loadTargetSimple);
-            this.session = PxPre.WASM.Module.LoadBinary(rb);
+            this.module = PxPre.WASM.Module.LoadBinary(rb);
 
-            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext();
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.module);
             List<PxPre.Datum.Val> values = 
                 ex.Invoke(
-                    this.session, // TODO: Correct this when session gets removed from ExecutionContexts
+                    this.module, // TODO: Correct this when session gets removed from ExecutionContexts
                     "addTwo", 
                     new PxPre.Datum.ValInt(10),
                     new PxPre.Datum.ValInt(25));
@@ -76,12 +76,12 @@ public class Test : MonoBehaviour
         if(GUILayout.Button("Test Binary fac(9)") == true)
         {
             byte[] rb = System.IO.File.ReadAllBytes(this.loadTargetFactorial);
-            this.session = PxPre.WASM.Module.LoadBinary(rb);
+            this.module = PxPre.WASM.Module.LoadBinary(rb);
 
-            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext();
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.module);
             List<PxPre.Datum.Val> values =
                 ex.Invoke(
-                    this.session,
+                    this.module,
                     "fac",
                     new PxPre.Datum.ValInt(9));
 
@@ -92,43 +92,67 @@ public class Test : MonoBehaviour
         if(GUILayout.Button("Test Binary stuff") == true)
         {
             byte[] rb = System.IO.File.ReadAllBytes(this.loadTargetStuff);
-            this.session = PxPre.WASM.Module.LoadBinary(rb);
+            this.module = PxPre.WASM.Module.LoadBinary(rb);
 
-            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext();
-            ex.InvokeStart(this.session, true);
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.module);
+            ex.InvokeStart(this.module, true);
         }
 
         if(GUILayout.Button("Test Binary mutable globals") == true)
         {
             byte[] rb = System.IO.File.ReadAllBytes(this.loadTargetMutableGlobals);
-            this.session = PxPre.WASM.Module.LoadBinary(rb);
+            this.module = PxPre.WASM.Module.LoadBinary(rb);
 
-            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext();
-            ex.Invoke(this.session, "f");
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.module);
+            ex.Invoke(this.module, "f");
         }
 
         if(GUILayout.Button("Test Binary saturating float-to-int") == true)
         {
             byte[] rb = System.IO.File.ReadAllBytes(this.loadTargetSaturatingFloatToInt);
-            this.session = PxPre.WASM.Module.LoadBinary(rb);
+            this.module = PxPre.WASM.Module.LoadBinary(rb);
+
+            // TODO: Handle infinities
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.module);
+            PxPre.Datum.Val ret = ex.Invoke_SingleRet(this.module, "f", new PxPre.Datum.ValFloat(5.5f));
+            Debug.Log(ret.GetString());
         }
 
         if(GUILayout.Button("Test Binary sign extension") == true)
         {
             byte[] rb = System.IO.File.ReadAllBytes(this.loadTargetSignExtension);
-            this.session = PxPre.WASM.Module.LoadBinary(rb);
+            this.module = PxPre.WASM.Module.LoadBinary(rb);
+
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.module);
+            PxPre.Datum.Val ret = ex.Invoke_SingleRet(this.module, "f", new PxPre.Datum.ValInt(128));
+            Debug.Log(ret.GetString());
         }
 
         if(GUILayout.Button("Test Binary multi value") == true)
         {
             byte[] rb = System.IO.File.ReadAllBytes(this.loadTargetMultiValue);
-            this.session = PxPre.WASM.Module.LoadBinary(rb);
+            this.module = PxPre.WASM.Module.LoadBinary(rb);
+
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.module);
+            PxPre.Datum.Val ret = 
+                ex.Invoke_SingleRet(
+                    this.module,
+                    "reverseSub", 
+                    new PxPre.Datum.ValInt(10),
+                    new PxPre.Datum.ValInt(3));
+
+            Debug.Log(ret.GetString());
         }
 
         if (GUILayout.Button("Test Binary bulk memory") == true)
         {
-            byte[] rb = System.IO.File.ReadAllBytes(this.loadTargetBulkMemory);
-            this.session = PxPre.WASM.Module.LoadBinary(rb);
+            byte[] rb = System.IO.File.ReadAllBytes(this.loadTargetBulkMemory); 
+            this.module = PxPre.WASM.Module.LoadBinary(rb);
+
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(this.module);
+            ex.Invoke(this.module, "fill", PxPre.Datum.Val.Make(0), PxPre.Datum.Val.Make(13), PxPre.Datum.Val.Make(5)); 
+            ex.Invoke(this.module, "fill", PxPre.Datum.Val.Make(10), PxPre.Datum.Val.Make(77), PxPre.Datum.Val.Make(7));
+            ex.Invoke(this.module, "fill", PxPre.Datum.Val.Make(20), PxPre.Datum.Val.Make(255), PxPre.Datum.Val.Make(1000));
         }
 
         if (GUILayout.Button("Parse") == true)

@@ -22,47 +22,12 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using PxPre.WASM.Vali;
 
 namespace PxPre.WASM
 {
     public class Function
     {
-        /// <summary>
-        /// The various values used to track and validate execution, matching
-        /// the unique values in the WASM spec - for the reference algorithm in
-        /// the appendix.
-        /// 
-        /// See type opd_stack in https://webassembly.github.io/spec/core/appendix/algorithm.html
-        /// for more details.
-        /// </summary>
-        public enum Opd_Stack
-        { 
-            /// <summary>
-            /// The type is a 32 bit integer.
-            /// </summary>
-            i32,
-
-            /// <summary>
-            /// The type is a 64 bit integer.
-            /// </summary>
-            i64,
-
-            /// <summary>
-            /// The type is a 32 bit (single precision) float.
-            /// </summary>
-            f32,
-
-            /// <summary>
-            /// The type is a 64 bit (double precision) float.
-            /// </summary>
-            f64,
-
-            /// <summary>
-            /// The type is unknown.
-            /// </summary>
-            Unknown
-        }
-
         /// <summary>
         /// The function signature. This will point to the type in the parentModule's 
         /// types list.
@@ -136,195 +101,8 @@ namespace PxPre.WASM
             }
         }
 
-        public static Opd_Stack ConvertToStackType(Bin.TypeID tyid)
-        { 
-            switch(tyid)
-            {
-                case Bin.TypeID.Float32:
-                    return Opd_Stack.f32;
 
-                case Bin.TypeID.Float64:
-                    return Opd_Stack.f64;
-
-                case Bin.TypeID.Int32:
-                    return Opd_Stack.i32;
-
-                case Bin.TypeID.Int64:
-                    return Opd_Stack.i64;
-            }
-
-            return Opd_Stack.Unknown;
-        }
-
-        public class CtrlFrame
-        { 
-            public Instruction opcode;
-            public List<Opd_Stack> startTypes;
-            public List<Opd_Stack> endTypes;
-            public int height;
-            public bool unreachable;
-
-            public List<uint> writePopped;
-
-            public void QueueEndWrite(List<byte> expanded)
-            { 
-                if(this.writePopped == null)
-                    this.writePopped = new List<uint>();
-
-                this.writePopped.Add((uint)expanded.Count);
-
-                // Add an int into expanded
-                expanded.Add(0);
-                expanded.Add(0);
-                expanded.Add(0);
-                expanded.Add(0);
-            }
-
-            public void QueueEndWrite(uint loc)
-            {
-                if (this.writePopped == null)
-                    this.writePopped = new List<uint>();
-
-                this.writePopped.Add(loc);
-            }
-
-            unsafe public void FlushEndWrites(List<byte> expanded)
-            { 
-                if(this.writePopped == null)
-                    return;
-
-                uint idx = (uint)expanded.Count;
-
-                // Write the current end position (idx) in every position queued
-                // to have it written to.
-                byte [] rb = System.BitConverter.GetBytes(idx);
-                foreach(uint u in writePopped)
-                {
-                    expanded[(int)u + 0] = rb[0];
-                    expanded[(int)u + 1] = rb[1];
-                    expanded[(int)u + 2] = rb[2];
-                    expanded[(int)u + 3] = rb[3];
-                }
-            }
-        }
-
-        public class ValidatorUtil
-        {
-            public List<Opd_Stack> opds = new List<Opd_Stack>();
-            public Stack<CtrlFrame> ctrls = new Stack<CtrlFrame>();
-
-            public void PushOpd(Opd_Stack os)
-            { 
-                this.opds.Add(os);
-            }
-
-            public Opd_Stack PopOpd()
-            { 
-                if(this.opds.Count == this.ctrls.Peek().height && this.ctrls.Peek().unreachable == true)
-                    return Opd_Stack.Unknown;
-
-                if(this.opds.Count == this.ctrls.Peek().height)
-                    this.EmitValidationError("Operation stack mismatch.");
-
-                Opd_Stack ret = this.opds[this.opds.Count - 1];
-                this.opds.RemoveAt(this.opds.Count - 1);
-                return  ret;
-            }
-
-            public Opd_Stack PopOpd(Opd_Stack expect)
-            { 
-                Opd_Stack actual = this.PopOpd();
-                if(actual == Opd_Stack.Unknown)
-                    return expect;
-
-                if(expect == Opd_Stack.Unknown)
-                    return actual;
-
-                if(actual != expect)
-                    this.EmitValidationError($"Incorrect type {actual} when expecting {expect}.");
-
-                return actual;
-            }
-
-            public void PushOpds(List<Opd_Stack> types)
-            { 
-                this.opds.AddRange(types);
-            }
-
-            public void PopOpds(List<Opd_Stack> types)
-            { 
-                for(int i = types.Count - 1; i >= 0; --i)
-                    this.PopOpd(types[i]);
-            }
-
-            public CtrlFrame PushCtrl(Instruction opcode, List<Opd_Stack> instk, List<Opd_Stack> outstk)
-            { 
-                CtrlFrame frame = new CtrlFrame();
-                frame.opcode        = opcode;
-                frame.startTypes    = instk;
-                frame.endTypes      = outstk;
-                frame.unreachable   = false;
-                frame.height        = this.opds.Count;
-                this.ctrls.Push(frame);
-                this.PushOpds(instk);
-
-                return frame;
-            }
-
-            unsafe public CtrlFrame PopCtrl(List<byte> expanded)
-            { 
-                if(this.ctrls.Count == 0)
-                { } // TODO: Error
-
-                CtrlFrame frame = this.ctrls.Peek();
-                this.PopOpds(frame.endTypes);
-
-                if(this.opds.Count != frame.height)
-                { } // TODO: Error
-
-                this.ctrls.Pop();
-                frame.FlushEndWrites(expanded);
-                return frame;
-            }
-
-            public CtrlFrame GetCtrl(int fromTop)
-            { 
-                foreach(CtrlFrame cf in this.ctrls)
-                {
-                    if(fromTop == 0)
-                        return cf;
-
-                    --fromTop;
-                }
-                return null;
-            }
-
-            public List<Opd_Stack> LabelTypes(CtrlFrame frame)
-            { 
-                if(frame.opcode == Instruction.loop)
-                    return frame.startTypes;
-                else
-                    return frame.endTypes;
-            }
-
-            public void Unreachable()
-            { 
-                int height = this.ctrls.Peek().height;
-
-                // This popping in batch isn't as efficient as it could be
-                while(this.opds.Count > height) 
-                    this.opds.RemoveAt(this.opds.Count -1);
-
-                this.ctrls.Peek().unreachable = true;
-            }
-
-            public void EmitValidationError(string str)
-            { 
-                throw new System.Exception(str);
-            }
-        }
-
-        unsafe public static void ConsumeTypes(byte * pb, ref uint idx, List<Opd_Stack> stk)
+        unsafe public static void ConsumeTypes(byte * pb, ref uint idx, List<StackOpd> stk)
         {
             bool c = true;
             while (c)
@@ -332,22 +110,22 @@ namespace PxPre.WASM
                 switch (pb[idx])
                 {
                     case (int)Bin.TypeID.Int32:
-                        stk.Add(Opd_Stack.i32);
+                        stk.Add(StackOpd.i32);
                         ++idx;
                         break;
 
                     case (int)Bin.TypeID.Int64:
-                        stk.Add(Opd_Stack.i64);
+                        stk.Add(StackOpd.i64);
                         ++idx;
                         break;
 
                     case (int)Bin.TypeID.Float32:
-                        stk.Add(Opd_Stack.f32);
+                        stk.Add(StackOpd.f32);
                         ++idx;
                         break;
 
                     case (int)Bin.TypeID.Float64:
-                        stk.Add(Opd_Stack.f64);
+                        stk.Add(StackOpd.f64);
                         ++idx;
                         break;
 
@@ -400,16 +178,26 @@ namespace PxPre.WASM
         { 
             List<byte> expanded = new List<byte>();
 
-            ValidatorUtil vu = new ValidatorUtil();
+            DataStoreIdx memoryStore = new DataStoreIdx();
+            DataStoreIdx globalStore = new DataStoreIdx();
+            DataStoreIdx tableStore = new DataStoreIdx();
+
+            ValiMgr vmgr = new ValiMgr();
             // The algorithm in the appendix of the spec didn't say how vu should be initialized,
             // but an initial ctrl is required on the stack.
             // (wleu 02/18/2021)
-            List<Opd_Stack> startFrameCtrl = new List<Opd_Stack>();
+            List<StackOpd> startFrameCtrl = new List<StackOpd>();
             foreach(FunctionType.DataOrgInfo doi in this.fnType.resultTypes)
             {
-                startFrameCtrl.Add(ConvertToStackType((Bin.TypeID)doi.type));
+                startFrameCtrl.Add(ValiMgr.ConvertToStackType((Bin.TypeID)doi.type));
             }
-            vu.PushCtrl(Instruction.nop, new List<Opd_Stack>(), startFrameCtrl);
+            vmgr.PushCtrl(
+                Instruction.nop, 
+                new List<StackOpd>(), 
+                startFrameCtrl,
+                memoryStore,
+                globalStore,
+                tableStore);
 
             FunctionType ft = session.types[index];
 
@@ -424,7 +212,7 @@ namespace PxPre.WASM
                     switch(instr)
                     {
                         case Instruction.unreachable:
-                            vu.Unreachable();
+                            vmgr.Unreachable();
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -433,40 +221,60 @@ namespace PxPre.WASM
 
                         case Instruction.block:
                             {
-                                List<Opd_Stack> instk = new List<Opd_Stack>();
-                                List<Opd_Stack> outstk = new List<Opd_Stack>();
+                                List<StackOpd> instk = new List<StackOpd>();
+                                List<StackOpd> outstk = new List<StackOpd>();
                                 ConsumeTypes(pb, ref idx, outstk);
 
-                                vu.PopOpds(instk);
-                                vu.PushCtrl(Instruction.block, instk, outstk);
+                                vmgr.PopOpds(instk);
+                                vmgr.PushCtrl(
+                                    Instruction.block, 
+                                    instk, 
+                                    outstk,
+                                    memoryStore,
+                                    globalStore,
+                                    tableStore);
                                 TransferInstruction(expanded, instr);
                             }
                             break;
 
                         case Instruction.loop:
                             {
-                                List<Opd_Stack> instk = new List<Opd_Stack>();
-                                List<Opd_Stack> outstk = new List<Opd_Stack>();
+                                List<StackOpd> instk = new List<StackOpd>();
+                                List<StackOpd> outstk = new List<StackOpd>();
                                 ConsumeTypes(pb, ref idx, outstk);
 
-                                vu.PopOpds(instk);
-                                vu.PushCtrl(Instruction.loop, instk, outstk);
+                                vmgr.PopOpds(instk);
+                                vmgr.PushCtrl(
+                                    Instruction.loop, 
+                                    instk, 
+                                    outstk,
+                                    memoryStore,
+                                    globalStore,
+                                    tableStore);
                                 TransferInstruction(expanded, instr);
                             }
                             break;
 
                         case Instruction.ifblock:
                             {
-                                List<Opd_Stack> instk = new List<Opd_Stack>();
-                                List<Opd_Stack> outstk = new List<Opd_Stack>();
+                                List<StackOpd> instk = new List<StackOpd>();
+                                List<StackOpd> outstk = new List<StackOpd>();
                                 ConsumeTypes(pb, ref idx, outstk);
 
-                                vu.PopOpd(Opd_Stack.i32);
-                                vu.PopOpds(instk);
+                                vmgr.PopOpd(StackOpd.i32);
+                                vmgr.PopOpds(instk);
                                 TransferInstruction(expanded, instr);
 
-                                vu.PushCtrl(Instruction.ifblock, instk, outstk).
-                                    QueueEndWrite(expanded);
+                                CtrlFrame ctrlFrame = 
+                                    vmgr.PushCtrl(
+                                        Instruction.ifblock, 
+                                        instk, 
+                                        outstk,
+                                        memoryStore,
+                                        globalStore,
+                                        tableStore);
+
+                                ctrlFrame.QueueEndWrite(expanded);
                             }
                             break;
 
@@ -480,30 +288,38 @@ namespace PxPre.WASM
                                 expanded.Add(0);
                                 expanded.Add(0);
 
-                                CtrlFrame frame = vu.PopCtrl(expanded);
+                                CtrlFrame frame = vmgr.PopCtrl(expanded);
                                 if(frame.opcode != Instruction.ifblock)
-                                    vu.EmitValidationError("Illegal else block that did not follow if statement.");
+                                    vmgr.EmitValidationError("Illegal else block that did not follow if statement.");
 
                                 
-                                vu.PushCtrl( Instruction.elseblock, frame.startTypes, frame.endTypes).
-                                    QueueEndWrite(jumpLoc);
+                                CtrlFrame ctrlFrame = 
+                                    vmgr.PushCtrl( 
+                                        Instruction.elseblock, 
+                                        frame.startTypes, 
+                                        frame.endTypes,
+                                        memoryStore,
+                                        globalStore,
+                                        tableStore);
+
+                                ctrlFrame.QueueEndWrite(jumpLoc);
                             }
                             break;
 
                         case Instruction.end:
-                            CtrlFrame endf = vu.PopCtrl(expanded);
-                            vu.PushOpds(endf.endTypes);
+                            CtrlFrame endf = vmgr.PopCtrl(expanded);
+                            vmgr.PushOpds(endf.endTypes);
                             //TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.br:
                             {
                                 int n = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                if (vu.ctrls.Count < n)
-                                    vu.EmitValidationError("Stack mismatch for br");
+                                if (vmgr.ctrls.Count < n)
+                                    vmgr.EmitValidationError("Stack mismatch for br");
 
-                                vu.PopOpds( vu.LabelTypes(vu.GetCtrl(n)));
-                                vu.Unreachable();
+                                vmgr.PopOpds( vmgr.LabelTypes(vmgr.GetCtrl(n)));
+                                vmgr.Unreachable();
                                 TransferInstruction(expanded, instr);
                             }
                             break;
@@ -511,12 +327,12 @@ namespace PxPre.WASM
                         case Instruction.br_if:
                             {
                                 int n = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                if(vu.ctrls.Count < n)
-                                    vu.EmitValidationError("Stack mismatch for br_if");
+                                if(vmgr.ctrls.Count < n)
+                                    vmgr.EmitValidationError("Stack mismatch for br_if");
 
-                                vu.PopOpd(Opd_Stack.i32);
-                                vu.PopOpds(vu.LabelTypes(vu.GetCtrl(n)));
-                                vu.PushOpds(vu.LabelTypes(vu.GetCtrl(n)));
+                                vmgr.PopOpd(StackOpd.i32);
+                                vmgr.PopOpds(vmgr.LabelTypes(vmgr.GetCtrl(n)));
+                                vmgr.PushOpds(vmgr.LabelTypes(vmgr.GetCtrl(n)));
                                 TransferInstruction(expanded, instr);
                             }
                             break;
@@ -526,17 +342,17 @@ namespace PxPre.WASM
                                 int n = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 int m = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                                if(vu.ctrls.Count < m)
-                                    vu.EmitValidationError("");
+                                if(vmgr.ctrls.Count < m)
+                                    vmgr.EmitValidationError("");
 
                                 for(int i = 0; i < n; ++i)
                                 { 
-                                    if(vu.ctrls.Count < i || vu.LabelTypes(vu.GetCtrl(i)) != vu.LabelTypes(vu.GetCtrl(m)))
-                                        vu.EmitValidationError("");
+                                    if(vmgr.ctrls.Count < i || vmgr.LabelTypes(vmgr.GetCtrl(i)) != vmgr.LabelTypes(vmgr.GetCtrl(m)))
+                                        vmgr.EmitValidationError("");
                                 }
-                                vu.PopOpd( Opd_Stack.i32);
-                                vu.PopOpds( vu.LabelTypes(vu.GetCtrl(m)));
-                                vu.Unreachable();
+                                vmgr.PopOpd( StackOpd.i32);
+                                vmgr.PopOpds( vmgr.LabelTypes(vmgr.GetCtrl(m)));
+                                vmgr.Unreachable();
 
                                 TransferInstruction(expanded, instr);
                             }
@@ -550,8 +366,8 @@ namespace PxPre.WASM
                         case Instruction.call:
                             {
                                 uint fnidx = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                FunctionIndexEntry fie = parentModule.functionIndexing[(int)fnidx];
-                                if(fie.type == FunctionIndexEntry.FnIdxType.Local)
+                                IndexEntry fie = parentModule.indexingFunction[(int)fnidx];
+                                if(fie.type == IndexEntry.FnIdxType.Local)
                                 { 
                                     TransferInstruction(expanded, Instruction._call_local);
                                     TransferInt32u(expanded, (uint)fie.index);
@@ -565,20 +381,20 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.call_indirect:
-                            vu.PopOpd(Opd_Stack.i32);
+                            vmgr.PopOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.drop:
-                            vu.PopOpd();
+                            vmgr.PopOpd();
                             TransferInstruction(expanded, instr);
                             break;
                         
                         case Instruction.select:
-                            vu.PopOpd(Opd_Stack.i32);
-                            Opd_Stack selos1 = vu.PopOpd();
-                            Opd_Stack selos2 = vu.PopOpd(selos1);
-                            vu.PushOpd(selos2);
+                            vmgr.PopOpd(StackOpd.i32);
+                            StackOpd selos1 = vmgr.PopOpd();
+                            StackOpd selos2 = vmgr.PopOpd(selos1);
+                            vmgr.PushOpd(selos2);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -587,7 +403,7 @@ namespace PxPre.WASM
                                 uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
 
-                                vu.PushOpd(ConvertToStackType(ty.type));
+                                vmgr.PushOpd(ValiMgr.ConvertToStackType(ty.type));
                                 if(ty.size == 4)
                                 {
                                     TransferInstruction(expanded, Instruction._local_get32);
@@ -599,7 +415,7 @@ namespace PxPre.WASM
                                     TransferInt32u(expanded, ty.offset);
                                 }
                                 else
-                                    vu.EmitValidationError("Retrieving parameter of illegal size.");
+                                    vmgr.EmitValidationError("Retrieving parameter of illegal size.");
 
                             
 
@@ -610,13 +426,13 @@ namespace PxPre.WASM
                                 uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
 
-                                vu.PopOpd(ConvertToStackType(ty.type));
+                                vmgr.PopOpd(ValiMgr.ConvertToStackType(ty.type));
                                 if (ty.size == 4)
                                     TransferInstruction(expanded, Instruction._local_set32);
                                 else if (ty.size == 8)
                                     TransferInstruction(expanded, Instruction._local_set64);
                                 else
-                                    vu.EmitValidationError("Setting parameter of illegal size.");
+                                    vmgr.EmitValidationError("Setting parameter of illegal size.");
 
                                 TransferInt32u(expanded, ty.offset);
 
@@ -627,27 +443,31 @@ namespace PxPre.WASM
                                 uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
 
-                                vu.PopOpd(ConvertToStackType(ty.type));
-                                vu.PushOpd(ConvertToStackType(ty.type));
+                                vmgr.PopOpd(ValiMgr.ConvertToStackType(ty.type));
+                                vmgr.PushOpd(ValiMgr.ConvertToStackType(ty.type));
                                 if (ty.size == 4)
                                     TransferInstruction(expanded, Instruction._local_tee32);
                                 else if (ty.size == 8)
                                     TransferInstruction(expanded, Instruction._local_tee64);
                                 else
-                                    vu.EmitValidationError("Setting parameter of illegal size.");
+                                    vmgr.EmitValidationError("Setting parameter of illegal size.");
 
                                 TransferInt32u(expanded, ty.offset);
                             }
                             break;
                         case Instruction.global_get:
                             {
-                                // This function is incorrect in that it's a duplicate of local_get.
-                                // this eventually needs to pull from the global varable source.
-
                                 uint globalIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                Bin.TypeID type = parentModule.globals[(int)globalIdx].global.type;
+                                Bin.TypeID type = parentModule.imports.globals[(int)globalIdx].type;
 
-                                vu.PushOpd(ConvertToStackType(type));
+                                // Validate the stack typing
+                                vmgr.PushOpd(ValiMgr.ConvertToStackType(type));
+
+                                ValiMgr.DoDataStoreValidation(
+                                    this.parentModule.indexingGlobal, 
+                                    (int)globalIdx, 
+                                    expanded, 
+                                    ref globalStore);
 
                                 int typeSize = Memory.GetTypeIDSize(type);
                                 if (typeSize == 4)
@@ -655,9 +475,7 @@ namespace PxPre.WASM
                                 else if (typeSize == 8)
                                     TransferInstruction(expanded, Instruction._global_get64);
                                 else
-                                    vu.EmitValidationError("Getting global value of illegal size.");
-
-                                TransferInt32u(expanded, globalIdx);
+                                    vmgr.EmitValidationError("Getting global value of illegal size.");
                             }
                             break;
                         case Instruction.global_set:
@@ -666,9 +484,16 @@ namespace PxPre.WASM
                                 // this eventually needs to pull from the global varable source.
 
                                 uint globalIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                Bin.TypeID type = parentModule.globals[(int)globalIdx].global.type;
+                                Bin.TypeID type = parentModule.imports.globals[(int)globalIdx].type;
 
-                                vu.PopOpd(ConvertToStackType(session.globals[(int)globalIdx].global.type));
+                                // Validate the stack typing
+                                vmgr.PopOpd(ValiMgr.ConvertToStackType(type));
+
+                                ValiMgr.DoDataStoreValidation(
+                                    this.parentModule.indexingGlobal,
+                                    (int)globalIdx,
+                                    expanded,
+                                    ref globalStore);
 
                                 int typeSize = Memory.GetTypeIDSize(type);
                                 if (typeSize == 4)
@@ -676,35 +501,32 @@ namespace PxPre.WASM
                                 else if (typeSize == 8)
                                     TransferInstruction(expanded, Instruction._global_set64);
                                 else
-                                    vu.EmitValidationError("Setting global value of illegal size.");
-
-                                TransferInt32u(expanded, globalIdx);
-
+                                    vmgr.EmitValidationError("Setting global value of illegal size.");
                             }
                         
                             break;
 
                         case Instruction.i32_load:
-                            vu.PopOpd( Opd_Stack.i32 );
-                            vu.PushOpd(Opd_Stack.i32 );
+                            vmgr.PopOpd( StackOpd.i32 );
+                            vmgr.PushOpd(StackOpd.i32 );
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i64_load:
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.i64);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f32_load:
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.f32);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.f32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f64_load:
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.f64);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.f64);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -714,7 +536,7 @@ namespace PxPre.WASM
                         case Instruction.i32_load16_u:
                             {
                                 uint val = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                vu.PushOpd(Opd_Stack.i32);
+                                vmgr.PushOpd(StackOpd.i32);
                                 TransferInstruction(expanded, instr);
                             }
                             break;
@@ -726,38 +548,38 @@ namespace PxPre.WASM
                         case Instruction.i64_load32_s:
                         case Instruction.i64_load32_u:
                             BinParse.LoadUnsignedLEB32(pb, ref idx);
-                            vu.PushOpd(Opd_Stack.i64);
+                            vmgr.PushOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_store:
                             BinParse.LoadUnsignedLEB32(pb, ref idx);
-                            vu.PopOpd(Opd_Stack.i32);
+                            vmgr.PopOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i64_store:
                             BinParse.LoadUnsignedLEB32(pb, ref idx);
-                            vu.PopOpd(Opd_Stack.i64);
+                            vmgr.PopOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f32_store:
                             BinParse.LoadUnsignedLEB32(pb, ref idx);
-                            vu.PopOpd(Opd_Stack.f32);
+                            vmgr.PopOpd(StackOpd.f32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f64_store:
                             BinParse.LoadUnsignedLEB32(pb, ref idx);
-                            vu.PopOpd(Opd_Stack.f64);
+                            vmgr.PopOpd(StackOpd.f64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_store8:
                         case Instruction.i32_store16:
                             BinParse.LoadUnsignedLEB32(pb, ref idx);
-                            vu.PopOpd(Opd_Stack.i32);
+                            vmgr.PopOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -765,7 +587,7 @@ namespace PxPre.WASM
                         case Instruction.i64_store16:
                         case Instruction.i64_store32:
                             BinParse.LoadUnsignedLEB32(pb, ref idx);
-                            vu.PopOpd(Opd_Stack.i64);
+                            vmgr.PopOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -775,7 +597,7 @@ namespace PxPre.WASM
 
                         case Instruction.i32_const:
                             {
-                                vu.PushOpd(Opd_Stack.i32);
+                                vmgr.PushOpd(StackOpd.i32);
                                 TransferInstruction(expanded, instr);
 
                                 uint cval = BinParse.LoadUnsignedLEB32(pb, ref idx);
@@ -786,7 +608,7 @@ namespace PxPre.WASM
 
                         case Instruction.i64_const:
                             {
-                                vu.PushOpd(Opd_Stack.i64);
+                                vmgr.PushOpd(StackOpd.i64);
                                 TransferInstruction(expanded, instr);
 
                                 ulong cval = BinParse.LoadUnsignedLEB64(pb, ref idx);
@@ -796,7 +618,7 @@ namespace PxPre.WASM
 
                         case Instruction.f32_const:
                             {
-                                vu.PushOpd(Opd_Stack.f32);
+                                vmgr.PushOpd(StackOpd.f32);
                                 TransferInstruction(expanded, instr);
 
                                 TransferInt32u(expanded, *(uint*)&pb[idx]);
@@ -807,7 +629,7 @@ namespace PxPre.WASM
 
                         case Instruction.f64_const:
                             {
-                                vu.PushOpd(Opd_Stack.f64);
+                                vmgr.PushOpd(StackOpd.f64);
                                 TransferInstruction(expanded, instr);
 
                                 TransferInt64u(expanded, *(ulong*)&pb[idx]);
@@ -817,8 +639,8 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.i32_eqz:
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.i32);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -832,15 +654,15 @@ namespace PxPre.WASM
                         case Instruction.i32_le_u:
                         case Instruction.i32_ge_s:
                         case Instruction.i32_ge_u:
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.i32);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i64_eqz:
-                            vu.PopOpd(Opd_Stack.i64);
-                            vu.PushOpd(Opd_Stack.i32);
+                            vmgr.PopOpd(StackOpd.i64);
+                            vmgr.PushOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -854,9 +676,9 @@ namespace PxPre.WASM
                         case Instruction.i64_le_u:
                         case Instruction.i64_ge_s:
                         case Instruction.i64_ge_u:
-                            vu.PopOpd(Opd_Stack.i64);
-                            vu.PopOpd(Opd_Stack.i64);
-                            vu.PushOpd(Opd_Stack.i32);
+                            vmgr.PopOpd(StackOpd.i64);
+                            vmgr.PopOpd(StackOpd.i64);
+                            vmgr.PushOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -866,9 +688,9 @@ namespace PxPre.WASM
                         case Instruction.f32_gt:
                         case Instruction.f32_le:
                         case Instruction.f32_ge:
-                            vu.PopOpd(Opd_Stack.f32);
-                            vu.PopOpd(Opd_Stack.f32);
-                            vu.PushOpd(Opd_Stack.i32);
+                            vmgr.PopOpd(StackOpd.f32);
+                            vmgr.PopOpd(StackOpd.f32);
+                            vmgr.PushOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -878,17 +700,17 @@ namespace PxPre.WASM
                         case Instruction.f64_gt:
                         case Instruction.f64_le:
                         case Instruction.f64_ge:
-                            vu.PopOpd(Opd_Stack.f64);
-                            vu.PopOpd(Opd_Stack.f64);
-                            vu.PushOpd(Opd_Stack.i32);
+                            vmgr.PopOpd(StackOpd.f64);
+                            vmgr.PopOpd(StackOpd.f64);
+                            vmgr.PushOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_clz:
                         case Instruction.i32_ctz:
                         case Instruction.i32_popcnt:
-                            Opd_Stack unopty = vu.PopOpd( Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.i32);
+                            StackOpd unopty = vmgr.PopOpd( StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -907,17 +729,17 @@ namespace PxPre.WASM
                         case Instruction.i32_shr_u:
                         case Instruction.i32_rotl:
                         case Instruction.i32_rotr:
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.i32);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i64_clz:
                         case Instruction.i64_ctz:
                         case Instruction.i64_popcnt:
-                            vu.PopOpd(Opd_Stack.i64);
-                            vu.PushOpd(Opd_Stack.i64);
+                            vmgr.PopOpd(StackOpd.i64);
+                            vmgr.PushOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -936,9 +758,9 @@ namespace PxPre.WASM
                         case Instruction.i64_shr_u:
                         case Instruction.i64_rotl:
                         case Instruction.i64_rotr:
-                            vu.PopOpd(Opd_Stack.i64);
-                            vu.PopOpd(Opd_Stack.i64);
-                            vu.PushOpd(Opd_Stack.i64);
+                            vmgr.PopOpd(StackOpd.i64);
+                            vmgr.PopOpd(StackOpd.i64);
+                            vmgr.PushOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -949,8 +771,8 @@ namespace PxPre.WASM
                         case Instruction.f32_trunc:
                         case Instruction.f32_nearest:
                         case Instruction.f32_sqrt:
-                            vu.PopOpd(Opd_Stack.f32);
-                            vu.PushOpd(Opd_Stack.f32);
+                            vmgr.PopOpd(StackOpd.f32);
+                            vmgr.PushOpd(StackOpd.f32);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -961,9 +783,9 @@ namespace PxPre.WASM
                         case Instruction.f32_min:
                         case Instruction.f32_max:
                         case Instruction.f32_copysign:
-                            vu.PopOpd(Opd_Stack.f32);
-                            vu.PopOpd(Opd_Stack.f32);
-                            vu.PushOpd(Opd_Stack.f32);
+                            vmgr.PopOpd(StackOpd.f32);
+                            vmgr.PopOpd(StackOpd.f32);
+                            vmgr.PushOpd(StackOpd.f32);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -974,8 +796,8 @@ namespace PxPre.WASM
                         case Instruction.f64_trunc:
                         case Instruction.f64_nearest:
                         case Instruction.f64_sqrt:
-                            vu.PopOpd(Opd_Stack.f64);
-                            vu.PushOpd(Opd_Stack.f64);
+                            vmgr.PopOpd(StackOpd.f64);
+                            vmgr.PushOpd(StackOpd.f64);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -986,29 +808,29 @@ namespace PxPre.WASM
                         case Instruction.f64_min:
                         case Instruction.f64_max:
                         case Instruction.f64_copysign:
-                            vu.PopOpd( Opd_Stack.f64 );
-                            vu.PopOpd( Opd_Stack.f64 );
-                            vu.PushOpd(Opd_Stack.f64 );
+                            vmgr.PopOpd( StackOpd.f64 );
+                            vmgr.PopOpd( StackOpd.f64 );
+                            vmgr.PushOpd(StackOpd.f64 );
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_wrap_i64:
-                            vu.PopOpd(Opd_Stack.i64);
-                            vu.PushOpd(Opd_Stack.i32);
+                            vmgr.PopOpd(StackOpd.i64);
+                            vmgr.PushOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_trunc_f32_s:
                         case Instruction.i32_trunc_f32_u:
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.f32);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.f32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_trunc_f64_s:
                         case Instruction.i32_trunc_f64_u:
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.f64);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.f64);
                             TransferInstruction(expanded, instr);
                             break;
 
@@ -1016,56 +838,56 @@ namespace PxPre.WASM
                         case Instruction.i64_extend_i32_u:
                         case Instruction.i64_trunc_f32_s:
                         case Instruction.i64_trunc_f32_u:
-                            vu.PopOpd(Opd_Stack.i64);
-                            vu.PushOpd(Opd_Stack.f32);
+                            vmgr.PopOpd(StackOpd.i64);
+                            vmgr.PushOpd(StackOpd.f32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i64_trunc_f64_s:
                         case Instruction.i64_trunc_f64_u:
-                            vu.PopOpd(Opd_Stack.f64);
-                            vu.PushOpd(Opd_Stack.f64);
+                            vmgr.PopOpd(StackOpd.f64);
+                            vmgr.PushOpd(StackOpd.f64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f32_convert_i32_s:
                         case Instruction.f32_convert_i32_u:
-                            vu.PopOpd(Opd_Stack.f32);
-                            vu.PushOpd(Opd_Stack.i32);
+                            vmgr.PopOpd(StackOpd.f32);
+                            vmgr.PushOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f32_convert_i64_s:
                         case Instruction.f32_convert_i64_u:
                         case Instruction.f32_convert_f64:
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.i64);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f64_convert_i32_s:
                         case Instruction.f64_convert_i32_u:
-                            vu.PopOpd(Opd_Stack.i64);
-                            vu.PushOpd(Opd_Stack.i32);
+                            vmgr.PopOpd(StackOpd.i64);
+                            vmgr.PushOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f64_convert_i64_s:
                         case Instruction.f64_convert_i64_u:
-                            vu.PopOpd(Opd_Stack.i64);
-                            vu.PushOpd(Opd_Stack.i64);
+                            vmgr.PopOpd(StackOpd.i64);
+                            vmgr.PushOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f64_promote_f32:
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.f32);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.f32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_reinterpret_f32:
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.f32);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.f32);
 
                             // Validate the instruction, but we don't need to emit any
                             // instructions - it literally changes nothing with the 
@@ -1074,8 +896,8 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.i64_reinterpret_f64:
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.i64);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.i64);
 
                             // Validate the instruction, but we don't need to emit any
                             // instructions - it literally changes nothing with the 
@@ -1084,8 +906,8 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.f32_reinterpret_i32:
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.i32);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.i32);
 
                             // Validate the instruction, but we don't need to emit any
                             // instructions - it literally changes nothing with the 
@@ -1094,8 +916,8 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.f64_reinterpret_i64:
-                            vu.PopOpd(Opd_Stack.i32);
-                            vu.PushOpd(Opd_Stack.i64);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.i64);
 
                             // Validate the instruction, but we don't need to emit any
                             // instructions - it literally changes nothing with the 
@@ -1105,70 +927,73 @@ namespace PxPre.WASM
 
                         case Instruction.i32_extend8_s:
                         case Instruction.i32_extend16_s:
-                            vu.PopOpd(Opd_Stack.f32);
-                            vu.PushOpd(Opd_Stack.f32);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i64_extend8_s:
                         case Instruction.i64_extend16_s:
                         case Instruction.i64_extend32_s:
-                            vu.PopOpd(Opd_Stack.f64);
-                            vu.PushOpd(Opd_Stack.f32);
+                            vmgr.PopOpd(StackOpd.f64);
+                            vmgr.PushOpd(StackOpd.f32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.trunc_sat:
                             { 
-                                int subop = BinParse.LoadSignedLEB32(pb, ref idx);
+                                uint subop = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 switch(subop)
                                 { 
                                     case 0:
-                                        vu.PopOpd(Opd_Stack.f32);
-                                        vu.PushOpd(Opd_Stack.i32);
+                                        vmgr.PopOpd(StackOpd.f32);
+                                        vmgr.PushOpd(StackOpd.i32);
                                         TransferInstruction(expanded, Instruction._i32_trunc_sat_f32_s);
                                         break;
                                     case 1:
-                                        vu.PopOpd(Opd_Stack.f32);
-                                        vu.PushOpd(Opd_Stack.i32);
+                                        vmgr.PopOpd(StackOpd.f32);
+                                        vmgr.PushOpd(StackOpd.i32);
                                         TransferInstruction(expanded, Instruction._i32_trunc_sat_f32_u);
                                         break;
                                     case 2:
-                                        vu.PopOpd(Opd_Stack.f64);
-                                        vu.PushOpd(Opd_Stack.i32);
+                                        vmgr.PopOpd(StackOpd.f64);
+                                        vmgr.PushOpd(StackOpd.i32);
                                         TransferInstruction(expanded, Instruction._i32_trunc_sat_f64_s);
                                         break;
                                     case 3:
-                                        vu.PopOpd(Opd_Stack.f64);
-                                        vu.PushOpd(Opd_Stack.i32);
+                                        vmgr.PopOpd(StackOpd.f64);
+                                        vmgr.PushOpd(StackOpd.i32);
                                         TransferInstruction(expanded, Instruction._i32_trunc_sat_f64_u);
                                         break;
                                     case 4:
-                                        vu.PopOpd(Opd_Stack.f32);
-                                        vu.PushOpd(Opd_Stack.i64);
+                                        vmgr.PopOpd(StackOpd.f32);
+                                        vmgr.PushOpd(StackOpd.i64);
                                         TransferInstruction(expanded, Instruction._i64_trunc_sat_f32_s);
                                         break;
                                     case 5:
-                                        vu.PopOpd(Opd_Stack.f32);
-                                        vu.PushOpd(Opd_Stack.i64);
+                                        vmgr.PopOpd(StackOpd.f32);
+                                        vmgr.PushOpd(StackOpd.i64);
                                         TransferInstruction(expanded, Instruction._i64_trunc_sat_f32_u);
                                         break;
                                     case 6:
-                                        vu.PopOpd(Opd_Stack.f64);
-                                        vu.PushOpd(Opd_Stack.i64);
+                                        vmgr.PopOpd(StackOpd.f64);
+                                        vmgr.PushOpd(StackOpd.i64);
                                         TransferInstruction(expanded, Instruction._i64_trunc_sat_f64_s);
                                         break;
                                     case 7:
-                                        vu.PopOpd(Opd_Stack.f64);
-                                        vu.PushOpd(Opd_Stack.i64);
+                                        vmgr.PopOpd(StackOpd.f64);
+                                        vmgr.PushOpd(StackOpd.i64);
                                         TransferInstruction(expanded, Instruction._i64_trunc_sat_f64_u);
                                         break;
                                     case 0xB:
-                                        vu.PopOpd(Opd_Stack.i32);
-                                        vu.PopOpd(Opd_Stack.i32);
-                                        vu.PopOpd(Opd_Stack.i32);
-                                        TransferInstruction(expanded, Instruction._memory_fill);
-                                        BinParse.LoadSignedLEB32(pb, ref idx); // Eat unused placeholder number
+                                        vmgr.PopOpd(StackOpd.i32);
+                                        vmgr.PopOpd(StackOpd.i32);
+                                        vmgr.PopOpd(StackOpd.i32);
+                                        {
+                                            TransferInstruction(expanded, Instruction._memory_fill);
+                                            uint filler = BinParse.LoadUnsignedLEB32(pb, ref idx); // Unused placeholder in the WASM spec
+                                            TransferInt32u(expanded, filler);
+                                        }
                                         break;
                                 }
                             }
@@ -1176,8 +1001,8 @@ namespace PxPre.WASM
                     }
                 }
 
-                while(vu.ctrls.Count > 0)
-                    vu.PopCtrl(expanded);
+                while(vmgr.ctrls.Count > 0)
+                    vmgr.PopCtrl(expanded);
 
                 if(this.fnType.totalResultSize > 0)
                 {

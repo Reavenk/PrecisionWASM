@@ -25,58 +25,68 @@ using System.Collections.Generic;
 
 namespace PxPre.WASM
 {
+    /// <summary>
+    /// The imported module data of an ExecutionContext.
+    /// </summary>
     public class ImportModule
     {
-        // It's unknown if we want to do this for modules (have them all based off a class)
-        // but 
-        public class ImportEntry
+        public readonly ImportDefinitions definition;
+
+        /// <summary>
+        /// Functions that are provided by outside sources in an input block.
+        /// </summary>
+        public List<ImportFunction> importFn    = null;
+
+        /// <summary>
+        /// Memory that is defined as an import.
+        /// </summary>
+        public List<Memory> memories            = null;
+
+        /// <summary>
+        /// Globals that are defined as an input.
+        /// </summary>
+        public List<Global> globals             = null;
+
+        /// <summary>
+        /// Tables that are defined as an input.
+        /// </summary>
+        public List<Table> tables               = null;
+
+        public ImportModule(ImportDefinitions definition)
         {
-            public virtual FunctionImportEntry CastToFunctionImport() 
-            { return null; }
+            this.definition = definition;
 
-            public virtual TableImportEntry CastToTableImport()
-            { return null; }
-
-            public virtual GlobalTypeEntry CastToGlobalImport()
-            { return null; }
-
-            public virtual MemoryTypeEntry CastToMemoryImport()
-            { return null; }
+            this.Reset();
         }
 
-        public class FunctionImportEntry : ImportEntry
+        public void Reset()
         {
-            public ImportFunction importFn;
+            this.importFn   = new List<ImportFunction>();
+            this.memories   = new List<Memory>();
+            this.globals    = new List<Global>();
+            this.tables     = new List<Table>();
 
-            public FunctionImportEntry(ImportFunction ifn)
-            { 
-                this.importFn = ifn;
+            foreach (DefFunction df in definition.functions)
+                this.importFn.Add(null);
+
+            foreach (DefMem dm in definition.memories)
+            {
+                Memory mem = new Memory((int)dm.initialPages, (int)dm.minPages, (int)dm.maxPages);
+                this.memories.Add(mem);
             }
 
-            public override FunctionImportEntry CastToFunctionImport()
-            { return this; }
+            foreach (DefGlobal dg in definition.globals)
+            {
+                Global glob = new Global(dg.type, 1, dg.mut == Global.Mutability.Variable);
+                this.globals.Add(glob);
+            }
+
+            foreach (DefTable dt in definition.tables)
+            { 
+                Table tabl = new Table(dt.type, (int)dt.elements);
+                this.tables.Add(tabl);
+            }
+
         }
-
-        public class TableImportEntry : ImportEntry
-        {
-
-            public override TableImportEntry CastToTableImport()
-            { return null; }
-
-        }
-
-        public class GlobalTypeEntry : ImportEntry
-        {
-            public Global global;
-        }
-
-        public class MemoryTypeEntry : ImportEntry
-        {
-            public override MemoryTypeEntry CastToMemoryImport()
-            { return this; }
-        }
-
-        public Dictionary<string, ImportEntry> importedMembers = 
-            new Dictionary<string, ImportEntry>();
     }
 }

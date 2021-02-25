@@ -23,11 +23,43 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace PxPre.WASM
-{ 
-    public class GlobalDirectory
+namespace PxPre.WASM.Vali
+{
+    /// <summary>
+    /// Stack Operand
+    /// 
+    /// The various values used to track and validate execution, matching
+    /// the unique values in the WASM spec - for the reference algorithm in
+    /// the appendix.
+    /// 
+    /// See type opd_stack in https://webassembly.github.io/spec/core/appendix/algorithm.html
+    /// for more details.
+    /// </summary>
+    public enum StackOpd
     {
-        public Dictionary<string, GlobalSpace> globalSpaces = 
-            new Dictionary<string, GlobalSpace>();
+        /// <summary>
+        /// The type is a 32 bit integer.
+        /// </summary>
+        i32,
+
+        /// <summary>
+        /// The type is a 64 bit integer.
+        /// </summary>
+        i64,
+
+        /// <summary>
+        /// The type is a 32 bit (single precision) float.
+        /// </summary>
+        f32,
+
+        /// <summary>
+        /// The type is a 64 bit (double precision) float.
+        /// </summary>
+        f64,
+
+        /// <summary>
+        /// The type is unknown.
+        /// </summary>
+        Unknown
     }
 }

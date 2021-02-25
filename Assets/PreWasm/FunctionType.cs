@@ -26,6 +26,7 @@ namespace PxPre.WASM
 {
     public class FunctionType
     {
+        // TODO: Comments
         public struct DataOrgInfo
         {
             public string refName;
@@ -33,6 +34,7 @@ namespace PxPre.WASM
             public bool isFloat;
             public uint size;
             public uint offset;
+            public uint invOffset;
         }
 
         /// <summary>
@@ -59,6 +61,8 @@ namespace PxPre.WASM
         {
             this.totalParamSize = 0;
             this.totalResultSize = 0;
+
+            // Pass 1. Get inverted offsets and get the total stack size
 
             for(int i = 0; i < this.paramTypes.Count; ++i)
             { 
@@ -104,5 +108,6 @@ namespace PxPre.WASM
 
             totalSize += doi.size;
         }
+
     }
 }

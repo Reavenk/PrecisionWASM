@@ -44,6 +44,20 @@ public static class WASMDatum
         return Invoke(ex, module, fnIdx, ps);
     }
 
+    public static unsafe PxPre.Datum.Val Invoke_SingleRet(
+        this PxPre.WASM.ExecutionContext ex,
+        PxPre.WASM.Module module,
+        string fnName, params PxPre.Datum.Val[] ps)
+    {
+        int fnIdx = module.GetExportedFunctionID(fnName);
+
+        if (fnIdx == -1)
+            return null;
+
+        List<PxPre.Datum.Val> rets = Invoke(ex, module, fnIdx, ps);
+        return rets[0];
+    }
+
     public static unsafe List<PxPre.Datum.Val> Invoke(
         this PxPre.WASM.ExecutionContext ex,
         PxPre.WASM.Module module,

@@ -80,10 +80,14 @@ namespace PxPre.WASM
         _local_set64    = (local_set << 8) | 64,
         _local_tee32    = (local_tee << 8) | 32,
         _local_tee64    = (local_tee << 8) | 64,
+
+        _global_chStoreLoc  = (global_get << 8) | 0,    // Change the store to an index local to the ExecutionContext
+        _global_chStoreImp  = (global_get << 8) | 1,    // Change the store to an import index.
         _global_get32   = (global_get << 8) | 32,
         _global_get64   = (global_get << 8) | 64,
         _global_set32   = (global_set << 8) | 32,
         _global_set64   = (global_set << 8) | 64,
+
 
         i32_load        = 0x28,
         i64_load        = 0x29,
