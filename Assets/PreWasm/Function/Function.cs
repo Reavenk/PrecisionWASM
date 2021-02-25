@@ -407,12 +407,12 @@ namespace PxPre.WASM
                                 if(ty.size == 4)
                                 {
                                     TransferInstruction(expanded, Instruction._local_get32);
-                                    TransferInt32u(expanded, ty.offset);
+                                    TransferInt32u(expanded, this.totalStackSize - ty.offset - 4);
                                 }
                                 else if(ty.size == 8)
                                 {
                                     TransferInstruction(expanded, Instruction._local_get64);
-                                    TransferInt32u(expanded, ty.offset);
+                                    TransferInt32u(expanded, this.totalStackSize - ty.offset - 8);
                                 }
                                 else
                                     vmgr.EmitValidationError("Retrieving parameter of illegal size.");
@@ -428,13 +428,17 @@ namespace PxPre.WASM
 
                                 vmgr.PopOpd(ValiMgr.ConvertToStackType(ty.type));
                                 if (ty.size == 4)
+                                {
                                     TransferInstruction(expanded, Instruction._local_set32);
+                                    TransferInt32u(expanded, this.totalStackSize - ty.offset - 4);
+                                }
                                 else if (ty.size == 8)
+                                {
                                     TransferInstruction(expanded, Instruction._local_set64);
+                                    TransferInt32u(expanded, this.totalStackSize - ty.offset - 8);
+                                }
                                 else
                                     vmgr.EmitValidationError("Setting parameter of illegal size.");
-
-                                TransferInt32u(expanded, ty.offset);
 
                             }
                             break;

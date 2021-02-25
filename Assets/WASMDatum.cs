@@ -95,16 +95,16 @@ public static class WASMDatum
                 if (doi.size == 4)
                 {
                     if (doi.isFloat == true)
-                        *(float*)(&pstk[ex.stackPos + doi.offset]) = ps[i].GetFloat();
+                        *(float*)(&pstk[ex.stackPos + fn.totalStackSize - doi.offset - 4]) = ps[i].GetFloat();
                     else
-                        *(int*)(&pstk[ex.stackPos + doi.offset]) = ps[i].GetInt();
+                        *(int*)(&pstk[ex.stackPos + fn.totalStackSize - doi.offset - 4]) = ps[i].GetInt();
                 }
                 else if (doi.size == 8)
                 {
                     if (doi.isFloat == true)
-                        *(double*)(&pstk[ex.stackPos + doi.offset]) = (double)ps[i].GetFloat();
+                        *(double*)(&pstk[ex.stackPos + fn.totalStackSize - doi.offset - 8]) = (double)ps[i].GetFloat();
                     else
-                        *(long*)(&pstk[ex.stackPos + doi.offset]) = ps[i].GetInt();
+                        *(long*)(&pstk[ex.stackPos + fn.totalStackSize - doi.offset - 8]) = ps[i].GetInt();
                 }
                 else
                 { } // TODO: Error
