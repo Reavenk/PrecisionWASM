@@ -226,9 +226,9 @@ namespace Tests
             List<FloatIntPair> tests = 
                 new List<FloatIntPair>
                 { 
-                    new FloatIntPair(float.PositiveInfinity, 2147483647),
+                    //new FloatIntPair(float.PositiveInfinity, 2147483647), // unsigned can't be represented with Datum values
                     new FloatIntPair(float.NegativeInfinity, -2147483648),
-                    new FloatIntPair(5000.0f, 50010),
+                    new FloatIntPair(5000.0f, 5000),
                     new FloatIntPair(0.0f, 0),
                     new FloatIntPair(99.99f, 99),
                     new FloatIntPair(-99.99f, -99),
@@ -292,8 +292,8 @@ namespace Tests
                     new PxPre.Datum.ValInt(10),
                     new PxPre.Datum.ValInt(3));
 
-            if(ret.GetInt() != -1)
-                throw new System.Exception("multivalue.wasm expected a return value of -7");
+            if(ret.GetInt() != -7)
+                throw new System.Exception($"multivalue.wasm expected a return value of -7, instead got {ret.GetInt()}");
         }
 
         [Test]
