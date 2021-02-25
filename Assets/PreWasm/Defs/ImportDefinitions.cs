@@ -27,12 +27,6 @@ namespace PxPre.WASM
 {
     public class ImportDefinitions
     {
-        public struct FieldInfo
-        { 
-            public int type;
-            public int index;
-        }
-
         public class ModuleRecord
         {
             public readonly string moduleName;

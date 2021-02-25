@@ -88,7 +88,6 @@ namespace PxPre.WASM
         _global_set32   = (global_set << 8) | 32,
         _global_set64   = (global_set << 8) | 64,
 
-
         i32_load        = 0x28,
         i64_load        = 0x29,
         f32_load        = 0x2A,
@@ -114,6 +113,9 @@ namespace PxPre.WASM
         i64_store32     = 0x3E,
         MemorySize      = 0x3F,
         MemoryGrow      = 0x40,
+
+        _SetMemoryStoreImp = (MemoryGrow << 8) | 0,
+        _SetMemoryStoreLoc = (MemoryGrow << 8) | 1,
 
         i32_const       = 0x41,
         i64_const       = 0x42,

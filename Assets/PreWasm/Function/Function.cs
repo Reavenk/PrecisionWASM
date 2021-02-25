@@ -511,24 +511,32 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.i32_load:
+                            ValiMgr.EnsureDefaultMemory( parentModule.indexingMemory, expanded, ref memoryStore);
+
                             vmgr.PopOpd( StackOpd.i32 );
                             vmgr.PushOpd(StackOpd.i32 );
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i64_load:
+                            ValiMgr.EnsureDefaultMemory(parentModule.indexingMemory, expanded, ref memoryStore);
+
                             vmgr.PopOpd(StackOpd.i32);
                             vmgr.PushOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f32_load:
+                            ValiMgr.EnsureDefaultMemory(parentModule.indexingMemory, expanded, ref memoryStore);
+
                             vmgr.PopOpd(StackOpd.i32);
                             vmgr.PushOpd(StackOpd.f32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f64_load:
+                            ValiMgr.EnsureDefaultMemory(parentModule.indexingMemory, expanded, ref memoryStore);
+
                             vmgr.PopOpd(StackOpd.i32);
                             vmgr.PushOpd(StackOpd.f64);
                             TransferInstruction(expanded, instr);
@@ -539,6 +547,8 @@ namespace PxPre.WASM
                         case Instruction.i32_load16_s:
                         case Instruction.i32_load16_u:
                             {
+                                ValiMgr.EnsureDefaultMemory(parentModule.indexingMemory, expanded, ref memoryStore);
+
                                 uint val = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 vmgr.PushOpd(StackOpd.i32);
                                 TransferInstruction(expanded, instr);
@@ -551,30 +561,40 @@ namespace PxPre.WASM
                         case Instruction.i64_load16_u:
                         case Instruction.i64_load32_s:
                         case Instruction.i64_load32_u:
+                            ValiMgr.EnsureDefaultMemory(parentModule.indexingMemory, expanded, ref memoryStore);
+
                             BinParse.LoadUnsignedLEB32(pb, ref idx);
                             vmgr.PushOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_store:
+                            ValiMgr.EnsureDefaultMemory(parentModule.indexingMemory, expanded, ref memoryStore);
+
                             BinParse.LoadUnsignedLEB32(pb, ref idx);
                             vmgr.PopOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i64_store:
+                            ValiMgr.EnsureDefaultMemory(parentModule.indexingMemory, expanded, ref memoryStore);
+
                             BinParse.LoadUnsignedLEB32(pb, ref idx);
                             vmgr.PopOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f32_store:
+                            ValiMgr.EnsureDefaultMemory(parentModule.indexingMemory, expanded, ref memoryStore);
+
                             BinParse.LoadUnsignedLEB32(pb, ref idx);
                             vmgr.PopOpd(StackOpd.f32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f64_store:
+                            ValiMgr.EnsureDefaultMemory(parentModule.indexingMemory, expanded, ref memoryStore);
+
                             BinParse.LoadUnsignedLEB32(pb, ref idx);
                             vmgr.PopOpd(StackOpd.f64);
                             TransferInstruction(expanded, instr);
@@ -582,6 +602,8 @@ namespace PxPre.WASM
 
                         case Instruction.i32_store8:
                         case Instruction.i32_store16:
+                            ValiMgr.EnsureDefaultMemory(parentModule.indexingMemory, expanded, ref memoryStore);
+
                             BinParse.LoadUnsignedLEB32(pb, ref idx);
                             vmgr.PopOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
@@ -590,6 +612,8 @@ namespace PxPre.WASM
                         case Instruction.i64_store8:
                         case Instruction.i64_store16:
                         case Instruction.i64_store32:
+                            ValiMgr.EnsureDefaultMemory(parentModule.indexingMemory, expanded, ref memoryStore);
+
                             BinParse.LoadUnsignedLEB32(pb, ref idx);
                             vmgr.PopOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);

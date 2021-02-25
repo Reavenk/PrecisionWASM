@@ -199,5 +199,38 @@ namespace PxPre.WASM.Vali
             else
                 return false;
         }
+
+        public static bool EnsureDefaultMemory(List<IndexEntry> memoryIndices, List<byte> expanded, ref DataStoreIdx dsIdx)
+        {
+            if(dsIdx.loc != DataStoreIdx.Location.Unknown)
+                return false;
+
+            if(memoryIndices.Count == 0)
+                throw new System.Exception("No memories provided for a function that requires memory storage.");
+
+            IndexEntry ie = memoryIndices[0];
+            if (ie.type == IndexEntry.FnIdxType.Local)
+            {
+                dsIdx.loc = DataStoreIdx.Location.Local;
+                dsIdx.index = ie.index;
+
+                Function.TransferInstruction(expanded, Instruction._SetMemoryStoreLoc);
+                Function.TransferInt32s(expanded, ie.index );
+
+                return true;
+            }
+            else
+            {
+                dsIdx.loc = DataStoreIdx.Location.Import;
+                dsIdx.index = ie.index;
+
+                Function.TransferInstruction(expanded, Instruction._SetMemoryStoreImp);
+                Function.TransferInt32s(expanded, ie.index);
+
+                return true;
+            }
+
+            throw new System.Exception(); // TODO: Error message
+        }
     }
 }
