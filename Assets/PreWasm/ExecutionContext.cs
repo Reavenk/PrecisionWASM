@@ -59,34 +59,45 @@ namespace PxPre.WASM
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ExecutionContext(Module module, bool start = true)
+        public ExecutionContext(Module module, bool start = true) 
         { 
             this.instancer = module;
-            this.importData = new ImportModule(module.storeDecl);
+            this.importData = new ImportModule(module.storeDecl); 
 
-            foreach(DefMem dm in module.storeDecl.memories)
+            for(int i = 0; i < module.storeDecl.localMemsCt; ++i)
+                this.memories.Add(null);
+
+            for(int i = 0; i < module.storeDecl.memories.Count; ++i)
             {
-                Memory newMem = new Memory((int)dm.initialPages, (int)dm.minPages, (int)dm.maxPages);
+                IndexEntry ie = module.storeDecl.indexingMemory[i];
+                if (ie.type == IndexEntry.FnIdxType.Import)
+                    continue;
 
-                if(dm.defaultData != null)
-                { 
-                    for(int i = 0; i < dm.defaultData.Length; ++i)
-                        newMem.data[i] = dm.defaultData[i];
-                }
-
-                this.memories.Add(newMem);
+                this.memories[ie.index] = module.storeDecl.memories[i].CreateDefault();
             }
 
-            foreach(DefGlobal dg in module.storeDecl.globals)
-            {
-                Global newGlobal = new Global(dg.type, dg.elements, dg.mut == Global.Mutability.Variable);
-                this.globals.Add(newGlobal);
+            for(int i = 0; i < module.storeDecl.localGlobalCt; ++i)
+                this.globals.Add(null);
+
+            for(int i = 0; i < module.storeDecl.globals.Count; ++i)
+            { 
+                IndexEntry ie = module.storeDecl.indexingGlobal[i];
+                if(ie.type == IndexEntry.FnIdxType.Import)
+                    continue;
+
+                this.globals[ie.index] = module.storeDecl.globals[i].CreateDefault();
             }
 
-            foreach(DefTable dt in module.storeDecl.tables)
-            {
-                Table newTable = new Table(dt.type, (int)dt.elements, (int)dt.maxElements);
-                this.tables.Add(newTable);
+            for(int i = 0; i < module.storeDecl.tables.Count; ++i)
+                this.tables.Add(null);
+
+            for(int i = 0; i < module.storeDecl.tables.Count; ++i)
+            { 
+                IndexEntry ie = module.storeDecl.indexingTable[i];
+                if(ie.type == IndexEntry.FnIdxType.Import)
+                    continue;
+
+                this.tables[ie.index] = module.storeDecl.tables[i].CreateDefault();
             }
 
             if(start == true)
@@ -95,7 +106,8 @@ namespace PxPre.WASM
 
         unsafe public void RunFunction(Module module, int index)
         {
-            IndexEntry fie = module.indexingFunction[index];
+            IndexEntry fie = module.storeDecl.indexingFunction[index];
+
             if(fie.type == IndexEntry.FnIdxType.Local)
             { 
                 this.RunLocalFunction(module, fie.index);
@@ -1714,10 +1726,10 @@ namespace PxPre.WASM
                                 uint start  = *(uint*)&pstk[this.stackPos + 8];
                                 uint val    = *(uint*)&pstk[this.stackPos + 4];
                                 uint count  = *(uint*)&pstk[this.stackPos + 0];
-                                this.stackPos += 12;
+                                this.stackPos += 12; 
 
                                 for(uint i = 0; i < count; ++i)
-                                    this.importData.memories[0].pdata[start + i] = (byte)val;
+                                    pbMem[start + i] = (byte)val;
                             }
                             break;
 
@@ -1738,7 +1750,7 @@ namespace PxPre.WASM
                 return true;
             }
 
-            IndexEntry fie = this.instancer.indexingFunction[(int)this.instancer.startFnIndex];
+            IndexEntry fie = this.instancer.storeDecl.indexingFunction[(int)this.instancer.startFnIndex];
 
             if(fie.type == IndexEntry.FnIdxType.Local)
             {

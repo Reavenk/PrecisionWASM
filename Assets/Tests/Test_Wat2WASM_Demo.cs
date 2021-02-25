@@ -53,7 +53,7 @@ namespace Tests
                 throw new System.Exception( $"Error, failure parsing {path} to WASM module" );
 
             
-            Debug.Log($"Loaded with {mod.indexingFunction.Count} functions total.");
+            Debug.Log($"Loaded with {mod.storeDecl.indexingFunction.Count} functions total.");
             Debug.Log($"Loaded with {mod.functions.Count} functions locally.");
 
             return mod;
@@ -318,7 +318,7 @@ namespace Tests
 
             for(int i = 0; i < rb.Count; ++i)
             { 
-                if(rb[i] != ex.memories[0].data[0])
+                if(rb[i] != ex.memories[0].data[i])
                     throw new System.Exception("bulkmemory.wasm memory result not matching expected end state");
             }
         }

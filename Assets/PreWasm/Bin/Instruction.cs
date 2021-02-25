@@ -260,16 +260,16 @@ namespace PxPre.WASM
         i64_extend16_s      = 0xC3,
         i64_extend32_s      = 0xC4,
 
-        trunc_sat           = 0xFC,
+        extPrefixed         = 0xFC,
 
-        _i32_trunc_sat_f32_s    = (trunc_sat << 8) | 0,
-        _i32_trunc_sat_f32_u    = (trunc_sat << 8) | 1,
-        _i32_trunc_sat_f64_s    = (trunc_sat << 8) | 2,
-        _i32_trunc_sat_f64_u    = (trunc_sat << 8) | 3,
-        _i64_trunc_sat_f32_s    = (trunc_sat << 8) | 4,
-        _i64_trunc_sat_f32_u    = (trunc_sat << 8) | 5,
-        _i64_trunc_sat_f64_s    = (trunc_sat << 8) | 6,
-        _i64_trunc_sat_f64_u    = (trunc_sat << 8) | 7,
-        _memory_fill            = (trunc_sat << 8) | 0xB, // Bulk memory (extension?)
+        _i32_trunc_sat_f32_s    = (extPrefixed << 8) | 0,
+        _i32_trunc_sat_f32_u    = (extPrefixed << 8) | 1,
+        _i32_trunc_sat_f64_s    = (extPrefixed << 8) | 2,
+        _i32_trunc_sat_f64_u    = (extPrefixed << 8) | 3,
+        _i64_trunc_sat_f32_s    = (extPrefixed << 8) | 4,
+        _i64_trunc_sat_f32_u    = (extPrefixed << 8) | 5,
+        _i64_trunc_sat_f64_s    = (extPrefixed << 8) | 6,
+        _i64_trunc_sat_f64_u    = (extPrefixed << 8) | 7,
+        _memory_fill            = (extPrefixed << 8) | 0xB, // Bulk memory (extension?)
     }
 }

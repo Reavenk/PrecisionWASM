@@ -27,27 +27,6 @@ namespace PxPre.WASM
 {
     public class Module
     {
-        
-
-        public const uint UnloadedStartIndex = unchecked((uint)~0);
-
-        public List<FunctionType> types = new List<FunctionType>();
-
-        public List<Export> exports = new List<Export>();
-
-        public List<IndexEntry> indexingFunction    = new List<IndexEntry>();
-        public List<IndexEntry> indexingGlobal      = new List<IndexEntry>();
-        public List<IndexEntry> indexingMemory      = new List<IndexEntry>();
-        public List<IndexEntry> indexingTable       = new List<IndexEntry>();
-        
-
-        public List<Function> functions = new List<Function>();
-        
-        public StoreDeclarations storeDecl = new StoreDeclarations();
-
-
-        public uint startFnIndex = UnloadedStartIndex;
-
         // TODO: Remove elsewhere - possibly into Bin?
         public enum ImportType
         {
@@ -58,9 +37,27 @@ namespace PxPre.WASM
             GlobalType  = 0x03  // A global type 
         }
 
-        unsafe public static Module LoadBinary(byte [] rb)
+        public const uint UnloadedStartIndex = unchecked((uint)~0);
+
+        public List<FunctionType> types = new List<FunctionType>();
+
+        public List<Export> exports = new List<Export>();
+
+        public List<Function> functions = new List<Function>();
+        
+        public StoreDeclarations storeDecl;
+
+
+        public uint startFnIndex = UnloadedStartIndex;
+
+        protected Module()
         { 
-            fixed(byte * pb = rb)
+            this.storeDecl = new StoreDeclarations(this);
+        }
+
+        unsafe public static Module LoadBinary(byte [] rb)
+        {
+            fixed (byte * pb = rb)
             { 
                 uint idx = 0;
                 return LoadBinary(pb, ref idx);
@@ -166,26 +163,28 @@ namespace PxPre.WASM
                                     uint fnTyIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                     FunctionType fnTy = ret.types[(int)fnTyIdx];
 
-                                    ret.indexingFunction.Add(
+                                    ret.storeDecl.indexingFunction.Add(
                                         IndexEntry.CreateImport(ret.storeDecl.functions.Count, modName, fieldName));
 
-                                    ret.storeDecl.AddFunction(modName, fieldName, fnTy);
+                                    ret.storeDecl.AddFunctionImp(modName, fieldName, fnTy);
                                 }
                                 break;
 
                             case ImportType.TableType:
                                 {
                                     uint tableIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
+
                                     // TODO:
-                                    // ret.indexingTable.Add(IndexEntry.CreateImport(ret.storeDecl.tables.Count, modName, fieldName));
+                                    //ret.storeDecl.AddTableImp(modName, fieldName,  
                                 }
                                 break;
 
                             case ImportType.MemType:
                                 {
                                     uint memIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
+
                                     // TODO:
-                                    // ret.indexingMemory.Add(IndexEntry.CreateImport(ret.storeDecl.memories.Count, modName, fieldName));
+                                    //ret.storeDecl.AddMemoryImp(
                                 }
                                 break;
 
@@ -194,8 +193,7 @@ namespace PxPre.WASM
                                     uint globalIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                     uint mutability = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                                    ret.indexingGlobal.Add(IndexEntry.CreateImport(ret.storeDecl.globals.Count, modName, fieldName));
-                                    ret.storeDecl.AddGlobal(modName, fieldName, (Bin.TypeID)globalIdx, 1, mutability != 0);
+                                    ret.storeDecl.AddGlobalImp(modName, fieldName, (Bin.TypeID)globalIdx, mutability != 0);
                                 }
                                 break;
                         }
@@ -213,7 +211,7 @@ namespace PxPre.WASM
                         function.typeidx = fnType;
                         function.fnType = ret.types[(int)fnType];
 
-                        ret.indexingFunction.Add(
+                        ret.storeDecl.indexingFunction.Add(
                             IndexEntry.CreateLocal(ret.functions.Count));
 
                         ret.functions.Add(function);
@@ -232,7 +230,7 @@ namespace PxPre.WASM
                         uint initial = BinParse.LoadUnsignedLEB32(pb, ref idx); 
                         uint max = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                        ret.storeDecl.AddTable(ty, initial, max, flags);
+                        ret.storeDecl.AddTableLoc(ty, initial, max);
 
                         // TODO: Transfer table values
                         // if (ty == Bin.TypeID.FuncRef)
@@ -262,12 +260,7 @@ namespace PxPre.WASM
                         if((memFlags & 0x01) != 0)
                             memMaxPageCt = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                        ret.storeDecl.AddMemory(
-                            memInitialPageCt, 
-                            memInitialPageCt, 
-                            memMaxPageCt, 
-                            memFlags);
-
+                        ret.storeDecl.AddMemoryLoc( memInitialPageCt,  memInitialPageCt, memMaxPageCt);
                     }
                 }
                 else if(sectionCode == Bin.Section.GlobalSec)

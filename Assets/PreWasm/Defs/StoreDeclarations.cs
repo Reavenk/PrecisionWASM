@@ -42,18 +42,35 @@ namespace PxPre.WASM
             }
         }
 
+        public readonly Module parentModule;
+
         public List<DefGlobal>      globals     = new List<DefGlobal>();
         public List<DefTable>       tables      = new List<DefTable>();
         public List<DefFunction>    functions   = new List<DefFunction>();
         public List<DefMem>         memories    = new List<DefMem>();
 
-        public int importGlobalsCt = 0;
-        public int importTablesCt = 0;
-        public int importFunctionsCt = 0;
-        public int importMemsCt = 0;
+        public List<IndexEntry> indexingFunction = new List<IndexEntry>();
+        public List<IndexEntry> indexingGlobal = new List<IndexEntry>();
+        public List<IndexEntry> indexingMemory = new List<IndexEntry>();
+        public List<IndexEntry> indexingTable = new List<IndexEntry>();
+
+        public int importFunctionsCt    { get; private set; } = 0;
+        public int importMemsCt         { get; private set; } = 0;
+        public int importGlobalsCt      { get; private set; } = 0;
+        public int importTablesCt       { get; private set; } = 0;
+
+        public int localFunctionCt      { get; private set; } = 0;
+        public int localMemsCt          { get; private set; } = 0;
+        public int localGlobalCt        { get; private set; } = 0;
+        public int localTablesCt        { get; private set; } = 0;
 
         Dictionary<string, ModuleRecord> moduleLookup = 
             new Dictionary<string, ModuleRecord>();
+
+        public StoreDeclarations(Module parentModule)
+        { 
+            this.parentModule = parentModule;
+        }
 
         private ModuleRecord GetOrCreateRecord(string module)
         { 
@@ -67,79 +84,232 @@ namespace PxPre.WASM
             return mr;
         }
 
-        public void AddGlobal(DefGlobal global)
-        { 
-            this.globals.Add(global);
-        }
-
-        public void AddGlobal(string module, string fieldname, DefGlobal global)
+        public ModuleRecord GetModuleRecord(string module)
         {
-            this.globals.Add(global);
-            this.GetOrCreateRecord(module).globals.Add(fieldname, global);
-
-            ++this.importGlobalsCt;
+            ModuleRecord mr;
+            this.moduleLookup.TryGetValue(module, out mr);
+            return mr;
         }
 
-        public void AddGlobal(string module, string fieldname, Bin.TypeID type, int elements, bool mutable)
+        public IEnumerable<string> ModuleNames()
         {
-            DefGlobal global = new DefGlobal(type, elements, mutable);
-            this.AddGlobal(module, fieldname, global);
+            return this.moduleLookup.Keys;
         }
 
-        public void AddTable(DefTable table)
-        { 
-            this.tables.Add(table);
-        }
+        ////////////////////////////////////////////////////////////////////////////////
+        //
+        //      Add Function Declarations
+        //
+        ////////////////////////////////////////////////////////////////////////////////
 
-        public void AddTable(string module, string fieldname, DefTable table)
-        { 
-            this.tables.Add(table);
-            this.GetOrCreateRecord(module).tables.Add(fieldname, table);
-
-            ++this.importTablesCt;
-        }
-
-        public void AddTable(Bin.TypeID type, uint initialElements, uint maxElements, uint flags)
+        public void AddFunction(FunctionType fnTy)
         {
-            DefTable table = new DefTable(type, initialElements, maxElements, flags);
-            this.tables.Add(table);
+            this.indexingFunction.Add(IndexEntry.CreateLocal(this.functions.Count));
+
+            DefFunction df = new DefFunction(this.functions.Count, fnTy);
+            this.functions.Add(df);
+
+            ++this.localFunctionCt;
         }
 
-        public void AddFunction(DefFunction function)
-        { 
-            this.functions.Add(function);
-        }
-
-        public void AddFunction(string module, string fieldname, DefFunction function)
+        public void AddFunctionImp(string module, string fieldname, FunctionType fnTy)
         {
-            this.functions.Add(function);
-            this.GetOrCreateRecord(module).functions.Add(fieldname, function);
+            this.indexingFunction.Add(IndexEntry.CreateImport(this.functions.Count, module, fieldname));
+
+            DefFunction df = new DefFunction(this.functions.Count, fnTy);
+            this.functions.Add(df);
+
+            this.GetOrCreateRecord(module).functions.Add(fieldname, df);
 
             ++this.importFunctionsCt;
         }
 
-        public void AddFunction(string module, string fieldname, FunctionType fnTy)
+
+        ////////////////////////////////////////////////////////////////////////////////
+        //
+        //      Add Memory Declarations
+        //
+        ////////////////////////////////////////////////////////////////////////////////
+
+        public void AddMemoryLoc(uint initialPageCt, uint minPageCt, uint maxPageCt /*, uint flags*/)
         {
-            this.AddFunction(module, fieldname, new DefFunction(fnTy));
+            this.indexingMemory.Add(IndexEntry.CreateLocal(this.memories.Count));
+
+            DefMem mem = new DefMem(this.memories.Count, initialPageCt, minPageCt, maxPageCt );
+            this.memories.Add(mem);
+
+            ++this.localMemsCt;
         }
 
-        public void AddMemory(DefMem memory)
-        { 
-            this.memories.Add(memory);
-        }
+        public void AddMemoryIm(string module, string fieldname, uint initialPageCt, uint minPageCt, uint maxPageCt)
+        {
+            this.indexingMemory.Add(IndexEntry.CreateLocal(this.memories.Count));
 
-        public void AddMemory(string module, string fieldname, DefMem memory)
-        { 
-            this.memories.Add(memory);
-            this.GetOrCreateRecord(module).memories.Add(fieldname, memory);
+            DefMem mem = new DefMem(this.memories.Count, initialPageCt, minPageCt, maxPageCt );
+            this.memories.Add(mem);
 
+            this.GetOrCreateRecord(module).memories.Add(fieldname, mem);
+            
             ++this.importMemsCt;
         }
 
-        public void AddMemory(uint initialPageCt, uint minPageCt, uint maxPageCt, uint flags)
+
+        ////////////////////////////////////////////////////////////////////////////////
+        //
+        //      Add Global Declarations
+        //
+        ////////////////////////////////////////////////////////////////////////////////
+
+        public void AddGlobalLoc(Bin.TypeID type, bool mutable)
         { 
-            DefMem mem = new DefMem(initialPageCt, minPageCt, maxPageCt, flags);
-            this.AddMemory(mem);
+            this.indexingGlobal.Add(IndexEntry.CreateLocal(this.globals.Count));
+
+            DefGlobal global = new DefGlobal(this.globals.Count, type, 1, mutable);
+            this.globals.Add(global);
+
+            ++this.localGlobalCt;
         }
+
+        public void AddGlobalImp(string module, string fieldname, Bin.TypeID type, bool mutable)
+        {
+            this.indexingGlobal.Add(IndexEntry.CreateImport(this.globals.Count, module, fieldname));
+
+            DefGlobal global = new DefGlobal(this.globals.Count, type, 1, mutable);
+            this.globals.Add(global);
+
+            this.GetOrCreateRecord(module).globals.Add(fieldname, global);
+        
+            ++this.importGlobalsCt;
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////
+        //
+        //      Add Table Declarations
+        //
+        ////////////////////////////////////////////////////////////////////////////////
+
+        public void AddTableLoc(Bin.TypeID type, uint initialElements, uint maxElements)
+        { 
+            this.indexingTable.Add(IndexEntry.CreateLocal(this.tables.Count));
+
+            DefTable table = new DefTable(this.tables.Count, type, initialElements, maxElements);
+            this.tables.Add(table);
+
+            ++this.localTablesCt;
+        }
+
+        public void AddTableImp(string module, string fieldname, Bin.TypeID type, uint initialElements, uint maxElements)
+        {
+            this.indexingTable.Add(IndexEntry.CreateImport(this.tables.Count, module, fieldname));
+        
+            DefTable table = new DefTable(this.tables.Count, type, initialElements, maxElements);
+            this.tables.Add(table);
+
+            this.GetOrCreateRecord(module).tables.Add(fieldname, table);
+        
+            ++this.importTablesCt;
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////
+        //
+        //      Add Get Defs
+        //
+        ////////////////////////////////////////////////////////////////////////////////
+
+        public DefGlobal ? GetImportGlobalDef(string module, string field)
+        {
+            ModuleRecord m;
+            if (this.moduleLookup.TryGetValue(module, out m) == false)
+                return null;
+
+            DefGlobal dg;
+            if(m.globals.TryGetValue(field, out dg) == false)
+                return null;
+
+            return dg;
+        }
+
+        public DefTable ? GetImportTableDef(string module, string field)
+        {
+            ModuleRecord m;
+            if (this.moduleLookup.TryGetValue(module, out m) == false)
+                return null;
+
+            DefTable dt;
+            if(m.tables.TryGetValue(field, out dt) == false)
+                return null;
+
+            return dt;
+        }
+
+        public DefFunction? GetImportFunctionDef(string module, string field)
+        {
+            ModuleRecord m;
+            if (this.moduleLookup.TryGetValue(module, out m) == false)
+                return null;
+
+            DefFunction df;
+            if (m.functions.TryGetValue(field, out df) == false)
+                return null;
+
+            return df;
+        }
+
+        public DefMem? GetImportMemDef(string module, string field)
+        {
+            ModuleRecord m;
+            if (this.moduleLookup.TryGetValue(module, out m) == false)
+                return null;
+
+            DefMem dm;
+            if (m.memories.TryGetValue(field, out dm) == false)
+                return null;
+
+            return dm;
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////
+        //
+        //      Enumerate Entries
+        //
+        ////////////////////////////////////////////////////////////////////////////////
+
+        public IEnumerable<DefFunction> EnumerateFunctionDefs()
+        { 
+            foreach(KeyValuePair<string, ModuleRecord> kvp in this.moduleLookup)
+            {
+                foreach(KeyValuePair<string, DefFunction> df in kvp.Value.functions)
+                    yield return df.Value;
+            }
+        }
+
+        public IEnumerable<DefMem> EnumeratorMemories()
+        {
+            foreach (KeyValuePair<string, ModuleRecord> kvp in this.moduleLookup)
+            {
+                foreach(KeyValuePair<string, DefMem> dm in kvp.Value.memories)
+                    yield return dm.Value;
+            }
+        }
+
+        public IEnumerable<DefGlobal> EnumerateGlobals()
+        {
+            foreach (KeyValuePair<string, ModuleRecord> kvp in this.moduleLookup)
+            {
+                foreach(KeyValuePair<string, DefGlobal> dg in kvp.Value.globals)
+                    yield return dg.Value;
+            }
+        }
+
+        public IEnumerable<DefTable> EnumerateTableDefs()
+        {
+            foreach (KeyValuePair<string, ModuleRecord> kvp in this.moduleLookup)
+            {
+                foreach(KeyValuePair<string, DefTable> dt in kvp.Value.tables)
+                    yield return dt.Value;
+            }
+        }
+
+
     }
 }

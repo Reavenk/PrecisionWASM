@@ -23,6 +23,10 @@
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// This is the start of a WAT to WASM bytecode converter. It is currently
+/// not functional.
+/// </summary>
 namespace PxPre.WASM
 {
     public class Parser
@@ -1163,47 +1167,47 @@ namespace PxPre.WASM
                         break;
 
                     case "i32.trunc_sat_f32_s":
-                        outBytecode.Add((byte)Instruction.trunc_sat);
+                        outBytecode.Add((byte)Instruction.extPrefixed);
                         outBytecode.Add(0);
                         break;
 
                     case "i32.trunc_sat_f32_u":
-                        outBytecode.Add((byte)Instruction.trunc_sat);
+                        outBytecode.Add((byte)Instruction.extPrefixed);
                         outBytecode.Add(1);
                         break;
 
                     case "i32.trunc_sat_f64_s":
-                        outBytecode.Add((byte)Instruction.trunc_sat);
+                        outBytecode.Add((byte)Instruction.extPrefixed);
                         outBytecode.Add(2);
                         break;
 
                     case "i32.trunc_sat_f64_u":
-                        outBytecode.Add((byte)Instruction.trunc_sat);
+                        outBytecode.Add((byte)Instruction.extPrefixed);
                         outBytecode.Add(3);
                         break;
 
                     case "i64.trunc_sat_f32_s":
-                        outBytecode.Add((byte)Instruction.trunc_sat);
+                        outBytecode.Add((byte)Instruction.extPrefixed);
                         outBytecode.Add(4);
                         break;
 
                     case "i64.trunc_sat_f32_u":
-                        outBytecode.Add((byte)Instruction.trunc_sat);
+                        outBytecode.Add((byte)Instruction.extPrefixed);
                         outBytecode.Add(5);
                         break;
 
                     case "i64.trunc_sat_f64_s":
-                        outBytecode.Add((byte)Instruction.trunc_sat);
+                        outBytecode.Add((byte)Instruction.extPrefixed);
                         outBytecode.Add(6);
                         break;
 
                     case "i64.trunc_sat_f64_u":
-                        outBytecode.Add((byte)Instruction.trunc_sat);
+                        outBytecode.Add((byte)Instruction.extPrefixed);
                         outBytecode.Add(7);
                         break;
 
                     case "memory.fill":
-                        outBytecode.Add((byte)Instruction.trunc_sat);
+                        outBytecode.Add((byte)Instruction.extPrefixed);
                         outBytecode.Add(0x0B);
                         outBytecode.Add(0x00);
                         break;

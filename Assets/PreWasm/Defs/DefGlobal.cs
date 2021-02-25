@@ -24,15 +24,24 @@ namespace PxPre.WASM
 {
     public struct DefGlobal
     {
+        public readonly int index;
+
         public readonly Bin.TypeID type;
         public readonly int elements;
         public readonly Global.Mutability mut;
 
-        public DefGlobal(Bin.TypeID type, int elements, bool mutable)
+        public DefGlobal(int index, Bin.TypeID type, int elements, bool mutable)
         { 
+            this.index = index;
+
             this.type = type;
             this.elements = elements;
             this.mut = mutable ? Global.Mutability.Variable : Global.Mutability.Const;
+        }
+
+        public Global CreateDefault()
+        { 
+            return new Global(this.type, this.elements, this.mut == Global.Mutability.Variable);
         }
     }
 }

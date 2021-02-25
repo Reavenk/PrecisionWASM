@@ -52,9 +52,24 @@ namespace PxPre.WASM
         /// </summary>
         public List<Table> tables               = null;
 
+        /// <summary>
+        /// The number of imported functions.
+        /// </summary>
         public int NumFunctions { get => this.storeDecl.importFunctionsCt; }
+
+        /// <summary>
+        /// The number of imported memories.
+        /// </summary>
         public int NumMemories { get => this.storeDecl.importMemsCt; }
+
+        /// <summary>
+        /// The number of imported globals.
+        /// </summary>
         public int NumGlobals { get => this.storeDecl.importGlobalsCt; }
+
+        /// <summary>
+        /// The number of imported tables.
+        /// </summary>
         public int NumTables { get => this.storeDecl.importTablesCt; }
 
         public ImportModule(StoreDeclarations storeDecl)
@@ -82,6 +97,343 @@ namespace PxPre.WASM
 
             for(int i = 0; i < this.storeDecl.importTablesCt; ++i)
                 this.tables.Add(null);
+        }
+
+        public void ResetToDefaults()
+        { 
+            this.Reset();
+
+            foreach(IndexEntry ie in this.storeDecl.indexingMemory)
+            {
+                if(ie.type == IndexEntry.FnIdxType.Local)
+                    continue;
+
+                this.memories[ie.index] = 
+                    this.storeDecl.GetImportMemDef(ie.module, ie.fieldname).Value.CreateDefault();
+            }
+
+            foreach (IndexEntry ie in this.storeDecl.indexingGlobal)
+            {
+                if (ie.type == IndexEntry.FnIdxType.Local)
+                    continue;
+
+                this.globals[ie.index] = 
+                    this.storeDecl.GetImportGlobalDef(ie.module, ie.fieldname).Value.CreateDefault();
+            }
+
+            foreach (IndexEntry ie in this.storeDecl.indexingTable)
+            {
+                if (ie.type == IndexEntry.FnIdxType.Local)
+                    continue;
+
+                this.tables[ie.index] = 
+                    this.storeDecl.GetImportTableDef(ie.module, ie.fieldname).Value.CreateDefault();
+            }
+        }
+
+        public bool Validate(bool throwOnErr = false)
+        { 
+            if(this.storeDecl.importFunctionsCt != 0)
+            {
+                if(this.importFn == null || this.importFn.Count != this.storeDecl.importFunctionsCt)
+                {
+                    if(throwOnErr == true)
+                        throw new System.Exception("Module imports do not match expected definition.");
+
+                    return false;
+                }
+
+                for(int i = 0; i < this.importFn.Count; ++i)
+                { 
+                    if(this.importFn[i] == null)
+                    {
+                        if (throwOnErr == true)
+                            throw new System.Exception("Missing imported function.");
+
+                        return false;
+                    }
+                }
+            }
+
+            if(this.storeDecl.importMemsCt != 0)
+            { 
+                if(this.memories == null || this.tables.Count != this.storeDecl.importTablesCt)
+                { 
+                    if(throwOnErr == true)
+                        throw new System.Exception("Module tables do not match expected definition.");
+
+                    return false;
+                }
+
+                for(int i = 0; i < this.memories.Count; ++i)
+                { 
+                    if(this.memories[i] == null)
+                    { 
+                        if(throwOnErr == true)
+                            throw new System.Exception("Missing imported memory.");
+
+                        return false;
+                    }
+                }
+            }
+
+            if(this.storeDecl.importGlobalsCt != 0)
+            { 
+                if(this.globals == null || this.globals.Count != this.storeDecl.importGlobalsCt)
+                { 
+                    if(throwOnErr == true)
+                        throw new System.Exception("Module globals do not match expected definition.");
+
+                    return false;
+                }
+
+                for(int i = 0; i < this.globals.Count; ++i)
+                { 
+                    if(this.globals[i] == null)
+                    {
+                        if (throwOnErr == true)
+                            throw new System.Exception("Missing imported global.");
+
+                        return false;
+                    }
+                }
+            }
+
+            if(this.storeDecl.importTablesCt != 0)
+            { 
+                if(this.tables == null || this.tables.Count != this.storeDecl.importTablesCt)
+                {
+                    if(throwOnErr == true)
+                        throw new System.Exception("Module tables do not match expected definition.");
+
+                    return false;
+                }
+
+                for(int i = 0; i < this.tables.Count; ++i)
+                { 
+                    if(this.tables[i] == null)
+                    {
+                        if (throwOnErr == true)
+                            throw new System.Exception("Missing imported table.");
+
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public bool SetFunction(string module, string field, ImportFunction ifn)
+        { 
+            StoreDeclarations.ModuleRecord mr = this.storeDecl.GetModuleRecord(module);
+            if(mr == null)
+                return false;
+
+            DefFunction df;
+            if(mr.functions.TryGetValue(field, out df) == false)
+                return false;
+
+            // There is currently no reliable way to typecheck the function.
+
+            IndexEntry ie = this.storeDecl.indexingFunction[df.index];
+
+            this.importFn[ie.index] = ifn;
+            return true;
+        }
+
+        public bool SetMemory(string module, string field, Memory memory)
+        {
+            StoreDeclarations.ModuleRecord mr = this.storeDecl.GetModuleRecord(module);
+            if (mr == null)
+                return false;
+
+            DefMem dm;
+            if (mr.memories.TryGetValue(field, out dm) == false)
+                return false;
+
+            if(memory != null)
+            { 
+                if(
+                    dm.initialPages < memory.minPageCt || 
+                    dm.initialPages > memory.maxPageCt ||
+                    dm.minPages != memory.minPageCt ||
+                    dm.maxPages != memory.maxPageCt)
+                { 
+                    return false;
+                }
+                
+            }
+
+            IndexEntry ie = this.storeDecl.indexingMemory[dm.index];
+
+            this.memories[ie.index] = memory;
+            return true;
+        }
+
+        public bool SetGlobal(string module, string field, Global global)
+        {
+            StoreDeclarations.ModuleRecord mr = this.storeDecl.GetModuleRecord(module);
+            if (mr == null)
+                return false;
+
+            DefGlobal dg;
+            if (mr.globals.TryGetValue(field, out dg) == false)
+                return false;
+
+            if(global != null)
+            { 
+                if(
+                    dg.type != global.type || 
+                    dg.mut != global.mutable)
+                {
+                    return false;
+                }
+            }
+
+            IndexEntry ie = this.storeDecl.indexingGlobal[dg.index];
+            this.globals[ie.index] = global;
+            return true;
+        }
+
+        public bool SetTable(string module, string field, Table table)
+        {
+            StoreDeclarations.ModuleRecord mr = this.storeDecl.GetModuleRecord(module);
+            if (mr == null)
+                return false;
+
+            DefTable dt;
+            if (mr.tables.TryGetValue(field, out dt) == false)
+                return false;
+
+            if (table != null)
+            {
+                if (
+                    dt.type != table.type ||
+                    dt.maxElements != table.max)
+                {
+                    return false;
+                }
+            }
+
+            IndexEntry ie = this.storeDecl.indexingTable[dt.index];
+            this.tables[ie.index] = table;
+            return true;
+        }
+
+        public ImportFunction GetFunction(string module, string field)
+        {
+            StoreDeclarations.ModuleRecord mr = this.storeDecl.GetModuleRecord(module);
+            if (mr == null)
+                return null;
+
+            DefFunction df;
+            if (mr.functions.TryGetValue(field, out df) == false)
+                return null;
+
+            IndexEntry ie = this.storeDecl.indexingFunction[df.index];
+            return this.importFn[ie.index];
+        }
+
+        public Memory GetMemory(string module, string field)
+        {
+            StoreDeclarations.ModuleRecord mr = this.storeDecl.GetModuleRecord(module);
+            if (mr == null)
+                return null;
+
+            DefMem dm;
+            if (mr.memories.TryGetValue(field, out dm) == false)
+                return null;
+
+            IndexEntry ie = this.storeDecl.indexingMemory[dm.index];
+            return this.memories[ie.index];
+        }
+
+
+        public Global GetGlobal(string module, string field)
+        {
+            StoreDeclarations.ModuleRecord mr = this.storeDecl.GetModuleRecord(module);
+            if (mr == null)
+                return null;
+
+            DefGlobal dg;
+            if (mr.globals.TryGetValue(field, out dg) == false)
+                return null;
+
+            IndexEntry ie = this.storeDecl.indexingGlobal[dg.index];
+            return this.globals[ie.index];
+        }
+
+        public Table GetTable(string module, string field)
+        {
+            StoreDeclarations.ModuleRecord mr = this.storeDecl.GetModuleRecord(module);
+            if (mr == null)
+                return null;
+
+            DefTable dt;
+            if (mr.tables.TryGetValue(field, out dt) == false)
+                return null;
+
+            IndexEntry ie = this.storeDecl.indexingTable[dt.index];
+            return this.tables[ie.index];
+        }
+
+        public Memory GetMemoryOrDefault(string module, string field)
+        {
+            StoreDeclarations.ModuleRecord mr = this.storeDecl.GetModuleRecord(module);
+            if (mr == null)
+                return null;
+
+            DefMem dm;
+            if (mr.memories.TryGetValue(field, out dm) == false)
+                return null;
+
+            IndexEntry ie = this.storeDecl.indexingMemory[dm.index];
+
+            if(this.memories[ie.index] == null)
+                this.memories[ie.index] = dm.CreateDefault();
+
+            return this.memories[ie.index];
+        }
+
+        public Global GetGlobalOrDefault(string module, string field)
+        {
+            StoreDeclarations.ModuleRecord mr = this.storeDecl.GetModuleRecord(module);
+            if (mr == null)
+                return null;
+
+            DefGlobal dg;
+            if (mr.globals.TryGetValue(field, out dg) == false)
+                return null;
+
+
+            IndexEntry ie = this.storeDecl.indexingGlobal[dg.index];
+            if(this.globals[ie.index] == null)
+                this.globals[ie.index] = dg.CreateDefault();
+
+            return this.globals[ie.index];
+        }
+
+        public Table GetTableOrDefault(string module, string field)
+        {
+            StoreDeclarations.ModuleRecord mr = this.storeDecl.GetModuleRecord(module);
+            if (mr == null)
+                return null;
+
+            DefTable dt;
+            if (mr.tables.TryGetValue(field, out dt) == false)
+                return null;
+
+            IndexEntry ie = this.storeDecl.indexingTable[dt.index];
+            if(this.tables[ie.index] == null)
+                this.tables[ie.index] = dt.CreateDefault();
+
+            return this.tables[ie.index];
+        }
+
+        public IEnumerable<string> ModuleNames()
+        { 
+            return this.storeDecl.ModuleNames();
         }
     }
 }

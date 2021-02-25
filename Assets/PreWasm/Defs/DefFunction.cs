@@ -24,10 +24,13 @@ namespace PxPre.WASM
 {
     public struct DefFunction
     { 
+        public readonly int index;
         public readonly FunctionType fnType;
 
-        public DefFunction(FunctionType fnType)
+        public DefFunction(int index, FunctionType fnType)
         { 
+            this.index = index;
+
             this.fnType = fnType;
         }
     }

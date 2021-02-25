@@ -27,20 +27,34 @@ namespace PxPre.WASM
 {
     public struct DefMem
     {
-        public readonly uint flags;
+        public readonly int index;
 
         public readonly uint initialPages;
         public readonly uint minPages;
         public readonly uint maxPages;
         public byte [] defaultData;
 
-        public DefMem(uint initialPages, uint minPages, uint maxPages, uint flags)
+        public DefMem(int index, uint initialPages, uint minPages, uint maxPages )
         { 
+            this.index = index;
+
             this.initialPages = initialPages;
             this.minPages = minPages;
             this.maxPages = maxPages;
-            this.flags = flags;
             this.defaultData = null;
+        }
+
+        public Memory CreateDefault()
+        { 
+            Memory ret = new Memory((int)this.initialPages, (int)this.minPages, (int)this.maxPages);
+
+            if(this.defaultData != null)
+            { 
+                for(int i = 0; i < this.defaultData.Length; ++i)
+                    ret.data[i] = this.defaultData[i];
+            }
+
+            return ret;
         }
     }
 }

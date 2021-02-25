@@ -24,17 +24,24 @@ namespace PxPre.WASM
 {
     public struct DefTable
     {
-        public Bin.TypeID type;
-        public uint elements;
-        public uint maxElements;
-        public uint flags;
+        public readonly int index;
 
-        public DefTable(Bin.TypeID type, uint initialElements, uint maxElements, uint flags)
+        public readonly Bin.TypeID type;
+        public readonly uint elements;
+        public readonly uint maxElements;
+
+        public DefTable(int index, Bin.TypeID type, uint initialElements, uint maxElements )
         { 
+            this.index = index;
+
             this.type = type;
             this.elements = initialElements;
             this.maxElements = maxElements;
-            this.flags = flags;
+        }
+
+        public Table CreateDefault()
+        { 
+            return new Table(this.type, (int)this.elements, (int)this.maxElements);
         }
     }
 }
