@@ -174,7 +174,7 @@ namespace Tests
             AssertHasStart(mod, true);
             ex.InvokeStart();
 
-            if(mod.imports.functions.Count != 1)
+            if(mod.storeDecl.functions.Count != 1)
                 throw new System.Exception("Expected stuff.wasm to have 1 imported function");
 
             if(ex.tables.Count != 1)

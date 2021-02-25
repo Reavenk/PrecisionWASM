@@ -59,10 +59,38 @@ namespace PxPre.WASM
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ExecutionContext(Module module)
+        public ExecutionContext(Module module, bool start = true)
         { 
             this.instancer = module;
-            this.importData = new ImportModule(module.imports);
+            this.importData = new ImportModule(module.storeDecl);
+
+            foreach(DefMem dm in module.storeDecl.memories)
+            {
+                Memory newMem = new Memory((int)dm.initialPages, (int)dm.minPages, (int)dm.maxPages);
+
+                if(dm.defaultData != null)
+                { 
+                    for(int i = 0; i < dm.defaultData.Length; ++i)
+                        newMem.data[i] = dm.defaultData[i];
+                }
+
+                this.memories.Add(newMem);
+            }
+
+            foreach(DefGlobal dg in module.storeDecl.globals)
+            {
+                Global newGlobal = new Global(dg.type, dg.elements, dg.mut == Global.Mutability.Variable);
+                this.globals.Add(newGlobal);
+            }
+
+            foreach(DefTable dt in module.storeDecl.tables)
+            {
+                Table newTable = new Table(dt.type, (int)dt.elements, (int)dt.maxElements);
+                this.tables.Add(newTable);
+            }
+
+            if(start == true)
+                this.InvokeStart();
         }
 
         unsafe public void RunFunction(Module module, int index)

@@ -25,7 +25,7 @@ using System.Collections.Generic;
 
 namespace PxPre.WASM
 {
-    public class ImportDefinitions
+    public class StoreDeclarations
     {
         public class ModuleRecord
         {
@@ -46,6 +46,11 @@ namespace PxPre.WASM
         public List<DefTable>       tables      = new List<DefTable>();
         public List<DefFunction>    functions   = new List<DefFunction>();
         public List<DefMem>         memories    = new List<DefMem>();
+
+        public int importGlobalsCt = 0;
+        public int importTablesCt = 0;
+        public int importFunctionsCt = 0;
+        public int importMemsCt = 0;
 
         Dictionary<string, ModuleRecord> moduleLookup = 
             new Dictionary<string, ModuleRecord>();
@@ -71,6 +76,8 @@ namespace PxPre.WASM
         {
             this.globals.Add(global);
             this.GetOrCreateRecord(module).globals.Add(fieldname, global);
+
+            ++this.importGlobalsCt;
         }
 
         public void AddGlobal(string module, string fieldname, Bin.TypeID type, int elements, bool mutable)
@@ -88,6 +95,8 @@ namespace PxPre.WASM
         { 
             this.tables.Add(table);
             this.GetOrCreateRecord(module).tables.Add(fieldname, table);
+
+            ++this.importTablesCt;
         }
 
         public void AddTable(Bin.TypeID type, uint initialElements, uint maxElements, uint flags)
@@ -105,6 +114,8 @@ namespace PxPre.WASM
         {
             this.functions.Add(function);
             this.GetOrCreateRecord(module).functions.Add(fieldname, function);
+
+            ++this.importFunctionsCt;
         }
 
         public void AddFunction(string module, string fieldname, FunctionType fnTy)
@@ -121,6 +132,8 @@ namespace PxPre.WASM
         { 
             this.memories.Add(memory);
             this.GetOrCreateRecord(module).memories.Add(fieldname, memory);
+
+            ++this.importMemsCt;
         }
 
         public void AddMemory(uint initialPageCt, uint minPageCt, uint maxPageCt, uint flags)

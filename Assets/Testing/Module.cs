@@ -39,10 +39,11 @@ namespace PxPre.WASM
         public List<IndexEntry> indexingGlobal      = new List<IndexEntry>();
         public List<IndexEntry> indexingMemory      = new List<IndexEntry>();
         public List<IndexEntry> indexingTable       = new List<IndexEntry>();
+        
 
         public List<Function> functions = new List<Function>();
         
-        public ImportDefinitions imports = new ImportDefinitions();
+        public StoreDeclarations storeDecl = new StoreDeclarations();
 
 
         public uint startFnIndex = UnloadedStartIndex;
@@ -166,9 +167,9 @@ namespace PxPre.WASM
                                     FunctionType fnTy = ret.types[(int)fnTyIdx];
 
                                     ret.indexingFunction.Add(
-                                        IndexEntry.CreateImport(ret.imports.functions.Count, modName, fieldName));
+                                        IndexEntry.CreateImport(ret.storeDecl.functions.Count, modName, fieldName));
 
-                                    ret.imports.AddFunction(modName, fieldName, fnTy);
+                                    ret.storeDecl.AddFunction(modName, fieldName, fnTy);
                                 }
                                 break;
 
@@ -176,7 +177,7 @@ namespace PxPre.WASM
                                 {
                                     uint tableIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                     // TODO:
-                                    // ret.indexingTable.Add(IndexEntry.CreateImport(ret.imports.tables.Count, modName, fieldName));
+                                    // ret.indexingTable.Add(IndexEntry.CreateImport(ret.storeDecl.tables.Count, modName, fieldName));
                                 }
                                 break;
 
@@ -184,7 +185,7 @@ namespace PxPre.WASM
                                 {
                                     uint memIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                     // TODO:
-                                    // ret.indexingMemory.Add(IndexEntry.CreateImport(ret.imports.memories.Count, modName, fieldName));
+                                    // ret.indexingMemory.Add(IndexEntry.CreateImport(ret.storeDecl.memories.Count, modName, fieldName));
                                 }
                                 break;
 
@@ -193,8 +194,8 @@ namespace PxPre.WASM
                                     uint globalIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                     uint mutability = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                                    ret.indexingGlobal.Add(IndexEntry.CreateImport(ret.imports.globals.Count, modName, fieldName));
-                                    ret.imports.AddGlobal(modName, fieldName, (Bin.TypeID)globalIdx, 1, mutability != 0);
+                                    ret.indexingGlobal.Add(IndexEntry.CreateImport(ret.storeDecl.globals.Count, modName, fieldName));
+                                    ret.storeDecl.AddGlobal(modName, fieldName, (Bin.TypeID)globalIdx, 1, mutability != 0);
                                 }
                                 break;
                         }
@@ -231,7 +232,7 @@ namespace PxPre.WASM
                         uint initial = BinParse.LoadUnsignedLEB32(pb, ref idx); 
                         uint max = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                        ret.imports.AddTable(ty, initial, max, flags);
+                        ret.storeDecl.AddTable(ty, initial, max, flags);
 
                         // TODO: Transfer table values
                         // if (ty == Bin.TypeID.FuncRef)
@@ -261,7 +262,7 @@ namespace PxPre.WASM
                         if((memFlags & 0x01) != 0)
                             memMaxPageCt = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                        ret.imports.AddMemory(
+                        ret.storeDecl.AddMemory(
                             memInitialPageCt, 
                             memInitialPageCt, 
                             memMaxPageCt, 
@@ -348,7 +349,7 @@ namespace PxPre.WASM
 
                     // This check might not be correct - especially if other things are putting data
                     // in this section instead of just the memory.
-                    if(numData != ret.imports.memories.Count)
+                    if(numData != ret.storeDecl.memories.Count)
                         throw new System.Exception();   // TODO: Error msg
 
                     for(uint i = 0; i < numData; ++i)
@@ -367,9 +368,9 @@ namespace PxPre.WASM
 
                         uint dataSz = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                        DefMem dmem = ret.imports.memories[(int)i];
+                        DefMem dmem = ret.storeDecl.memories[(int)i];
                         dmem.defaultData = new byte[dataSz];
-                        ret.imports.memories[(int)i] = dmem;
+                        ret.storeDecl.memories[(int)i] = dmem;
 
                         // Copy into runtime memory block.
                         //

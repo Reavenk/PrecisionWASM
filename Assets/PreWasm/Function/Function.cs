@@ -462,7 +462,7 @@ namespace PxPre.WASM
                         case Instruction.global_get:
                             {
                                 uint globalIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                Bin.TypeID type = parentModule.imports.globals[(int)globalIdx].type;
+                                Bin.TypeID type = parentModule.storeDecl.globals[(int)globalIdx].type;
 
                                 // Validate the stack typing
                                 vmgr.PushOpd(ValiMgr.ConvertToStackType(type));
@@ -488,7 +488,7 @@ namespace PxPre.WASM
                                 // this eventually needs to pull from the global varable source.
 
                                 uint globalIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                Bin.TypeID type = parentModule.imports.globals[(int)globalIdx].type;
+                                Bin.TypeID type = parentModule.storeDecl.globals[(int)globalIdx].type;
 
                                 // Validate the stack typing
                                 vmgr.PopOpd(ValiMgr.ConvertToStackType(type));

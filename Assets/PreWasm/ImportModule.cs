@@ -30,7 +30,7 @@ namespace PxPre.WASM
     /// </summary>
     public class ImportModule
     {
-        public readonly ImportDefinitions definition;
+        public readonly StoreDeclarations storeDecl;
 
         /// <summary>
         /// Functions that are provided by outside sources in an input block.
@@ -52,9 +52,14 @@ namespace PxPre.WASM
         /// </summary>
         public List<Table> tables               = null;
 
-        public ImportModule(ImportDefinitions definition)
+        public int NumFunctions { get => this.storeDecl.importFunctionsCt; }
+        public int NumMemories { get => this.storeDecl.importMemsCt; }
+        public int NumGlobals { get => this.storeDecl.importGlobalsCt; }
+        public int NumTables { get => this.storeDecl.importTablesCt; }
+
+        public ImportModule(StoreDeclarations storeDecl)
         {
-            this.definition = definition;
+            this.storeDecl = storeDecl;
 
             this.Reset();
         }
@@ -66,27 +71,17 @@ namespace PxPre.WASM
             this.globals    = new List<Global>();
             this.tables     = new List<Table>();
 
-            foreach (DefFunction df in definition.functions)
+            for(int i = 0; i < this.storeDecl.importFunctionsCt; ++i)
                 this.importFn.Add(null);
 
-            foreach (DefMem dm in definition.memories)
-            {
-                Memory mem = new Memory((int)dm.initialPages, (int)dm.minPages, (int)dm.maxPages);
-                this.memories.Add(mem);
-            }
+            for(int i = 0; i < this.storeDecl.importMemsCt; ++i)
+                this.memories.Add(null);
 
-            foreach (DefGlobal dg in definition.globals)
-            {
-                Global glob = new Global(dg.type, 1, dg.mut == Global.Mutability.Variable);
-                this.globals.Add(glob);
-            }
+            for(int i = 0; i < this.storeDecl.importGlobalsCt; ++i)
+                this.globals.Add(null);
 
-            foreach (DefTable dt in definition.tables)
-            { 
-                Table tabl = new Table(dt.type, (int)dt.elements);
-                this.tables.Add(tabl);
-            }
-
+            for(int i = 0; i < this.storeDecl.importTablesCt; ++i)
+                this.tables.Add(null);
         }
     }
 }
