@@ -38,6 +38,10 @@ public static class WASMDatum
     {
         int fnIdx = module.GetExportedFunctionID(fnName);
 
+#if STRICT_PREWASM
+        if (fnIdx == -1)
+            throw new System.Exception("Missing module function.");
+#endif
         if (fnIdx == -1)
             return null;
 
@@ -51,10 +55,19 @@ public static class WASMDatum
     {
         int fnIdx = module.GetExportedFunctionID(fnName);
 
+#if STRICT_PREWASM
+        if(fnIdx == -1)
+            throw new System.Exception("Missing module function.");
+#endif
         if (fnIdx == -1)
             return null;
 
         List<PxPre.Datum.Val> rets = Invoke(ex, module, fnIdx, ps);
+
+#if STRICT_PREWASM
+        if (rets.Count != 1)
+            throw new System.Exception("Call to WASM function expected to return 1 result, had illegal return values count.");
+#endif
         return rets[0];
     }
 

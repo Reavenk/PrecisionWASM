@@ -53,6 +53,9 @@ namespace PxPre.WASM
         public readonly Module instancer;
         public ImportModule importData;
 
+        private bool initialized = false;
+        public bool Initialized { get => this.initialized; }
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -546,7 +549,7 @@ namespace PxPre.WASM
                             
                         case Instruction._SetMemoryStoreImp:
                             {
-                                int idx = *(int*)&pb[ip];
+                                int idx = *(int*)&pb[ip]; 
                                 ip += 4;
 
                                 curMemStore = this.importData.memories[idx];
@@ -1696,36 +1699,22 @@ namespace PxPre.WASM
         }
 
 
-        /// <summary>
-        /// Call to run the mo
-        /// </summary>
-        /// <returns></returns>
-        public bool InvokeStart(Module module, bool recursive = true)
+        public bool InvokeStart(bool allowRecall = false)
         { 
-            HashSet<Module> ignoreList = new HashSet<Module>();
-            InvokeStart(module, ignoreList, recursive);
-            return true;
-        }
-
-        public bool InvokeStart(Module module, HashSet<Module> ignore, bool recursive = true)
-        { 
-            if(ignore.Contains(module) == true)
+            if(this.initialized == true && allowRecall == false)
                 return false;
 
-            ignore.Add(module);
-            if(module.startFnIndex == 0xFFFFFFFF)
-                return false;
-
-            if(recursive == true)
+            if(this.instancer.startFnIndex == 0xFFFFFFFF)
             { 
-                // TODO: Call InvokeStart() on dependent modules.
+                this.initialized = true;
+                return true;
             }
 
-            IndexEntry fie = module.indexingFunction[(int)module.startFnIndex];
+            IndexEntry fie = this.instancer.indexingFunction[(int)this.instancer.startFnIndex];
 
             if(fie.type == IndexEntry.FnIdxType.Local)
             {
-                Function startFn = module.functions[fie.index];
+                Function startFn = this.instancer.functions[fie.index];
 
                 // TODO: Check this earlier during compile
                 if (startFn.fnType.resultTypes.Count > 0 || startFn.fnType.paramTypes.Count > 0)
@@ -1748,6 +1737,8 @@ namespace PxPre.WASM
             }
             else
                 throw new System.Exception(); // TODO: Error message
+
+            this.initialized = false;
 
             return true;
         }

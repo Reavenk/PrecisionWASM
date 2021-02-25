@@ -1,0 +1,19 @@
+{
+    "name": "PrecisionWASM_ASM",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "Select...",
+            "expression": "",
+            "define": ""
+        }
+    ],
+    "noEngineReferences": false
+}
