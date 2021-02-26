@@ -49,10 +49,15 @@ namespace PxPre.WASM
         public List<DefFunction>    functions   = new List<DefFunction>();
         public List<DefMem>         memories    = new List<DefMem>();
 
-        public List<IndexEntry> indexingFunction = new List<IndexEntry>();
-        public List<IndexEntry> indexingGlobal = new List<IndexEntry>();
-        public List<IndexEntry> indexingMemory = new List<IndexEntry>();
-        public List<IndexEntry> indexingTable = new List<IndexEntry>();
+        List<IndexEntry> indexingFunction       = new List<IndexEntry>();
+        List<IndexEntry> indexingGlobal         = new List<IndexEntry>();
+        List<IndexEntry> indexingMemory         = new List<IndexEntry>();
+        List<IndexEntry> indexingTable          = new List<IndexEntry>();
+
+        public IReadOnlyList<IndexEntry> IndexingFunction   { get { return this.indexingFunction;   } }
+        public IReadOnlyList<IndexEntry> IndexingGlobal     { get { return this.indexingGlobal;     } }
+        public IReadOnlyList<IndexEntry> IndexingMemory     { get { return this.indexingMemory;     } }
+        public IReadOnlyList<IndexEntry> IndexingTable      { get { return this.indexingTable;      } }
 
         public int importFunctionsCt    { get; private set; } = 0;
         public int importMemsCt         { get; private set; } = 0;
@@ -102,9 +107,9 @@ namespace PxPre.WASM
         //
         ////////////////////////////////////////////////////////////////////////////////
 
-        public void AddFunction(FunctionType fnTy)
+        public void AddFunctionLoc(FunctionType fnTy)
         {
-            this.indexingFunction.Add(IndexEntry.CreateLocal(this.functions.Count));
+            this.indexingFunction.Add(IndexEntry.CreateLocal(this.localFunctionCt));
 
             DefFunction df = new DefFunction(this.functions.Count, fnTy);
             this.functions.Add(df);
@@ -114,9 +119,9 @@ namespace PxPre.WASM
 
         public void AddFunctionImp(string module, string fieldname, FunctionType fnTy)
         {
-            this.indexingFunction.Add(IndexEntry.CreateImport(this.functions.Count, module, fieldname));
+            this.indexingFunction.Add(IndexEntry.CreateImport(this.importFunctionsCt, module, fieldname));
 
-            DefFunction df = new DefFunction(this.functions.Count, fnTy);
+            DefFunction df = new DefFunction(this.importFunctionsCt, fnTy);
             this.functions.Add(df);
 
             this.GetOrCreateRecord(module).functions.Add(fieldname, df);
@@ -133,7 +138,7 @@ namespace PxPre.WASM
 
         public void AddMemoryLoc(uint initialPageCt, uint minPageCt, uint maxPageCt /*, uint flags*/)
         {
-            this.indexingMemory.Add(IndexEntry.CreateLocal(this.memories.Count));
+            this.indexingMemory.Add(IndexEntry.CreateLocal(this.localMemsCt));
 
             DefMem mem = new DefMem(this.memories.Count, initialPageCt, minPageCt, maxPageCt );
             this.memories.Add(mem);
@@ -141,9 +146,9 @@ namespace PxPre.WASM
             ++this.localMemsCt;
         }
 
-        public void AddMemoryIm(string module, string fieldname, uint initialPageCt, uint minPageCt, uint maxPageCt)
+        public void AddMemoryImp(string module, string fieldname, uint initialPageCt, uint minPageCt, uint maxPageCt)
         {
-            this.indexingMemory.Add(IndexEntry.CreateLocal(this.memories.Count));
+            this.indexingMemory.Add(IndexEntry.CreateImport(this.importMemsCt, module, fieldname));
 
             DefMem mem = new DefMem(this.memories.Count, initialPageCt, minPageCt, maxPageCt );
             this.memories.Add(mem);
@@ -162,7 +167,7 @@ namespace PxPre.WASM
 
         public void AddGlobalLoc(Bin.TypeID type, bool mutable)
         { 
-            this.indexingGlobal.Add(IndexEntry.CreateLocal(this.globals.Count));
+            this.indexingGlobal.Add(IndexEntry.CreateLocal(this.localGlobalCt));
 
             DefGlobal global = new DefGlobal(this.globals.Count, type, 1, mutable);
             this.globals.Add(global);
@@ -172,7 +177,7 @@ namespace PxPre.WASM
 
         public void AddGlobalImp(string module, string fieldname, Bin.TypeID type, bool mutable)
         {
-            this.indexingGlobal.Add(IndexEntry.CreateImport(this.globals.Count, module, fieldname));
+            this.indexingGlobal.Add(IndexEntry.CreateImport(this.importGlobalsCt, module, fieldname));
 
             DefGlobal global = new DefGlobal(this.globals.Count, type, 1, mutable);
             this.globals.Add(global);
@@ -190,9 +195,9 @@ namespace PxPre.WASM
 
         public void AddTableLoc(Bin.TypeID type, uint initialElements, uint maxElements)
         { 
-            this.indexingTable.Add(IndexEntry.CreateLocal(this.tables.Count));
+            this.indexingTable.Add(IndexEntry.CreateLocal(this.localTablesCt));
 
-            DefTable table = new DefTable(this.tables.Count, type, initialElements, maxElements);
+            DefTable table = new DefTable(this.tables.Count, type, initialElements, 0, maxElements);
             this.tables.Add(table);
 
             ++this.localTablesCt;
@@ -200,9 +205,9 @@ namespace PxPre.WASM
 
         public void AddTableImp(string module, string fieldname, Bin.TypeID type, uint initialElements, uint maxElements)
         {
-            this.indexingTable.Add(IndexEntry.CreateImport(this.tables.Count, module, fieldname));
+            this.indexingTable.Add(IndexEntry.CreateImport(this.importTablesCt, module, fieldname));
         
-            DefTable table = new DefTable(this.tables.Count, type, initialElements, maxElements);
+            DefTable table = new DefTable(this.tables.Count, type, initialElements, 0, maxElements);
             this.tables.Add(table);
 
             this.GetOrCreateRecord(module).tables.Add(fieldname, table);

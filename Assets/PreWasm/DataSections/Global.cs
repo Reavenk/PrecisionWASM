@@ -25,19 +25,24 @@ using System.Collections.Generic;
 
 namespace PxPre.WASM
 {
-    public class Global : TypedArrayStore
+    public class Global
     {
         public enum Mutability
         { 
             Variable,
             Const
         }
-        public Mutability mutable;
+        public readonly Mutability mutable;
+        public readonly Bin.TypeID type;
+        public DataStore store;
 
-        public Global(Bin.TypeID type, int elementCt, bool mutable)
-            : base(type, elementCt)
+        public Global(Bin.TypeID type, bool mutable)
         {
             this.mutable = (mutable == true) ? Mutability.Variable : Mutability.Const;
+            this.type = type;
+
+            int size = DataStore.GetTypeIDSize(type);
+            this.store = new DataStore(size);
         }
     }
 }

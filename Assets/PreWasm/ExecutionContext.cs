@@ -50,8 +50,11 @@ namespace PxPre.WASM
         public List<Global> globals = new List<Global>();
         public List<Table> tables = new List<Table>();
 
+        public List<Limits> memoryLimits = new List<Limits>();
+        public List<Limits> tableLimits = new List<Limits>();
+
         public readonly Module instancer;
-        public ImportModule importData;
+        public ImportModule importData {get; protected set; }
 
         private bool initialized = false;
         public bool Initialized { get => this.initialized; }
@@ -69,7 +72,7 @@ namespace PxPre.WASM
 
             for(int i = 0; i < module.storeDecl.memories.Count; ++i)
             {
-                IndexEntry ie = module.storeDecl.indexingMemory[i];
+                IndexEntry ie = module.storeDecl.IndexingMemory[i];
                 if (ie.type == IndexEntry.FnIdxType.Import)
                     continue;
 
@@ -81,7 +84,7 @@ namespace PxPre.WASM
 
             for(int i = 0; i < module.storeDecl.globals.Count; ++i)
             { 
-                IndexEntry ie = module.storeDecl.indexingGlobal[i];
+                IndexEntry ie = module.storeDecl.IndexingGlobal[i];
                 if(ie.type == IndexEntry.FnIdxType.Import)
                     continue;
 
@@ -93,7 +96,7 @@ namespace PxPre.WASM
 
             for(int i = 0; i < module.storeDecl.tables.Count; ++i)
             { 
-                IndexEntry ie = module.storeDecl.indexingTable[i];
+                IndexEntry ie = module.storeDecl.IndexingTable[i];
                 if(ie.type == IndexEntry.FnIdxType.Import)
                     continue;
 
@@ -106,7 +109,7 @@ namespace PxPre.WASM
 
         unsafe public void RunFunction(Module module, int index)
         {
-            IndexEntry fie = module.storeDecl.indexingFunction[index];
+            IndexEntry fie = module.storeDecl.IndexingFunction[index];
 
             if(fie.type == IndexEntry.FnIdxType.Local)
             { 
@@ -340,7 +343,7 @@ namespace PxPre.WASM
                                 int importIdx = *(int*)&pb[ip];
                                 ip += 4;
 
-                                pbGlob = this.importData.globals[importIdx].pdata;
+                                pbGlob = this.importData.globals[importIdx].store.pdata;
                             }
                             break;
 
@@ -351,7 +354,7 @@ namespace PxPre.WASM
                                 int localIdx = *(int*)&pb[ip];
                                 ip += 4;
 
-                                pbGlob = this.globals[localIdx].pdata;
+                                pbGlob = this.globals[localIdx].store.pdata;
                             }
                             break;
 
@@ -593,7 +596,7 @@ namespace PxPre.WASM
                                 ip += 4;
 
                                 curMemStore = this.importData.memories[idx];
-                                pbMem = curMemStore.pdata;
+                                pbMem = curMemStore.store.pdata;
                             }
                             break;
 
@@ -603,7 +606,7 @@ namespace PxPre.WASM
                                 ip += 4;
 
                                 curMemStore = this.memories[idx];
-                                pbMem = curMemStore.pdata;
+                                pbMem = curMemStore.store.pdata;
                             }
                             break;
 
@@ -633,7 +636,10 @@ namespace PxPre.WASM
                                 // defined. While we're trying to gracefully what's arguably an error
                                 // condition, we may need to just throw an exception/trap.
                                 if (this.memories.Count == 0)
-                                    this.memories.Add(new Memory(0, 0, 1));
+                                {
+                                    this.memories.Add(
+                                        new Memory(0, new LimitsPaged(0, 1)));
+                                }
 
                                 // The stackpop is popped, but another 32 bit values is put on the stack. No stack modification.
                                 uint oldPageSz = this.memories[0].CalculatePageCt();
@@ -1750,7 +1756,7 @@ namespace PxPre.WASM
                 return true;
             }
 
-            IndexEntry fie = this.instancer.storeDecl.indexingFunction[(int)this.instancer.startFnIndex];
+            IndexEntry fie = this.instancer.storeDecl.IndexingFunction[(int)this.instancer.startFnIndex];
 
             if(fie.type == IndexEntry.FnIdxType.Local)
             {

@@ -103,7 +103,7 @@ namespace PxPre.WASM
         { 
             this.Reset();
 
-            foreach(IndexEntry ie in this.storeDecl.indexingMemory)
+            foreach(IndexEntry ie in this.storeDecl.IndexingMemory)
             {
                 if(ie.type == IndexEntry.FnIdxType.Local)
                     continue;
@@ -112,7 +112,7 @@ namespace PxPre.WASM
                     this.storeDecl.GetImportMemDef(ie.module, ie.fieldname).Value.CreateDefault();
             }
 
-            foreach (IndexEntry ie in this.storeDecl.indexingGlobal)
+            foreach (IndexEntry ie in this.storeDecl.IndexingGlobal)
             {
                 if (ie.type == IndexEntry.FnIdxType.Local)
                     continue;
@@ -121,7 +121,7 @@ namespace PxPre.WASM
                     this.storeDecl.GetImportGlobalDef(ie.module, ie.fieldname).Value.CreateDefault();
             }
 
-            foreach (IndexEntry ie in this.storeDecl.indexingTable)
+            foreach (IndexEntry ie in this.storeDecl.IndexingTable)
             {
                 if (ie.type == IndexEntry.FnIdxType.Local)
                     continue;
@@ -236,7 +236,7 @@ namespace PxPre.WASM
 
             // There is currently no reliable way to typecheck the function.
 
-            IndexEntry ie = this.storeDecl.indexingFunction[df.index];
+            IndexEntry ie = this.storeDecl.IndexingFunction[df.index];
 
             this.importFn[ie.index] = ifn;
             return true;
@@ -255,17 +255,17 @@ namespace PxPre.WASM
             if(memory != null)
             { 
                 if(
-                    dm.initialPages < memory.minPageCt || 
-                    dm.initialPages > memory.maxPageCt ||
-                    dm.minPages != memory.minPageCt ||
-                    dm.maxPages != memory.maxPageCt)
+                    dm.initialPages < memory.limits.minPages || 
+                    dm.initialPages > memory.limits.maxPages ||
+                    dm.limits.minPages != memory.limits.minPages ||
+                    dm.limits.maxPages != memory.limits.maxPages )
                 { 
                     return false;
                 }
                 
             }
 
-            IndexEntry ie = this.storeDecl.indexingMemory[dm.index];
+            IndexEntry ie = this.storeDecl.IndexingMemory[dm.index];
 
             this.memories[ie.index] = memory;
             return true;
@@ -291,7 +291,7 @@ namespace PxPre.WASM
                 }
             }
 
-            IndexEntry ie = this.storeDecl.indexingGlobal[dg.index];
+            IndexEntry ie = this.storeDecl.IndexingGlobal[dg.index];
             this.globals[ie.index] = global;
             return true;
         }
@@ -310,13 +310,13 @@ namespace PxPre.WASM
             {
                 if (
                     dt.type != table.type ||
-                    dt.maxElements != table.max)
+                    dt.limits.maxEntries != table.limits.maxEntries)
                 {
                     return false;
                 }
             }
 
-            IndexEntry ie = this.storeDecl.indexingTable[dt.index];
+            IndexEntry ie = this.storeDecl.IndexingTable[dt.index];
             this.tables[ie.index] = table;
             return true;
         }
@@ -331,7 +331,7 @@ namespace PxPre.WASM
             if (mr.functions.TryGetValue(field, out df) == false)
                 return null;
 
-            IndexEntry ie = this.storeDecl.indexingFunction[df.index];
+            IndexEntry ie = this.storeDecl.IndexingFunction[df.index];
             return this.importFn[ie.index];
         }
 
@@ -345,7 +345,7 @@ namespace PxPre.WASM
             if (mr.memories.TryGetValue(field, out dm) == false)
                 return null;
 
-            IndexEntry ie = this.storeDecl.indexingMemory[dm.index];
+            IndexEntry ie = this.storeDecl.IndexingMemory[dm.index];
             return this.memories[ie.index];
         }
 
@@ -360,7 +360,7 @@ namespace PxPre.WASM
             if (mr.globals.TryGetValue(field, out dg) == false)
                 return null;
 
-            IndexEntry ie = this.storeDecl.indexingGlobal[dg.index];
+            IndexEntry ie = this.storeDecl.IndexingGlobal[dg.index];
             return this.globals[ie.index];
         }
 
@@ -374,7 +374,7 @@ namespace PxPre.WASM
             if (mr.tables.TryGetValue(field, out dt) == false)
                 return null;
 
-            IndexEntry ie = this.storeDecl.indexingTable[dt.index];
+            IndexEntry ie = this.storeDecl.IndexingTable[dt.index];
             return this.tables[ie.index];
         }
 
@@ -388,7 +388,7 @@ namespace PxPre.WASM
             if (mr.memories.TryGetValue(field, out dm) == false)
                 return null;
 
-            IndexEntry ie = this.storeDecl.indexingMemory[dm.index];
+            IndexEntry ie = this.storeDecl.IndexingMemory[dm.index];
 
             if(this.memories[ie.index] == null)
                 this.memories[ie.index] = dm.CreateDefault();
@@ -407,7 +407,7 @@ namespace PxPre.WASM
                 return null;
 
 
-            IndexEntry ie = this.storeDecl.indexingGlobal[dg.index];
+            IndexEntry ie = this.storeDecl.IndexingGlobal[dg.index];
             if(this.globals[ie.index] == null)
                 this.globals[ie.index] = dg.CreateDefault();
 
@@ -424,7 +424,7 @@ namespace PxPre.WASM
             if (mr.tables.TryGetValue(field, out dt) == false)
                 return null;
 
-            IndexEntry ie = this.storeDecl.indexingTable[dt.index];
+            IndexEntry ie = this.storeDecl.IndexingTable[dt.index];
             if(this.tables[ie.index] == null)
                 this.tables[ie.index] = dt.CreateDefault();
 

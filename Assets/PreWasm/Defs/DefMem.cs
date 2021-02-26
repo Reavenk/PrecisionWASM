@@ -30,8 +30,7 @@ namespace PxPre.WASM
         public readonly int index;
 
         public readonly uint initialPages;
-        public readonly uint minPages;
-        public readonly uint maxPages;
+        public LimitsPaged limits;
         public byte [] defaultData;
 
         public DefMem(int index, uint initialPages, uint minPages, uint maxPages )
@@ -39,19 +38,18 @@ namespace PxPre.WASM
             this.index = index;
 
             this.initialPages = initialPages;
-            this.minPages = minPages;
-            this.maxPages = maxPages;
+            this.limits = new LimitsPaged((int)minPages, (int)maxPages);
             this.defaultData = null;
         }
 
         public Memory CreateDefault()
         { 
-            Memory ret = new Memory((int)this.initialPages, (int)this.minPages, (int)this.maxPages);
+            Memory ret = new Memory((int)this.initialPages, this.limits);
 
             if(this.defaultData != null)
             { 
                 for(int i = 0; i < this.defaultData.Length; ++i)
-                    ret.data[i] = this.defaultData[i];
+                    ret.store.data[i] = this.defaultData[i];
             }
 
             return ret;

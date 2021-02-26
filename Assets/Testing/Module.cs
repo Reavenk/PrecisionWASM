@@ -162,10 +162,6 @@ namespace PxPre.WASM
                                 {
                                     uint fnTyIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                     FunctionType fnTy = ret.types[(int)fnTyIdx];
-
-                                    ret.storeDecl.indexingFunction.Add(
-                                        IndexEntry.CreateImport(ret.storeDecl.functions.Count, modName, fieldName));
-
                                     ret.storeDecl.AddFunctionImp(modName, fieldName, fnTy);
                                 }
                                 break;
@@ -211,8 +207,7 @@ namespace PxPre.WASM
                         function.typeidx = fnType;
                         function.fnType = ret.types[(int)fnType];
 
-                        ret.storeDecl.indexingFunction.Add(
-                            IndexEntry.CreateLocal(ret.functions.Count));
+                        ret.storeDecl.AddFunctionLoc(function.fnType);
 
                         ret.functions.Add(function);
 

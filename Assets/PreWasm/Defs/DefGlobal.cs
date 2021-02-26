@@ -41,7 +41,7 @@ namespace PxPre.WASM
 
         public Global CreateDefault()
         { 
-            return new Global(this.type, this.elements, this.mut == Global.Mutability.Variable);
+            return new Global(this.type, this.mut == Global.Mutability.Variable);
         }
     }
 }

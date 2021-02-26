@@ -170,7 +170,7 @@ namespace PxPre.WASM.Vali
         }
 
         public static bool DoDataStoreValidation(
-            List<IndexEntry> idxEntries, 
+            IReadOnlyList<IndexEntry> idxEntries, 
             int operandSrc, 
             List<byte> expanded, 
             ref DataStoreIdx dstore)
@@ -200,7 +200,7 @@ namespace PxPre.WASM.Vali
                 return false;
         }
 
-        public static bool EnsureDefaultMemory(List<IndexEntry> memoryIndices, List<byte> expanded, ref DataStoreIdx dsIdx)
+        public static bool EnsureDefaultMemory(IReadOnlyList<IndexEntry> memoryIndices, List<byte> expanded, ref DataStoreIdx dsIdx)
         {
             if(dsIdx.loc != DataStoreIdx.Location.Unknown)
                 return false;

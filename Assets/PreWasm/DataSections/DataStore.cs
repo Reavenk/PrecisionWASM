@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Collections;
-using System.Collections.Generic;
+// using System.Collections;
+// using System.Collections.Generic;
 
 namespace PxPre.WASM
 {
@@ -35,13 +35,13 @@ namespace PxPre.WASM
             Successful
         }
 
+        public const int PageSize = 64 * 1024;
+
         byte [] _data = null;
         byte * _pdata = null;
 
         public byte [] data {get{return this._data; } }
         public byte * pdata {get{return this._pdata; } }
-
-        int maxByteSize = 0;
 
         public int CurByteSize 
         {
@@ -51,46 +51,75 @@ namespace PxPre.WASM
             } 
         }
 
-        public int MaxByteSize
-        { 
-            get
-            { 
-                return this.maxByteSize;
-            }
-        }
-
-        protected DataStore(int initialSize, int maxSize)
+        public  DataStore(int initialByteSize, Limits limits)
         {
-            if(maxSize < initialSize)
-                maxSize = initialSize;
-
-            this.SetMaxSize(maxSize);
-            this.ExpandSize(initialSize);
+            this.ExpandBytes(initialByteSize, limits);
         }
 
-        protected DataStore(int initialSize)
+        public  DataStore(int initialPageSize, LimitsPaged limits)
+        {   
+            this.ExpandPages(initialPageSize, limits);
+        }
+
+        public DataStore(int initialEntryCt, LimitEntries limits)
         {
-            this.SetMaxSize(initialSize);
-            this.ExpandSize(initialSize);
+            this.ExpandEntries(initialEntryCt, limits);
         }
 
-        protected bool SetMaxSize(int newMax)
+        public DataStore(int initalByteSize)
         { 
-            if(newMax <= this.maxByteSize)
-                return false;
-
-            this.maxByteSize = newMax;
-            return true;
+            this._ExpandInternal(initalByteSize);
         }
 
-        protected ExpandRet ExpandSize(int newByteSize)
-        { 
-            ExpandRet ret = this._ExpandSize(newByteSize);
+        public ExpandRet ExpandBytes(int newByteSize, Limits limits)
+        {
+            return 
+                this._ExpandSize(
+                    newByteSize, 
+                    limits.minBytes, 
+                    limits.maxBytes);
+        }
 
-            if(ret == ExpandRet.Successful)
-            { 
-                fixed(byte * pb = this.data)
-                { 
+        public ExpandRet ExpandEntries(int newEntriesCt, LimitEntries limits)
+        {
+            return
+                this._ExpandSize(
+                    newEntriesCt * limits.dataTypeSize,
+                    limits.minEntries * limits.dataTypeSize,
+                    limits.maxEntries * limits.dataTypeSize);
+        }
+
+        public ExpandRet ExpandPages(int newPageSize, LimitsPaged limits)
+        { 
+            return 
+                this._ExpandSize(
+                    newPageSize * PageSize, 
+                    limits.minPages * PageSize, 
+                    limits.maxPages * PageSize);
+        }
+
+        private ExpandRet _ExpandSize(int newByteSize, int minBytes, int maxBytes)
+        {
+            if (newByteSize > maxBytes)
+                return ExpandRet.Err_TooLarge;
+
+            if (newByteSize < 0 || (this._data != null && newByteSize < _data.Length))
+                return ExpandRet.Err_TooSmall;
+
+            if (newByteSize == 0 && (this._data == null || this._data.Length == 0))
+                return ExpandRet.Err_NoChange;
+
+            return this._ExpandInternal(newByteSize);
+        }
+
+        private ExpandRet _ExpandInternal(int newByteSize)
+        {
+            ExpandRet ret = this.__ExpandInternal(newByteSize);
+
+            if (ret == ExpandRet.Successful)
+            {
+                fixed (byte* pb = this.data)
+                {
                     this._pdata = pb;
                 }
             }
@@ -98,17 +127,8 @@ namespace PxPre.WASM
             return ret;
         }
 
-        private ExpandRet _ExpandSize(int newByteSize)
+        private ExpandRet __ExpandInternal(int newByteSize)
         { 
-            if(newByteSize > this.maxByteSize)
-                return ExpandRet.Err_TooLarge;
-
-            if(newByteSize < 0 || (this._data != null && newByteSize < _data.Length))
-                return ExpandRet.Err_TooSmall;
-
-            if(newByteSize == 0 && (this._data == null || this._data.Length == 0))
-                return ExpandRet.Err_NoChange;
-
             if(this._data == null)
             { 
                 this._data = new byte [newByteSize];

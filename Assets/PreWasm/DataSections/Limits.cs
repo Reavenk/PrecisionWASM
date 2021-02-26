@@ -20,37 +20,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Collections;
-using System.Collections.Generic;
+namespace PxPre.WASM
+{
+    public struct Limits
+    { 
+        public int minBytes;
+        public int maxBytes;
 
-// TODO: Remove
-//namespace PxPre.WASM
-//{
-//    public class TypedArrayStore : DataStore
-//    {
-//        public readonly Bin.TypeID type;
-//
-//        public TypedArrayStore(Bin.TypeID type, int elements, int maxElements)
-//            : base(GetTypeIDSize(type) * elements, GetTypeIDSize(type) * maxElements)
-//        {
-//            this.type = type;
-//        }
-//
-//        public TypedArrayStore(Bin.TypeID type, int elements)
-//            : base(GetTypeIDSize(type) * elements)
-//        {
-//            this.type = type;
-//        }
-//
-//        public ExpandRet ExpandElements(int elementCount)
-//        {
-//            int newByteSize = this.ElementSize() * elementCount;
-//            return this.ExpandSize(newByteSize);
-//        }
-//
-//        public int ElementSize()
-//        {
-//            return GetTypeIDSize(this.type);
-//        }
-//    }
-//}
+        public Limits(int minBytes, int maxBytes)
+        { 
+            this.minBytes = minBytes;
+            this.maxBytes = maxBytes;
+        }
+    }
+}

@@ -28,20 +28,29 @@ namespace PxPre.WASM
 
         public readonly Bin.TypeID type;
         public readonly uint elements;
-        public readonly uint maxElements;
+        public readonly LimitEntries limits;
 
-        public DefTable(int index, Bin.TypeID type, uint initialElements, uint maxElements )
+        public DefTable(int index, Bin.TypeID type, uint initialElements, uint minEntries, uint maxEntries )
         { 
             this.index = index;
 
+            int typeSize = DataStore.GetTypeIDSize(type);
+
             this.type = type;
             this.elements = initialElements;
-            this.maxElements = maxElements;
+            this.limits = 
+                new LimitEntries(
+                    typeSize, 
+                    (int)minEntries, 
+                    (int)maxEntries);
         }
 
         public Table CreateDefault()
         { 
-            return new Table(this.type, (int)this.elements, (int)this.maxElements);
+            return new Table(
+                (int)this.elements, 
+                this.type, 
+                this.limits);
         }
     }
 }

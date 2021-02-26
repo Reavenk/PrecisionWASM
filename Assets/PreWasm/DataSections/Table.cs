@@ -22,18 +22,37 @@
 
 namespace PxPre.WASM
 {
-    // TODO: Possibly merge with memories storage
-    unsafe public class Table : TypedArrayStore
+    unsafe public class Table
     {
-        public uint max;
-        public uint flags;
+        public readonly Bin.TypeID type;
+        public readonly LimitEntries limits;
+        public DataStore store;
 
-        public Table(Bin.TypeID type, int elementCt, int elementMax)
-            : base(type, elementCt, elementMax)
-        { }
+        public int CurByteSize
+        {
+            get => this.store.data != null ? this.store.data.Length : 0;
+        }
 
-        public Table(Bin.TypeID type, int elementCt)
-            : base(type, elementCt)
-        { }
+        public int MaxByteSize
+        {
+            get => this.limits.maxEntries;
+        }
+
+        public Table(int initEntriesCt, Bin.TypeID type, LimitEntries limits)
+        {
+            this.type = type;
+            this.limits = limits;
+
+            int typeSz = DataStore.GetTypeIDSize(type);
+            if(limits.dataTypeSize != typeSz)
+                throw new System.Exception(); // TODO: Error msg
+
+            this.store = new DataStore(initEntriesCt, limits);
+        }
+
+        public DataStore.ExpandRet ExpandEntriesCt(int newEntriesCt)
+        { 
+            return this.store.ExpandEntries(newEntriesCt, this.limits);
+        }
     }
 }

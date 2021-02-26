@@ -26,45 +26,35 @@ using System.Collections.Generic;
 namespace PxPre.WASM
 {
     // https://webassembly.github.io/spec/core/syntax/modules.html#syntax-mem
-    public unsafe class Memory : DataStore
+    public unsafe class Memory
     {
-        public const int PageSize = 64 * 1024;
+        public LimitsPaged limits;
+        public DataStore store;
 
-        public uint flags;
-        public int minPageCt = 0;
-        public int maxPageCt = int.MaxValue;
-
-        public new int CurByteSize
+        public int CurByteSize
         {
-            get => this.data != null ? this.data.Length : 0;
+            get => this.store.data != null ? this.store.data.Length : 0;
         }
 
-        public new int MaxByteSize
+        public int MaxByteSize
         {
-            get => this.MaxByteSize;
+            get => this.limits.maxPages * DataStore.PageSize;
         }
 
-        public Memory(int initPageCt, int minPageCt, int maxPageCt)
-            : base(initPageCt * PageSize, maxPageCt * PageSize)
+        public Memory(int initPageCt, LimitsPaged limits)
         {
-            this.minPageCt = minPageCt;
-            this.maxPageCt = maxPageCt;
-        }
-
-        public Memory(int initialPageCt)
-            : base(PageSize * initialPageCt)
-        {
+            this.limits = limits;
+            this.store = new DataStore(initPageCt, limits);
         }
 
         public uint CalculatePageCt()
         { 
-            return (uint)(this.CurByteSize / PageSize);
+            return (uint)(this.CurByteSize / DataStore.PageSize);
         }
 
-        public ExpandRet ExpandPageCt(int newPageSize)
+        public DataStore.ExpandRet ExpandPageCt(int newPageSize)
         {
-            int newPageByteCt = (int)(newPageSize * PageSize);
-            return this.ExpandSize(newPageByteCt);
+            return this.store.ExpandPages(newPageSize, this.limits);
         }
 
     }

@@ -53,7 +53,7 @@ namespace Tests
                 throw new System.Exception( $"Error, failure parsing {path} to WASM module" );
 
             
-            Debug.Log($"Loaded with {mod.storeDecl.indexingFunction.Count} functions total.");
+            Debug.Log($"Loaded with {mod.storeDecl.IndexingFunction.Count} functions total.");
             Debug.Log($"Loaded with {mod.functions.Count} functions locally.");
 
             return mod;
@@ -174,7 +174,7 @@ namespace Tests
             AssertHasStart(mod, true);
             ex.InvokeStart();
 
-            if(mod.storeDecl.functions.Count != 1)
+            if(mod.storeDecl.importFunctionsCt != 1)
                 throw new System.Exception("Expected stuff.wasm to have 1 imported function");
 
             if(ex.tables.Count != 1)
@@ -186,7 +186,7 @@ namespace Tests
         }
 
         [Test]
-        public void Test_MutualGlobals()
+        public void Test_MutableGlobals()
         {
             // https://webassembly.github.io/wabt/demo/wat2wasm/ : "mutable globals"
 
@@ -200,15 +200,23 @@ namespace Tests
             if(ex.importData.globals.Count != 1)
                 throw new System.Exception("Expected mutable_globals.wasm to have 1 imported global");
 
-            if(ex.importData.globals[0].type != PxPre.WASM.Bin.TypeID.Int32)
+            if(ex.importData.Validate() != false)
+                throw new System.Exception("Expected mutable_globals.wasm to fail validation.");
+
+            ex.importData.GetGlobalOrDefault("env", "g");
+
+            if (ex.importData.Validate() == false)
+                throw new System.Exception("Expected mutable_globals.wasm to pass validation.");
+
+            if (ex.importData.globals[0].type != PxPre.WASM.Bin.TypeID.Int32)
                 throw new System.Exception("Expected mutable_globals.wasm imported global to be of type f32");
 
-             if( System.BitConverter.ToInt32(ex.importData.globals[0].data, 0) != 0)
+            if (System.BitConverter.ToInt32(ex.importData.globals[0].store.data, 0) != 0)
                 throw new System.Exception("Expected mutable_globals.wasm imported global to have a start value of 0");
 
             ex.Invoke(mod, "f");
 
-            if (System.BitConverter.ToInt32(ex.importData.globals[0].data, 0) != 100)
+            if (System.BitConverter.ToInt32(ex.importData.globals[0].store.data, 0) != 100)
                 throw new System.Exception("Expected mutable_globals.wasm imported global expected to have an ending value of 100");
 
         }
@@ -318,7 +326,7 @@ namespace Tests
 
             for(int i = 0; i < rb.Count; ++i)
             { 
-                if(rb[i] != ex.memories[0].data[i])
+                if(rb[i] != ex.memories[0].store.data[i])
                     throw new System.Exception("bulkmemory.wasm memory result not matching expected end state");
             }
         }
