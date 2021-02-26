@@ -886,7 +886,7 @@ namespace PxPre.WASM
 
                         case Instruction.f32_convert_i64_s:
                         case Instruction.f32_convert_i64_u:
-                        case Instruction.f32_convert_f64:
+                        case Instruction.f32_convert_i64:
                             vmgr.PopOpd(StackOpd.i32);
                             vmgr.PushOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);

@@ -1611,8 +1611,8 @@ namespace PxPre.WASM
                             this.stackPos += 4;
                             break;
 
-                        case Instruction.f32_convert_f64:
-                            *(float*)&pstk[this.stackPos + 4] = (float)*(double*)&pstk[this.stackPos];
+                        case Instruction.f32_convert_i64:
+                            *(float*)&pstk[this.stackPos + 4] = (float)*(long*)&pstk[this.stackPos];
                             // Pop 8 bytes, pushed 4 bytes.
                             this.stackPos += 4;
                             break;
