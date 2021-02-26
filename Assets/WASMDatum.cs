@@ -115,9 +115,9 @@ public static class WASMDatum
                 else if (doi.size == 8)
                 {
                     if (doi.isFloat == true)
-                        *(double*)(&pstk[ex.stackPos + fn.totalStackSize - doi.offset - 8]) = (double)ps[i].GetFloat();
+                        *(double*)(&pstk[ex.stackPos + fn.totalStackSize - doi.offset - 8]) = ps[i].GetFloat64();
                     else
-                        *(long*)(&pstk[ex.stackPos + fn.totalStackSize - doi.offset - 8]) = ps[i].GetInt();
+                        *(long*)(&pstk[ex.stackPos + fn.totalStackSize - doi.offset - 8]) = ps[i].GetInt64();
                 }
                 else
                 { } // TODO: Error
@@ -142,9 +142,9 @@ public static class WASMDatum
                 else if (doi.size == 8)
                 {
                     if (doi.isFloat == true)
-                        v = new PxPre.Datum.ValFloat((float)*(double*)(&pstk[ex.stackPos + doi.offset]));
+                        v = new PxPre.Datum.ValFloat64(*(double*)(&pstk[ex.stackPos + doi.offset]));
                     else
-                        v = new PxPre.Datum.ValInt((int)*(long*)(&pstk[ex.stackPos + doi.offset]));
+                        v = new PxPre.Datum.ValInt64(*(long*)(&pstk[ex.stackPos + doi.offset]));
                 }
                 else
                 { } // TODO: Error
