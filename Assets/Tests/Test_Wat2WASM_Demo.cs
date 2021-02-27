@@ -32,47 +32,6 @@ namespace Tests
             }
         }
 
-        public static byte [] LoadTestBytes(string path)
-        {
-            byte[] rb = System.IO.File.ReadAllBytes(path);
-            if(rb == null || rb.Length == 0)
-                throw new System.Exception("Test loaded empty or missing binary file.");
-
-            Debug.Log($"Loading bytes {path} with byte count of {rb.Length}");
-
-            return rb;
-        }
-
-        public static PxPre.WASM.Module LoadUnitTestModule(string path)
-        { 
-            byte [] rb = LoadTestBytes(path);
-
-            Debug.Log("Loading binary");
-            PxPre.WASM.Module mod = PxPre.WASM.Module.LoadBinary(rb);
-            if(mod == null)
-                throw new System.Exception( $"Error, failure parsing {path} to WASM module" );
-
-            
-            Debug.Log($"Loaded with {mod.storeDecl.IndexingFunction.Count} functions total.");
-            Debug.Log($"Loaded with {mod.functions.Count} functions locally.");
-
-            return mod;
-        }
-
-        public static void AssertHasStart(PxPre.WASM.Module mod, bool hasStart)
-        { 
-            if(hasStart == false)
-            { 
-                if(mod.startFnIndex != 0xFFFFFFFF)
-                    throw new System.Exception("Module expected to not have a starting function, but does.");
-            }
-            else
-            { 
-                if(mod.startFnIndex == 0xFFFFFFFF)
-                    throw new System.Exception("Module expected to have a starting function, but doesn't.");
-            }
-        }
-
 
         [Test]
         public void Test_Empty()
@@ -80,10 +39,10 @@ namespace Tests
             // https://webassembly.github.io/wabt/demo/wat2wasm/ : "empty"
 
             // Basic test for empty program parsing.
-            PxPre.WASM.Module mod = LoadUnitTestModule("TestSamples/empty.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/empty.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
 
-            AssertHasStart(mod, false);
+            UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
         }
@@ -94,10 +53,9 @@ namespace Tests
             // https://webassembly.github.io/wabt/demo/wat2wasm/ : "simple"
 
             // Basic test for function calling.
-            PxPre.WASM.Module mod = LoadUnitTestModule("TestSamples/simple.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/simple.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
-
-            AssertHasStart(mod, false);
+            UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
             List<IntPair> tests = 
@@ -147,10 +105,10 @@ namespace Tests
             // https://webassembly.github.io/wabt/demo/wat2wasm/ : "factorial"
 
             // Basic test for recursive function calling.
-            PxPre.WASM.Module mod = LoadUnitTestModule("TestSamples/factorial.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/factorial.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
 
-            AssertHasStart(mod, false);
+            UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
             List<double> entries = new List<double>{ -90.0, 0.0, 1.0, 2.0, 4.0, 4.5, 7.0, 7.5, 9.0, 9.9, 10.0, 11.0 };
@@ -168,10 +126,10 @@ namespace Tests
             // https://webassembly.github.io/wabt/demo/wat2wasm/ : "stuff"
 
             // Basic test for various features.
-            PxPre.WASM.Module mod = LoadUnitTestModule("TestSamples/stuff.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/stuff.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
 
-            AssertHasStart(mod, true);
+            UnitUtil.AssertHasStart(mod, true);
             ex.InvokeStart();
 
             if(mod.storeDecl.importFunctionsCt != 1)
@@ -191,10 +149,10 @@ namespace Tests
             // https://webassembly.github.io/wabt/demo/wat2wasm/ : "mutable globals"
 
             // Basic test for imported globals that can be modified.
-            PxPre.WASM.Module mod = LoadUnitTestModule("TestSamples/mutable_globals.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/mutable_globals.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
 
-            AssertHasStart(mod, false);
+            UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
             if(ex.importData.globals.Count != 1)
@@ -225,10 +183,10 @@ namespace Tests
         public void Test_SaturatingFloatToInt()
         {
             // Basic test for the saturating float to int feature.
-            PxPre.WASM.Module mod = LoadUnitTestModule("TestSamples/saturatingfloattoint.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/saturatingfloattoint.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
 
-            AssertHasStart(mod, false);
+            UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
             List<FloatIntPair> tests = 
@@ -258,10 +216,10 @@ namespace Tests
         public void Test_SignExtension()
         {
             // Basic test for the sign extension function.
-            PxPre.WASM.Module mod = LoadUnitTestModule("TestSamples/signextension.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/signextension.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
 
-            AssertHasStart(mod, false);
+            UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
             List< IntPair> tests = 
@@ -287,10 +245,10 @@ namespace Tests
         public void Test_MultiValue()
         {
             // Basic test for function with multiple parameters and multiple result values.
-            PxPre.WASM.Module mod = LoadUnitTestModule("TestSamples/multivalue.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/multivalue.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
 
-            AssertHasStart(mod, false);
+            UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
             PxPre.Datum.Val ret =
@@ -309,7 +267,7 @@ namespace Tests
         {
             // Basic test for bulk memory feature to write large arrays of data with repeating
             // content.
-            PxPre.WASM.Module mod = LoadUnitTestModule("TestSamples/bulkmemory.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/bulkmemory.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             ex.InvokeStart();
 

@@ -243,7 +243,7 @@ namespace PxPre.WASM
         f32_convert_i32_u   = 0xB3,
         f32_convert_i64_s   = 0xB4,
         f32_convert_i64_u   = 0xB5,
-        f32_convert_i64     = 0xB6,
+        f32_demote_f64      = 0xB6,
         f64_convert_i32_s   = 0xB7,
         f64_convert_i32_u   = 0xB8,
         f64_convert_i64_s   = 0xB9,

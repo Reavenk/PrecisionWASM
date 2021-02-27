@@ -1501,6 +1501,9 @@ namespace PxPre.WASM
 
                         case Instruction.i32_wrap_i64:
                             {
+                                // TODO: Test if we can just chop off the high bytes and get the 
+                                // same results without the explicit modulus.
+
                                 ulong val = *(ulong*)(&pstk[stackPos]); 
                                 stackPos += 4; // -8 to pop off the parameter, and then +4 to add the 32 bit result.
                                 *(uint*)(&pstk[stackPos]) = (uint)val % 0xFFFFFFFF;
@@ -1517,10 +1520,13 @@ namespace PxPre.WASM
                                 // Both 32, pop 32bits, and then pop 32 bits leaving no change in the stack.
                                 float f = *(float*)&pstk[stackPos];
 
-                                if(f < 0.0f)
-                                    throw new System.Exception("RuntimeError: float unrepresentable in integer range");
+                                if(f < -1.0f)
+                                    throw new System.Exception("float unrepresentable in integer range");
 
-                                *(uint*)(&pstk[stackPos]) = (uint)f;
+                                if(f < 0.0f)
+                                    *(uint*)(&pstk[stackPos]) = 0;
+                                else
+                                    *(uint*)(&pstk[stackPos]) = (uint)f;
                             }
                             break;
 
@@ -1611,8 +1617,8 @@ namespace PxPre.WASM
                             this.stackPos += 4;
                             break;
 
-                        case Instruction.f32_convert_i64:
-                            *(float*)&pstk[this.stackPos + 4] = (float)*(long*)&pstk[this.stackPos];
+                        case Instruction.f32_demote_f64:
+                            *(float*)&pstk[this.stackPos + 4] = (float)*(double*)&pstk[this.stackPos];
                             // Pop 8 bytes, pushed 4 bytes.
                             this.stackPos += 4;
                             break;
@@ -1620,7 +1626,7 @@ namespace PxPre.WASM
                         case Instruction.f64_convert_i32_s:
                             *(double*)&pstk[this.stackPos - 4] = *(int*)&pstk[this.stackPos];
                             // Pop 4 bytes, pushed 8 bytes.
-                            this.stackPos += 4;
+                            this.stackPos -= 4;
                             break;
 
                         case Instruction.f64_convert_i32_u:
@@ -1630,7 +1636,7 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.f64_convert_i64_s:
-                            *(double*)&pstk[this.stackPos] = (float)*(double*)&pstk[this.stackPos];
+                            *(double*)&pstk[this.stackPos] = *(long*)&pstk[this.stackPos];
                             // Pop 4 bytes, pushed 4 bytes. No stack change
                             break;
 
@@ -1641,6 +1647,7 @@ namespace PxPre.WASM
 
                         case Instruction.f64_promote_f32:
                             *(double*)&pstk[this.stackPos - 4] = *(float*)&pstk[this.stackPos];
+                            stackPos -= 4;
                             // Pop 8 bytes, pushed 4 bytes.
                             break;
 

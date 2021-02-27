@@ -849,72 +849,82 @@ namespace PxPre.WASM
 
                         case Instruction.i32_trunc_f32_s:
                         case Instruction.i32_trunc_f32_u:
-                            vmgr.PopOpd(StackOpd.i32);
-                            vmgr.PushOpd(StackOpd.f32);
+                            vmgr.PopOpd(StackOpd.f32);
+                            vmgr.PushOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_trunc_f64_s:
                         case Instruction.i32_trunc_f64_u:
-                            vmgr.PopOpd(StackOpd.i32);
-                            vmgr.PushOpd(StackOpd.f64);
+                            vmgr.PopOpd(StackOpd.f64);
+                            vmgr.PushOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i64_extend_i32_s:
                         case Instruction.i64_extend_i32_u:
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.i64);
+                            TransferInstruction(expanded, instr);
+                            break;
+
                         case Instruction.i64_trunc_f32_s:
                         case Instruction.i64_trunc_f32_u:
-                            vmgr.PopOpd(StackOpd.i64);
-                            vmgr.PushOpd(StackOpd.f32);
+                            vmgr.PopOpd(StackOpd.f32);
+                            vmgr.PushOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i64_trunc_f64_s:
                         case Instruction.i64_trunc_f64_u:
                             vmgr.PopOpd(StackOpd.f64);
-                            vmgr.PushOpd(StackOpd.f64);
+                            vmgr.PushOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f32_convert_i32_s:
                         case Instruction.f32_convert_i32_u:
-                            vmgr.PopOpd(StackOpd.f32);
-                            vmgr.PushOpd(StackOpd.i32);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.f32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f32_convert_i64_s:
                         case Instruction.f32_convert_i64_u:
-                        case Instruction.f32_convert_i64:
-                            vmgr.PopOpd(StackOpd.i32);
-                            vmgr.PushOpd(StackOpd.i64);
+                            vmgr.PopOpd(StackOpd.i64);
+                            vmgr.PushOpd(StackOpd.f32);
+                            TransferInstruction(expanded, instr);
+                            break;
+
+                        case Instruction.f32_demote_f64:
+                            vmgr.PopOpd(StackOpd.f64);
+                            vmgr.PushOpd(StackOpd.f32);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f64_convert_i32_s:
                         case Instruction.f64_convert_i32_u:
-                            vmgr.PopOpd(StackOpd.i64);
-                            vmgr.PushOpd(StackOpd.i32);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.f64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f64_convert_i64_s:
                         case Instruction.f64_convert_i64_u:
                             vmgr.PopOpd(StackOpd.i64);
-                            vmgr.PushOpd(StackOpd.i64);
+                            vmgr.PushOpd(StackOpd.f64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.f64_promote_f32:
-                            vmgr.PopOpd(StackOpd.i32);
-                            vmgr.PushOpd(StackOpd.f32);
+                            vmgr.PopOpd(StackOpd.f32);
+                            vmgr.PushOpd(StackOpd.f64);
                             TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_reinterpret_f32:
-                            vmgr.PopOpd(StackOpd.i32);
-                            vmgr.PushOpd(StackOpd.f32);
+                            vmgr.PopOpd(StackOpd.f32);
+                            vmgr.PushOpd(StackOpd.i32);
 
                             // Validate the instruction, but we don't need to emit any
                             // instructions - it literally changes nothing with the 
@@ -923,7 +933,7 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.i64_reinterpret_f64:
-                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PopOpd(StackOpd.f64);
                             vmgr.PushOpd(StackOpd.i64);
 
                             // Validate the instruction, but we don't need to emit any
@@ -934,7 +944,7 @@ namespace PxPre.WASM
 
                         case Instruction.f32_reinterpret_i32:
                             vmgr.PopOpd(StackOpd.i32);
-                            vmgr.PushOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.f32);
 
                             // Validate the instruction, but we don't need to emit any
                             // instructions - it literally changes nothing with the 
@@ -943,8 +953,8 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.f64_reinterpret_i64:
-                            vmgr.PopOpd(StackOpd.i32);
-                            vmgr.PushOpd(StackOpd.i64);
+                            vmgr.PopOpd(StackOpd.i64);
+                            vmgr.PushOpd(StackOpd.f64);
 
                             // Validate the instruction, but we don't need to emit any
                             // instructions - it literally changes nothing with the 
@@ -962,8 +972,8 @@ namespace PxPre.WASM
                         case Instruction.i64_extend8_s:
                         case Instruction.i64_extend16_s:
                         case Instruction.i64_extend32_s:
-                            vmgr.PopOpd(StackOpd.f64);
-                            vmgr.PushOpd(StackOpd.f32);
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;
 
