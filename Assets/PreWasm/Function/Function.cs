@@ -972,7 +972,7 @@ namespace PxPre.WASM
                         case Instruction.i64_extend8_s:
                         case Instruction.i64_extend16_s:
                         case Instruction.i64_extend32_s:
-                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PopOpd(StackOpd.i64);
                             vmgr.PushOpd(StackOpd.i64);
                             TransferInstruction(expanded, instr);
                             break;

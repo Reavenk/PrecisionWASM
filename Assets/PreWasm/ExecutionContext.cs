@@ -1686,17 +1686,17 @@ namespace PxPre.WASM
 
                         case Instruction.i64_extend8_s:
                             *(long*)&pstk[this.stackPos] = *(sbyte*)&pstk[this.stackPos];
-                            // Pop 4 bytes, pushed 4 bytes. No stack change
+                            // Pop 8 bytes, pushed 8 bytes. No stack change
                             break;
 
                         case Instruction.i64_extend16_s:
                             *(long*)&pstk[this.stackPos] = *(short*)&pstk[this.stackPos];
-                            // Pop 4 bytes, pushed 4 bytes. No stack change
+                            // Pop 8 bytes, pushed 8 bytes. No stack change
                             break;
 
                         case Instruction.i64_extend32_s:
                             *(long*)&pstk[this.stackPos] = *(int*)&pstk[this.stackPos];
-                            // Pop 4 bytes, pushed 4 bytes. No stack change
+                            // Pop 8 bytes, pushed 8 bytes. No stack change
                             break;
 
                         case Instruction._i32_trunc_sat_f32_s:

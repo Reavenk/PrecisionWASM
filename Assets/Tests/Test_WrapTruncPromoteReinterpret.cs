@@ -724,5 +724,143 @@ namespace Tests
                     throw new System.Exception("Invalid return value.");  
             }
         }
+
+        [Test]
+        public void Test_i32_extend8_s()
+        {
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i32.extend8_s.wasm");
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
+            UnitUtil.AssertHasStart(mod, false);
+            ex.InvokeStart();
+
+            for(int i = -500; i < 500; ++i)
+            {
+                PxPre.Datum.Val ret =
+                ex.Invoke_SingleRet(
+                    mod,
+                    "Test",
+                    PxPre.Datum.Val.Make(i));
+
+                if (ret.wrapType != PxPre.Datum.Val.Type.Int)
+                    throw new System.Exception("Invalid return type.");
+
+                byte [] rb = System.BitConverter.GetBytes(i);
+                sbyte low = (sbyte)rb[0];
+
+                if (ret.GetInt() != (int)low)
+                    throw new System.Exception("Invalid return value.");
+            }
+        }
+
+        [Test]
+        public void Test_i32_extend16_s()
+        {
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i32.extend16_s.wasm");
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
+            UnitUtil.AssertHasStart(mod, false);
+            ex.InvokeStart();
+
+            for (int i = -500; i < 500; ++i)
+            {
+                short v = (short)(i * 251); // Multiply by something near, but less than 256. Preferrably an odd number.
+
+                PxPre.Datum.Val ret =
+                ex.Invoke_SingleRet(
+                    mod,
+                    "Test",
+                    PxPre.Datum.Val.Make(v));
+
+                if (ret.wrapType != PxPre.Datum.Val.Type.Int)
+                    throw new System.Exception("Invalid return type.");
+
+                if (ret.GetInt() != (int)v)
+                    throw new System.Exception("Invalid return value.");
+            }
+        }
+
+        [Test]
+        public void Test_i64_extend8_s()
+        {
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i64.extend8_s.wasm");
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
+            UnitUtil.AssertHasStart(mod, false);
+            ex.InvokeStart();
+
+            for (long i = -500; i < 500; ++i)
+            {
+                PxPre.Datum.Val ret =
+                ex.Invoke_SingleRet(
+                    mod,
+                    "Test",
+                    PxPre.Datum.Val.Make(i));
+
+                if (ret.wrapType != PxPre.Datum.Val.Type.Int64)
+                    throw new System.Exception("Invalid return type.");
+
+                byte[] rb = System.BitConverter.GetBytes(i);
+                sbyte low = (sbyte)rb[0];
+
+                if (ret.GetInt64() != (long)low)
+                    throw new System.Exception("Invalid return value.");
+            }
+        }
+
+        [Test]
+        public void Test_i64_extend16_s()
+        {
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i64.extend16_s.wasm");
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
+            UnitUtil.AssertHasStart(mod, false);
+            ex.InvokeStart();
+
+            for(long i = -500; i < 500; ++i)
+            {
+                long val = i * 251;
+
+                PxPre.Datum.Val ret =
+                ex.Invoke_SingleRet(
+                    mod,
+                    "Test",
+                    PxPre.Datum.Val.Make(val));
+
+                if (ret.wrapType != PxPre.Datum.Val.Type.Int64)
+                    throw new System.Exception("Invalid return type.");
+
+                byte[] rb = System.BitConverter.GetBytes(val);
+                short low = System.BitConverter.ToInt16(rb, 0);
+
+                if (ret.GetInt64() != (long)low)
+                    throw new System.Exception("Invalid return value.");
+            }
+        }
+
+        [Test]
+        public void Test_i64_extend32_s()
+        {
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i64.extend32_s.wasm");
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
+            UnitUtil.AssertHasStart(mod, false);
+            ex.InvokeStart();
+
+            for (long i = -500; i < 500; ++i)
+            {
+                long val = i * 65432;
+
+                PxPre.Datum.Val ret =
+                ex.Invoke_SingleRet(
+                    mod,
+                    "Test",
+                    PxPre.Datum.Val.Make(val));
+
+                if (ret.wrapType != PxPre.Datum.Val.Type.Int64)
+                    throw new System.Exception("Invalid return type.");
+
+                byte[] rb = System.BitConverter.GetBytes(val);
+                int low = System.BitConverter.ToInt32(rb, 0);
+
+                if (ret.GetInt64() != (long)low)
+                    throw new System.Exception("Invalid return value.");
+            }
+        }
     }
 }
