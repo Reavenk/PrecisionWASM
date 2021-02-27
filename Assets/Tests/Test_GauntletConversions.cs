@@ -7,8 +7,10 @@ using UnityEngine;
 
 namespace Tests
 {
-    public class Test_WrapTruncPromoteReinterpret
+    public class Test_GauntletConversions
     {
+        const string TestTheme = "Conversions";
+
         public static float[] floatTestValues = 
             new float[] { -9999.1234f, -45.5f, -45.0f, -0.75f, 0.0f, 0.75f, 45.0f, 45.5f, 9999.1234f };
 
@@ -27,10 +29,11 @@ namespace Tests
         uint[] uintTestValues =
             new uint[] { 0, 1, 10, 55, 999, 123456789, 4294967295 };
 
+
         [Test]
         public void Test_i32_wrap_i64  ()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i32.wrap_i64.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i32.wrap_i64.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -55,7 +58,7 @@ namespace Tests
         [Test]
         public void Test_i32_trunc_f32_s()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i32.trunc_f32_s.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i32.trunc_f32_s.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -79,7 +82,7 @@ namespace Tests
         [Test]
         public void Test_i32_trunc_f32_u()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i32.trunc_f32_u.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i32.trunc_f32_u.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -123,7 +126,7 @@ namespace Tests
         [Test]
         public void Test_i32_trunc_f64_s()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i32.trunc_f64_s.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i32.trunc_f64_s.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -147,7 +150,7 @@ namespace Tests
         [Test]
         public void Test_i32_trunc_f64_u()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i32.trunc_f64_u.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i32.trunc_f64_u.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -191,7 +194,7 @@ namespace Tests
         [Test]
         public void Test_i64_extend_i32_s()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i64.extend_i32_s.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i64.extend_i32_s.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -215,7 +218,7 @@ namespace Tests
         [Test]
         public void Test_i64_extend_i32_u()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i64.extend_i32_u.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i64.extend_i32_u.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -239,7 +242,7 @@ namespace Tests
         [Test]
         public void Test_i64_trunc_f32_s()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i64.trunc_f32_s.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i64.trunc_f32_s.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -263,7 +266,7 @@ namespace Tests
         [Test]
         public void Test_i64_trunc_f32_u()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i64.trunc_f32_u.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i64.trunc_f32_u.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -306,7 +309,7 @@ namespace Tests
         [Test]
         public void Test_i64_trunc_f64_s()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i64.trunc_f64_s.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i64.trunc_f64_s.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -330,7 +333,7 @@ namespace Tests
         [Test]
         public void Test_i64_trunc_f64_u()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i64.trunc_f64_u.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i64.trunc_f64_u.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -373,7 +376,7 @@ namespace Tests
         [Test]
         public void Test_f32_convert_i32_s()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/f32.convert_i32_s.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/f32.convert_i32_s.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -397,7 +400,7 @@ namespace Tests
         [Test]
         public void Test_f32_convert_i32_u()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/f32.convert_i32_u.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/f32.convert_i32_u.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -421,7 +424,7 @@ namespace Tests
         [Test]
         public void Test_f32_convert_i64_s()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/f32.convert_i64_s.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/f32.convert_i64_s.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -445,7 +448,7 @@ namespace Tests
         [Test]
         public void Test_f32_convert_i64_u()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/f32.convert_i64_u.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/f32.convert_i64_u.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -469,7 +472,7 @@ namespace Tests
         [Test]
         public void Test_f32_demote_f64()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/f32.demote_f64.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/f32.demote_f64.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -493,7 +496,7 @@ namespace Tests
         [Test]
         public void Test_f64_convert_i32_s()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/f64.convert_i32_s.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/f64.convert_i32_s.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -517,7 +520,7 @@ namespace Tests
         [Test]
         public void Test_f64_convert_i32_u()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/f64.convert_i32_u.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/f64.convert_i32_u.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -541,7 +544,7 @@ namespace Tests
         [Test]
         public void Test_f64_convert_i64_s()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/f64.convert_i64_s.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/f64.convert_i64_s.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -565,7 +568,7 @@ namespace Tests
         [Test]
         public void Test_f64_convert_i64_u()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/f64.convert_i64_u.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/f64.convert_i64_u.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -589,7 +592,7 @@ namespace Tests
         [Test]
         public void Test_f64_promote_f32()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/f64.promote_f32.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/f64.promote_f32.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -613,7 +616,7 @@ namespace Tests
         [Test]
         public void Test_i32_reinterpret_f32()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i32.reinterpret_f32.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i32.reinterpret_f32.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -642,7 +645,7 @@ namespace Tests
         [Test]
         public void Test_i64_reinterpret_f64()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i64.reinterpret_f64.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i64.reinterpret_f64.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -669,7 +672,7 @@ namespace Tests
         [Test]
         public void Test_f32_reinterpret_i32()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/f32.reinterpret_i32.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/f32.reinterpret_i32.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -699,7 +702,7 @@ namespace Tests
         [Test]
         public void Test_f64_reinterpret_i64()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/f64.reinterpret_i64.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/f64.reinterpret_i64.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -728,7 +731,7 @@ namespace Tests
         [Test]
         public void Test_i32_extend8_s()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i32.extend8_s.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i32.extend8_s.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -755,7 +758,7 @@ namespace Tests
         [Test]
         public void Test_i32_extend16_s()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i32.extend16_s.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i32.extend16_s.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -781,7 +784,7 @@ namespace Tests
         [Test]
         public void Test_i64_extend8_s()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i64.extend8_s.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i64.extend8_s.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -808,7 +811,7 @@ namespace Tests
         [Test]
         public void Test_i64_extend16_s()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i64.extend16_s.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i64.extend16_s.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
@@ -837,7 +840,7 @@ namespace Tests
         [Test]
         public void Test_i64_extend32_s()
         {
-            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule("TestSamples/Gauntlet/i64.extend32_s.wasm");
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i64.extend32_s.wasm");
             PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
