@@ -8,31 +8,6 @@ namespace Tests
 {
     public class Test_Wat2WASM_Demo
     {
-        public struct FloatIntPair
-        {
-            public float left;
-            public int right;
-
-            public FloatIntPair(float left, int right)
-            {
-                this.left = left;
-                this.right = right;
-            }
-        }
-
-        public struct IntPair
-        {
-            public int left;
-            public int right;
-
-            public IntPair(int left, int right)
-            {
-                this.left = left;
-                this.right = right;
-            }
-        }
-
-
         [Test]
         public void Test_Empty()
         {
@@ -44,7 +19,6 @@ namespace Tests
 
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
-
         }
 
         [Test]
