@@ -10,7 +10,7 @@ namespace Tests
     public class Test_WrapTruncPromoteReinterpret
     {
         public static float[] floatTestValues = 
-            new float[] { -9999.1234f, -45.5f, -45.0f, 0.0f, 45.0f, 45.5f, 9999.1234f };
+            new float[] { -9999.1234f, -45.5f, -45.0f, -0.75f, 0.0f, 0.75f, 45.0f, 45.5f, 9999.1234f };
 
         public static long[] longTestValues = 
             new long[] { -123456789123, -12345, 0, 1, 5, 12345, 123456789123 };
@@ -19,7 +19,7 @@ namespace Tests
             new ulong[] { 0, 10, 55, 999, 4294967296, 6442450944, 18446744073709551615 };
 
         double[] doubleTestValues = 
-            new double[] { -1234567890123.1234, -45.5, -45, 0, 45, 45.5, 1234567890123.1234 };
+            new double[] { -1234567890123.1234, -45.5, -45, -0.75, 0.0, 0.75, 45, 45.5, 1234567890123.1234 };
 
         int [] intTestValues = 
             new int[] { -999, -45, 0, 45, 999 };
@@ -84,7 +84,40 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            throw new System.Exception("Unimplemented");
+            foreach (float tv in floatTestValues)
+            {
+                bool shouldCatch = false;
+                bool didCatch = false;
+
+                PxPre.Datum.Val ret = null;
+                try
+                {
+                    shouldCatch = (tv <= -1.0f);
+
+                    ret =
+                        ex.Invoke_SingleRet(
+                        mod,
+                        "Test",
+                        PxPre.Datum.Val.Make(tv));
+
+                }
+                catch(System.Exception /*except*/)
+                {
+                    didCatch = true;
+                }
+                if(shouldCatch != didCatch)
+                    throw new System.Exception("Exception catching expectations not held.");
+
+                if(shouldCatch == true)
+                    continue;
+
+                if (ret.wrapType != PxPre.Datum.Val.Type.Int)
+                    throw new System.Exception("Invalid return type.");
+
+                if (ret.GetUInt() != (uint)tv)
+                    throw new System.Exception("Invalid return value.");
+
+            }
         }
 
         [Test]
@@ -119,7 +152,40 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            throw new System.Exception("Unimplemented");
+            foreach (double tv in doubleTestValues)
+            {
+                bool shouldCatch = false;
+                bool didCatch = false;
+
+                PxPre.Datum.Val ret = null;
+                try
+                {
+                    shouldCatch = (tv <= -1.0);
+
+                    ret =
+                        ex.Invoke_SingleRet(
+                        mod,
+                        "Test",
+                        PxPre.Datum.Val.Make(tv));
+
+                }
+                catch (System.Exception /*except*/)
+                {
+                    didCatch = true;
+                }
+                if (shouldCatch != didCatch)
+                    throw new System.Exception("Exception catching expectations not held.");
+
+                if (shouldCatch == true)
+                    continue;
+
+                if (ret.wrapType != PxPre.Datum.Val.Type.Int)
+                    throw new System.Exception("Invalid return type.");
+
+                if (ret.GetUInt() != (uint)tv)
+                    throw new System.Exception("Invalid return value.");
+
+            }
         }
 
         [Test]
@@ -154,7 +220,20 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            throw new System.Exception("Unimplemented");
+            foreach (uint tv in uintTestValues)
+            {
+                PxPre.Datum.Val ret =
+                    ex.Invoke_SingleRet(
+                        mod,
+                        "Test",
+                        PxPre.Datum.Val.Make(tv));
+
+                if (ret.wrapType != PxPre.Datum.Val.Type.Int64)
+                    throw new System.Exception("Invalid return type.");
+
+                if (ret.GetUInt64() != (ulong)tv)
+                    throw new System.Exception("Invalid return value.");
+            }
         }
 
         [Test]
@@ -189,7 +268,39 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            throw new System.Exception("Unimplemented");
+            foreach (float tv in floatTestValues)
+            {
+                bool shouldCatch = false;
+                bool didCatch = false;
+
+                PxPre.Datum.Val ret = null;
+                try
+                {
+                    shouldCatch = (tv <= -1.0f);
+
+                    ret =
+                        ex.Invoke_SingleRet(
+                        mod,
+                        "Test",
+                        PxPre.Datum.Val.Make(tv));
+
+                }
+                catch (System.Exception /*except*/)
+                {
+                    didCatch = true;
+                }
+                if (shouldCatch != didCatch)
+                    throw new System.Exception("Exception catching expectations not held.");
+
+                if (shouldCatch == true)
+                    continue;
+
+                if (ret.wrapType != PxPre.Datum.Val.Type.Int64)
+                    throw new System.Exception("Invalid return type.");
+
+                if (ret.GetUInt64() != (ulong)tv)
+                    throw new System.Exception("Invalid return value.");
+            }
         }
 
         [Test]
@@ -224,7 +335,39 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            throw new System.Exception("Unimplemented");
+            foreach (double tv in doubleTestValues)
+            {
+                bool shouldCatch = false;
+                bool didCatch = false;
+
+                PxPre.Datum.Val ret = null;
+                try
+                {
+                    shouldCatch = (tv <= -1.0);
+
+                    ret =
+                        ex.Invoke_SingleRet(
+                        mod,
+                        "Test",
+                        PxPre.Datum.Val.Make(tv));
+
+                }
+                catch (System.Exception /*except*/)
+                {
+                    didCatch = true;
+                }
+                if (shouldCatch != didCatch)
+                    throw new System.Exception("Exception catching expectations not held.");
+
+                if (shouldCatch == true)
+                    continue;
+
+                if (ret.wrapType != PxPre.Datum.Val.Type.Int64)
+                    throw new System.Exception("Invalid return type.");
+
+                if (ret.GetUInt64() != (ulong)tv)
+                    throw new System.Exception("Invalid return value.");
+            }
         }
 
         [Test]
@@ -259,7 +402,20 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            throw new System.Exception("Unimplemented");
+            foreach (uint tv in uintTestValues)
+            {
+                PxPre.Datum.Val ret =
+                    ex.Invoke_SingleRet(
+                        mod,
+                        "Test",
+                        PxPre.Datum.Val.Make(tv));
+
+                if (ret.wrapType != PxPre.Datum.Val.Type.Float)
+                    throw new System.Exception("Invalid return type.");
+
+                if (ret.GetFloat() != (float)tv)
+                    throw new System.Exception("Invalid return value.");
+            }
         }
 
         [Test]
@@ -294,7 +450,20 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            throw new System.Exception("Unimplemented");
+            foreach (ulong tv in ulongTestValues)
+            {
+                PxPre.Datum.Val ret =
+                    ex.Invoke_SingleRet(
+                        mod,
+                        "Test",
+                        PxPre.Datum.Val.Make(tv));
+
+                if (ret.wrapType != PxPre.Datum.Val.Type.Float)
+                    throw new System.Exception("Invalid return type.");
+
+                if (ret.GetFloat() != (float)tv)
+                    throw new System.Exception("Invalid return value.");
+            }
         }
 
         [Test]
@@ -353,7 +522,20 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            throw new System.Exception("Unimplemented");
+            foreach (uint tv in uintTestValues)
+            {
+                PxPre.Datum.Val ret =
+                    ex.Invoke_SingleRet(
+                        mod,
+                        "Test",
+                        new PxPre.Datum.ValUInt64(tv));
+
+                if (ret.wrapType != PxPre.Datum.Val.Type.Float64)
+                    throw new System.Exception("Invalid return type.");
+
+                if (ret.GetFloat64() != (double)tv)
+                    throw new System.Exception("Invalid return value.");
+            }
         }
 
         [Test]
@@ -388,7 +570,20 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            throw new System.Exception("Unimplemented");
+            foreach (ulong tv in ulongTestValues)
+            {
+                PxPre.Datum.Val ret =
+                    ex.Invoke_SingleRet(
+                        mod,
+                        "Test",
+                        new PxPre.Datum.ValUInt64(tv));
+
+                if (ret.wrapType != PxPre.Datum.Val.Type.Float64)
+                    throw new System.Exception("Invalid return type.");
+
+                if (ret.GetFloat64() != (double)tv)
+                    throw new System.Exception("Invalid return value.");
+            }
         }
 
         [Test]

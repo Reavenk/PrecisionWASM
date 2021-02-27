@@ -1541,11 +1541,15 @@ namespace PxPre.WASM
                             { 
                                 double d = *(double*)&pstk[stackPos];
 
-                                if(d < 0.0f)
-                                    throw new System.Exception("RuntimeError: float unrepresentable in integer range");
+                                if(d <= -1.0)
+                                    throw new System.Exception("float unrepresentable in integer range");
 
                                 this.stackPos += 4;
-                                *(uint*)&pstk[stackPos] = (uint)d;
+
+                                if(d <= 0.0)
+                                    *(uint*)&pstk[stackPos] = (uint)0;
+                                else
+                                    *(uint*)&pstk[stackPos] = (uint)d;
 
                                 // Pop off 8 bytes, push back 4 bytes
                             }
@@ -1570,11 +1574,15 @@ namespace PxPre.WASM
                             {
                                 float f = (long)*(float*)&pstk[stackPos];
 
-                                if(f < 0.0f)
-                                    throw new System.Exception("RuntimeError: float unrepresentable in integer range");
+                                if(f <= -1.0f)
+                                    throw new System.Exception("float unrepresentable in integer range");
 
                                 this.stackPos -= 4; // pop 4 bytes, push 8 bytes
-                                *(ulong*)&pstk[this.stackPos] = (ulong)f;
+
+                                if(f <= 0.0f)
+                                    *(ulong*)&pstk[this.stackPos] = 0;
+                                else
+                                    *(ulong*)&pstk[this.stackPos] = (ulong)f;
                             }
                             break;
 
@@ -1587,11 +1595,14 @@ namespace PxPre.WASM
                             {
                                 double d = *(double*)&pstk[stackPos];
                                 
-                                if(d < 0.0)
-                                    throw new System.Exception("RuntimeError: float urepresentable in integer range");
+                                if(d <= -1.0)
+                                    throw new System.Exception("float urepresentable in integer range");
 
+                                if(d <= 0.0)
+                                    *(ulong*)&pstk[this.stackPos] = 0;
+                                else
+                                    *(ulong*)&pstk[this.stackPos] = (ulong)d;
                                 // Pop 8 bytes, pushed 8 bytes. No stack change
-                                *(ulong*)&pstk[this.stackPos] = (ulong)d;
                             }
                             break;
 
@@ -1630,19 +1641,19 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.f64_convert_i32_u:
-                            *(double*)&pstk[this.stackPos - 4] = *(int*)&pstk[this.stackPos];
+                            *(double*)&pstk[this.stackPos - 4] = *(uint*)&pstk[this.stackPos];
                             // Pop 4 bytes, pushed 8 bytes.
                             this.stackPos -= 4;
                             break;
 
                         case Instruction.f64_convert_i64_s:
                             *(double*)&pstk[this.stackPos] = *(long*)&pstk[this.stackPos];
-                            // Pop 4 bytes, pushed 4 bytes. No stack change
+                            // Pop 8 bytes, pushed 8 bytes. No stack change
                             break;
 
                         case Instruction.f64_convert_i64_u:
                             *(double*)&pstk[this.stackPos] = *(ulong*)&pstk[this.stackPos];
-                            // Pop 4 bytes, pushed 4 bytes. No stack change
+                            // Pop 8 bytes, pushed 8 bytes. No stack change
                             break;
 
                         case Instruction.f64_promote_f32:
