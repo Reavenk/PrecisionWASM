@@ -48,5 +48,10 @@ namespace Tests
                     throw new System.Exception("Module expected to have a starting function, but doesn't.");
             }
         }
+
+        public static bool FloatEpsilon(float a, float b, float eps = 0.00001f)
+        { 
+            return Mathf.Abs(a - b) < eps;
+        }
     }
 }

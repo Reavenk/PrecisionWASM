@@ -29,4 +29,60 @@ namespace Tests
             this.right = right;
         }
     }
+
+    public struct IntTrippplet
+    {
+        public int a;
+        public int b;
+        public int c;
+
+        public IntTrippplet(int a, int b, int c)
+        {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+        }
+    }
+
+    public struct FloatTrippplet
+    { 
+        public float a;
+        public float b;
+        public float c;
+
+        public FloatTrippplet(float a, float b, float c)
+        { 
+            this.a = a;
+            this.b = b;
+            this.c = c;
+        }
+    }
+
+    public struct DoubleTripplet
+    { 
+        public double a;
+        public double b;
+        public double c;
+
+        public DoubleTripplet(double a, double b, double c)
+        { 
+            this.a = a;
+            this.b = b;
+            this.c = c;
+        }
+    }
+
+    public struct LongTripplet
+    {
+        public long a;
+        public long b;
+        public long c;
+
+        public LongTripplet(long a, long b, long c)
+        {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+        }
+    }
 }

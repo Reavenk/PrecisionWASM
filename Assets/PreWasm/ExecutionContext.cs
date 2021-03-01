@@ -1326,10 +1326,36 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.f32_floor:
+                            // https://webassembly.github.io/spec/core/exec/numerics.html#op-ffloor
+                            //
+                            // If z is a NaN, then return an element of nansN{z}.
+                            // Else if z is an infinity, then return z.
+                            // Else if z is a zero, then return z.
+                            // Else if z is greater than 0 but smaller than 1, then return positive zero.
+                            // Else return the largest integral value that is not larger than z.
+                            //
+                            // The definition of System.Math matches this logic.
+                            // https://docs.microsoft.com/en-us/dotnet/api/system.math.floor
+                            // Returns the largest integral value less than or equal to the specified number.
+
                             *(float*)(&pstk[stackPos]) = (float)System.Math.Floor(*(float*)(&pstk[stackPos]));
                             break;
 
                         case Instruction.f32_trunc:
+                            // https://webassembly.github.io/spec/core/exec/numerics.html#op-ftrunc
+                            //
+                            // If z is a NaN, then return an element of nansN{z}.
+                            // Else if z is an infinity, then return z.
+                            // Else if z is a zero, then return z.
+                            // Else if z is greater than 0 but smaller than 1, then return positive zero.
+                            // Else if z is smaller than 0 but greater than −1, then return negative zero.
+                            // Else return the integral value with the same sign as z and the largest magnitude that is not larger than the magnitude of z.
+                            //
+                            // The definition of System.Math.Truncate matches this logic
+                            // https://docs.microsoft.com/en-us/dotnet/api/system.math.truncate
+                            // Calculates the integral part of a specified double-precision floating-point number.
+                            // The integral part of is the number that remains after any fractional digits have been discarded.
+
                             *(float*)(&pstk[stackPos]) = (float)System.Math.Truncate(*(float*)(&pstk[stackPos]));
                             break;
 
@@ -1342,62 +1368,139 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.f32_add:
-                            *(float*)(&pstk[stackPos]) =
-                                *(float*)(&pstk[stackPos]) - *(float*)(&pstk[stackPos + 4]);
+                            *(float*)(&pstk[stackPos + 4]) =
+                                *(float*)(&pstk[stackPos + 4]) + *(float*)(&pstk[stackPos]);
 
                             stackPos += 4;
                             break;
 
                         case Instruction.f32_sub:
-                            *(float*)(&pstk[stackPos]) =
-                                *(float*)(&pstk[stackPos]) - *(float*)(&pstk[stackPos + 4]);
+                            *(float*)(&pstk[stackPos + 4]) =
+                                *(float*)(&pstk[stackPos + 4]) - *(float*)(&pstk[stackPos]);
 
                             stackPos += 4;
                             break;
 
                         case Instruction.f32_mul:
-                            *(float*)(&pstk[stackPos]) =
-                                *(float*)(&pstk[stackPos]) * *(float*)(&pstk[stackPos + 4]);
+                            *(float*)(&pstk[stackPos + 4]) =
+                                *(float*)(&pstk[stackPos + 4]) * *(float*)(&pstk[stackPos]);
 
                             stackPos += 4;
                             break;
 
                         case Instruction.f32_div:
-                            *(float*)(&pstk[stackPos]) =
-                                *(float*)(&pstk[stackPos]) / *(float*)(&pstk[stackPos + 4]);
+                            *(float*)(&pstk[stackPos + 4]) =
+                                *(float*)(&pstk[stackPos + 4]) / *(float*)(&pstk[stackPos]);
 
                             stackPos += 4;
                             break;
 
                         case Instruction.f32_min:
-                            *(float*)(&pstk[stackPos]) =
-                                *(float*)(&pstk[stackPos]) < *(float*)(&pstk[stackPos + 4]) ?
-                                    *(float*)(&pstk[stackPos]) :
-                                    *(float*)(&pstk[stackPos + 4]);
+                            {
+                                // https://webassembly.github.io/spec/core/exec/numerics.html?highlight=fmin
+                                //
+                                // • If either 𝑧1 or 𝑧2 is a NaN, then return an element of nans𝑁 {𝑧1, 𝑧2}.
+                                // • Else if one of 𝑧1 or 𝑧2 is a positive infinity, then return positive infinity.
+                                // • Else if one of 𝑧1 or 𝑧2 is a negative infinity, then return the other value.
+                                // • Else if both 𝑧1 and 𝑧2 are zeroes of opposite signs, then return positive zero.
+                                // • Else return the larger value of 𝑧1 and 𝑧2.
+
+                                // We're going to explicitly define the operator instead of using System.Min or 
+                                // Mathf.Min (not that we woudld allow Mathf code in here anways) because the
+                                // WASM spec is slightly different when dealing with NaNs and infs.
+
+                                float a = *(float*)(&pstk[stackPos + 4]);
+                                float b = *(float*)(&pstk[stackPos]);
+                                float * resloc = (float*)(&pstk[stackPos + 4]);
+
+                                if (float.IsNaN(a) == true || float.IsNaN(b) == true)
+                                    *resloc = float.NaN;
+                                else if (float.IsNegativeInfinity(a) == true || float.IsNegativeInfinity(b) == true)
+                                    *resloc = float.NegativeInfinity;
+                                else if (float.IsPositiveInfinity(a) == true)
+                                    *resloc = b;
+                                else if (float.IsPositiveInfinity(b) == true)
+                                    *resloc = a;
+                                else if (a < b)
+                                    *resloc = a;
+                                else
+                                    *resloc = b;
+                            }
 
                             stackPos += 4;
                             break;
 
                         case Instruction.f32_max:
-                            *(float*)(&pstk[stackPos]) =
-                                *(float*)(&pstk[stackPos]) > *(float*)(&pstk[stackPos + 4]) ?
-                                    *(float*)(&pstk[stackPos]) :
-                                    *(float*)(&pstk[stackPos + 4]);
+                            {
+                                // https://webassembly.github.io/spec/core/exec/numerics.html?highlight=fmin
+                                //
+                                // If either z1 or z2 is a NaN, then return an element of nansN{ z1,z2}.
+                                // Else if one of z1 or z2 is a negative infinity, then return negative infinity.
+                                // Else if one of z1 or z2 is a positive infinity, then return the other value.
+                                // Else if both z1 and z2 are zeroes of opposite signs, then return negative zero.
+                                // Else return the smaller value of z1 and z2.
+
+                                // We're going to explicitly define the operator instead of using System.Min or 
+                                // Mathf.Min (not that we woudld allow Mathf code in here anways) because the
+                                // WASM spec is slightly different when dealing with NaNs and infs.
+
+                                float a = *(float*)(&pstk[stackPos + 4]);
+                                float b = *(float*)(&pstk[stackPos]);
+                                float* resloc = (float*)(&pstk[stackPos + 4]);
+
+                                if (float.IsNaN(a) == true || float.IsNaN(b) == true)
+                                    *resloc = float.NaN;
+                                else if (float.IsPositiveInfinity(a) == true || float.IsPositiveInfinity(b) == true)
+                                    *resloc = float.PositiveInfinity;
+                                else if (float.IsNegativeInfinity(a) == true)
+                                    *resloc = b;
+                                else if (float.IsNegativeInfinity(b) == true)
+                                    *resloc = a;
+                                else if (a > b)
+                                    *resloc = a;
+                                else
+                                    *resloc = b;
+                            }
 
                             stackPos += 4;
                             break;
 
                         case Instruction.f32_copysign:
-                            float csMag = 
-                                *(float*)(&pstk[stackPos]) >= 0.0 ? 
-                                    *(float*)(&pstk[stackPos]) : 
-                                    -*(float*)(&pstk[stackPos]);
+                            {
+                                // https://webassembly.github.io/spec/core/exec/numerics.html#op-fcopysign
+                                //
+                                // If z1 and z2 have the same sign, then return z1.
+                                // Else return z1 with negated sign.
+                                //
+                                // This definition is missing explanation for cases involving
+                                // NaN vs -Nan, and 0.0f vs -0.0f. We're going to follow what WAT2WASM
+                                // returns, which seems to be performing bit-level logic with the sign -
+                                // which has different conventions than what a high-level C# implementation
+                                // would give, both for how the language behaves, and how the float utilities
+                                // behave.
 
-                            *(float*)(&pstk[stackPos + 4]) =
-                                *(float*)(&pstk[stackPos + 4]) > 0.0 ?
-                                    csMag : 
-                                    -csMag;
+                                float csMag = *(float*)(&pstk[stackPos + 4]);
+                                float csSin = *(float*)(&pstk[stackPos + 0]);
 
+                                if (float.IsNaN(csMag) == true)
+                                {
+                                    // In case the platform also has a negative NaN, either
+                                    // sign returns a positive NaN.
+                                    *(float*)(&pstk[stackPos + 4]) = float.NaN;
+                                }
+                                else
+                                {
+                                    // For how WASM is supposed to work, it WAY easier to 
+                                    // do this on a bit level with an integer type instead.
+                                    uint nMag = *(uint*)(&pstk[stackPos + 4]);
+                                    uint nSign = *(uint*)(&pstk[stackPos]);
+                                    const uint SignMask = (uint)1 << 31;
+                                    const uint MagMask = SignMask - 1;
+
+                                    * (uint*)(&pstk[stackPos + 4]) = 
+                                        (nSign & SignMask) | (nMag & MagMask);
+                                }
+                            }
                             stackPos += 4;
                             break;
 
@@ -1407,6 +1510,14 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.f64_neg:
+
+                            // https://webassembly.github.io/spec/core/exec/numerics.html#op-fneg
+                            //
+                            // If z is a NaN, then return z with negated sign.
+                            // Else if z is an infinity, then return that infinity negated.
+                            // Else if z is a zero, then return that zero negated.
+                            // Else return z negated.
+
                             *(double*)(&pstk[stackPos]) =
                                 -*(double*)(&pstk[stackPos]);
                             break;
@@ -1436,12 +1547,16 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.f64_sqrt:
+                            // Just use the build in System.Math implementation. If it behaves
+                            // non-deterministically there shall be eyebrows to raise - but it's
+                            // doubtful sqrt() for IEEE754 implementations will vary.
                             *(double*)(&pstk[stackPos]) =
                                 System.Math.Sqrt(
                                     *(double*)(&pstk[stackPos]));
                             break;
 
                         case Instruction.f64_add:
+                            // Built in implementation
                             *(double*)(&pstk[stackPos + 8]) = 
                                 *(double*)(&pstk[stackPos + 8]) + 
                                 *(double*)(&pstk[stackPos]);
@@ -1450,6 +1565,7 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.f64_sub:
+                            // Built in implementation
                             *(double*)(&pstk[stackPos + 8]) =
                                 *(double*)(&pstk[stackPos + 8]) -
                                 *(double*)(&pstk[stackPos]);
@@ -1458,6 +1574,7 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.f64_mul:
+                            // Built in implementation
                             *(double*)(&pstk[stackPos + 8]) =
                                 *(double*)(&pstk[stackPos + 8]) *
                                 *(double*)(&pstk[stackPos]);
@@ -1466,37 +1583,101 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.f64_div:
+                            // Built in implementation
                             *(double*)(&pstk[stackPos + 8]) =
                                 *(double*)(&pstk[stackPos + 8]) /
                                 *(double*)(&pstk[stackPos]);
 
-                            stackPos -= 8;
+                            stackPos += 8;
                             break;
 
                         case Instruction.f64_min:
-                            *(double*)(&pstk[stackPos + 8]) =
-                                System.Math.Min(
-                                    *(double*)(&pstk[stackPos + 8]),
-                                    *(double*)(&pstk[stackPos]));
+                            {
+                                // • If either 𝑧1 or 𝑧2 is a NaN, then return an element of nans𝑁 {𝑧1, 𝑧2}.
+                                // • Else if one of 𝑧1 or 𝑧2 is a positive infinity, then return positive infinity.
+                                // • Else if one of 𝑧1 or 𝑧2 is a negative infinity, then return the other value.
+                                // • Else if both 𝑧1 and 𝑧2 are zeroes of opposite signs, then return positive zero.
+                                // • Else return the larger value of 𝑧1 and 𝑧2.
 
-                            stackPos -= 8;
+                                // We're going to explicitly define the operator instead of using System.Min 
+                                // because the WASM spec is slightly different when dealing with NaNs and infs.
+
+                                double a = *(double*)(&pstk[stackPos + 8]);
+                                double b = *(double*)(&pstk[stackPos]);
+
+                                if(double.IsNaN(a) == true || double.IsNaN(b) == true)
+                                    *(double*)(&pstk[stackPos + 8]) = double.NaN;
+                                else if(double.IsNegativeInfinity(a) == true || double.IsNegativeInfinity(b) == true)
+                                    *(double*)(&pstk[stackPos + 8]) = double.NegativeInfinity;
+                                else if(double.IsPositiveInfinity(a) == true)
+                                    *(double*)(&pstk[stackPos + 8]) = b;
+                                else if (double.IsPositiveInfinity(b) == true)
+                                    *(double*)(&pstk[stackPos + 8]) = a;
+                                else if (a < b)
+                                    *(double*)(&pstk[stackPos + 8]) = a;
+                                else
+                                    *(double*)(&pstk[stackPos + 8]) = b;
+                            }
+
+                            stackPos += 8;
                             break;
 
                         case Instruction.f64_max:
-                            *(double*)(&pstk[stackPos + 8]) =
-                                System.Math.Max(
-                                    *(double*)(&pstk[stackPos + 8]),
-                                    *(double*)(&pstk[stackPos]));
+                            {
+                                // • If either 𝑧1 or 𝑧2 is a NaN, then return an element of nans𝑁 {𝑧1, 𝑧2}.
+                                // • Else if one of 𝑧1 or 𝑧2 is a positive infinity, then return positive infinity.
+                                // • Else if one of 𝑧1 or 𝑧2 is a negative infinity, then return the other value.
+                                // • Else if both 𝑧1 and 𝑧2 are zeroes of opposite signs, then return positive zero.
+                                // • Else return the larger value of 𝑧1 and 𝑧2.
 
-                            stackPos -= 8;
+                                double a = *(double*)(&pstk[stackPos + 8]);
+                                double b = *(double*)(&pstk[stackPos]);
+
+                                if (double.IsNaN(a) == true || double.IsNaN(b) == true)
+                                    *(double*)(&pstk[stackPos + 8]) = double.NaN;
+                                else if (double.IsPositiveInfinity(a) == true || double.IsPositiveInfinity(b) == true)
+                                    *(double*)(&pstk[stackPos + 8]) = double.PositiveInfinity;
+                                else if (double.IsNegativeInfinity(a) == true)
+                                    *(double*)(&pstk[stackPos + 8]) = b;
+                                else if (double.IsNegativeInfinity(b) == true)
+                                    *(double*)(&pstk[stackPos + 8]) = a;
+                                else if (a > b)
+                                    *(double*)(&pstk[stackPos + 8]) = a;
+                                else
+                                    *(double*)(&pstk[stackPos + 8]) = b;
+                            }
+
+                            stackPos += 8;
                             break;
 
                         case Instruction.f64_copysign:
-                            *(double*)(&pstk[stackPos + 8]) =
-                                    System.Math.Abs(*(double*)(&pstk[stackPos + 8])) * 
-                                    System.Math.Sign(*(double*)(&pstk[stackPos]));
+                            {
+                                double csMag = *(double*)(&pstk[stackPos + 8]);
+                                double csSin = *(double*)(&pstk[stackPos + 0]);
 
-                            stackPos -= 8;
+                                // This has the same issues mentioned in the comments for f32_copysign
+                                if (double.IsNaN(csMag) == true)
+                                {
+                                    // In case the platform also has a negative NaN, either
+                                    // sign returns a positive NaN.
+                                    *(double*)(&pstk[stackPos + 8]) = double.NaN;
+                                }
+                                else
+                                {
+                                    // For how WASM is supposed to work, it WAY easier to 
+                                    // do this on a bit level with an integer type instead.
+                                    ulong nMag = *(ulong*)(&pstk[stackPos + 8]);
+                                    ulong nSign = *(ulong*)(&pstk[stackPos]);
+
+                                    const ulong SignMask = (ulong)1 << 63;
+                                    const ulong MagMask = SignMask - 1;
+
+                                    *(ulong*)(&pstk[stackPos + 8]) =
+                                        (nSign & SignMask) | (nMag & MagMask);
+                                }
+                            }
+
+                            stackPos += 8;
                             break;
 
                         case Instruction.i32_wrap_i64:
