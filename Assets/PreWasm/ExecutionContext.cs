@@ -1926,6 +1926,15 @@ namespace PxPre.WASM
 
                         case Instruction._memory_fill:
                             {
+                                // Bulk memory extension
+                                // https://github.com/WebAssembly/bulk-memory-operations/blob/master/proposals/bulk-memory-operations/Overview.md
+                                //
+                                // While bulk memory is not functionality target for PreWASM, it was
+                                // featured as a demo in WAT2WASM so it was simple enough to support.
+                                //
+                                // Other bulk memory features may be added later, but there are no 
+                                // details if and when.
+
                                 ip += 4; // Skip unused parameter
 
                                 uint start  = *(uint*)&pstk[this.stackPos + 8];
