@@ -1881,47 +1881,277 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction._i32_trunc_sat_f32_s:
-                            *(int*)&pstk[this.stackPos] = (int)*(float*)&pstk[this.stackPos];
+                            // Saturating Truncate. A float to int operator that has rules
+                            // for handling/converting floating point errors and codes.
+                            // 
+                            // https://webassembly.github.io/spec/core/exec/numerics.html#op-trunc-sat-s
+                            // 
+                            // If z is a NaN, then return 0.
+                            // Else if z is negative infinity, then return −2N−1.
+                            // Else if z is positive infinity, then return 2N−1−1.
+                            // Else if trunc(z) is less than −2N−1, then return −2N−1.
+                            // Else if trunc(z) is greater than 2N−1−1, then return 2N−1−1.
+                            // Else, return trunc(z).
+                            //
+                            // I don't think there's a C# convention (or even an x86 op) for this.
+                            // We're going to implement this by hand.
+                            {
+                                float fval = *(float*)&pstk[this.stackPos];
+
+                                if(float.IsNaN(fval) == true)
+                                    *(int*)&pstk[this.stackPos] = 0;
+                                else if(float.IsNegativeInfinity(fval) == true)
+                                    *(int*)&pstk[this.stackPos] = int.MinValue;
+                                else if(float.IsPositiveInfinity(fval) == true)
+                                    *(int*)&pstk[this.stackPos] = int.MaxValue;
+                                else if(fval < int.MinValue)
+                                    *(int*)&pstk[this.stackPos] = int.MinValue;
+                                else if(fval > int.MaxValue)
+                                    *(int*)&pstk[this.stackPos] = int.MaxValue;
+                                else
+                                    *(int*)&pstk[this.stackPos] = (int)fval;
+                            }
                             // Pop 4 bytes, pushed 4 bytes. No stack change
                             break;
 
                         case Instruction._i32_trunc_sat_f32_u:
-                            *(uint*)&pstk[this.stackPos] = (uint)*(float*)&pstk[this.stackPos];
+                            // Saturating Truncate. A float to int operator that has rules
+                            // for handling/converting floating point errors and codes.
+                            // 
+                            // https://webassembly.github.io/spec/core/exec/numerics.html#op-trunc-sat-u
+                            //
+                            // If z is a NaN, then return 0.
+                            // Else if z is negative infinity, then return 0.
+                            // Else if z is positive infinity, then return 2N−1.
+                            // Else if trunc(z) is less than 0, then return 0.
+                            // Else if trunc(z) is greater than 2N−1, then return 2N−1.
+                            // Else, return trunc(z).
+                            //
+                            // I don't think there's a C# convention (or even an x86 op) for this.
+                            // We're going to implement this by hand.
+                            {
+                                float fval = *(float*)&pstk[this.stackPos];
+
+                                if(float.IsNaN(fval) == true)
+                                    *(uint*)&pstk[this.stackPos] = 0;
+                                else if(float.IsNegativeInfinity(fval) == true)
+                                    *(uint*)&pstk[this.stackPos] = 0;
+                                else if(float.IsPositiveInfinity(fval) == true)
+                                    *(uint*)&pstk[this.stackPos] = uint.MaxValue;
+                                else if(fval < 0.0f)
+                                    *(uint*)&pstk[this.stackPos] = 0;
+                                else if(fval > uint.MaxValue)
+                                    *(uint*)&pstk[this.stackPos] = uint.MaxValue;
+                                else
+                                    *(uint*)&pstk[this.stackPos] = (uint)fval;
+                            }
                             // Pop 4 bytes, pushed 4 bytes. No stack change
                             break;
 
                         case Instruction._i32_trunc_sat_f64_s:
-                            *(int*)&pstk[this.stackPos + 4] = (int)*(double*)&pstk[this.stackPos];
-                            this.stackPos += 4;
-                            // Pop 8 bytes, pushed 4 bytes.
+                            // Saturating Truncate. A float to int operator that has rules
+                            // for handling/converting floating point errors and codes.
+                            // 
+                            // https://webassembly.github.io/spec/core/exec/numerics.html#op-trunc-sat-s
+                            // 
+                            // If z is a NaN, then return 0.
+                            // Else if z is negative infinity, then return −2N−1.
+                            // Else if z is positive infinity, then return 2N−1−1.
+                            // Else if trunc(z) is less than −2N−1, then return −2N−1.
+                            // Else if trunc(z) is greater than 2N−1−1, then return 2N−1−1.
+                            // Else, return trunc(z).
+                            //
+                            // I don't think there's a C# convention (or even an x86 op) for this.
+                            // We're going to implement this by hand.
+                            {
+                                double dval = *(double*)&pstk[this.stackPos];
+                                this.stackPos += 4; // Pop 8 bytes, pushed 4 bytes.
+
+                                if(double.IsNaN(dval) == true)
+                                    *(int*)&pstk[this.stackPos] = 0;
+                                else if(double.IsNegativeInfinity(dval) == true)
+                                    *(int*)&pstk[this.stackPos] = int.MinValue;
+                                else if(double.IsPositiveInfinity(dval) == true)
+                                    *(int*)&pstk[this.stackPos] = int.MaxValue;
+                                else if(dval < int.MinValue)
+                                    *(int*)&pstk[this.stackPos] = int.MinValue;
+                                else if(dval > int.MaxValue)
+                                    *(int*)&pstk[this.stackPos] = int.MaxValue;
+                                else
+                                    *(int*)&pstk[this.stackPos] = (int)dval;
+                            }
                             break;
 
                         case Instruction._i32_trunc_sat_f64_u:
-                            *(uint*)&pstk[this.stackPos + 4] = (uint)*(double*)&pstk[this.stackPos];
-                            this.stackPos += 4;
+                            // Saturating Truncate. A float to int operator that has rules
+                            // for handling/converting floating point errors and codes.
+                            // 
+                            // https://webassembly.github.io/spec/core/exec/numerics.html#op-trunc-sat-u
+                            //
+                            // If z is a NaN, then return 0.
+                            // Else if z is negative infinity, then return 0.
+                            // Else if z is positive infinity, then return 2N−1.
+                            // Else if trunc(z) is less than 0, then return 0.
+                            // Else if trunc(z) is greater than 2N−1, then return 2N−1.
+                            // Else, return trunc(z).
+                            //
+                            // I don't think there's a C# convention (or even an x86 op) for this.
+                            // We're going to implement this by hand.
+                            {
+                                double dval = *(double*)&pstk[this.stackPos];
+                                this.stackPos += 4;
+
+                                if(double.IsNaN(dval) == true)
+                                    *(uint*)&pstk[this.stackPos] = 0;
+                                else if(double.IsNegativeInfinity(dval) == true)
+                                    *(uint*)&pstk[this.stackPos] = 0;
+                                else if (double.IsPositiveInfinity(dval) == true)
+                                    *(uint*)&pstk[this.stackPos] = uint.MaxValue;
+                                else if(dval < 0.0)
+                                    *(uint*)&pstk[this.stackPos] = 0;
+                                else if(dval > uint.MaxValue)
+                                    *(uint*)&pstk[this.stackPos] = uint.MaxValue;
+                                else
+                                    *(uint*)&pstk[this.stackPos] = (uint)dval;
+                            }
                             // Pop 8 bytes, pushed 4 bytes.
                             break;
 
                         case Instruction._i64_trunc_sat_f32_s:
-                            *(long*)&pstk[this.stackPos - 4] = (int)*(float*)&pstk[this.stackPos];
-                            this.stackPos -= 4;
-                            // Pop 4 bytes, pushed 8 bytes.
+                            // Saturating Truncate. A float to int operator that has rules
+                            // for handling/converting floating point errors and codes.
+                            // 
+                            // https://webassembly.github.io/spec/core/exec/numerics.html#op-trunc-sat-s
+                            // 
+                            // If z is a NaN, then return 0.
+                            // Else if z is negative infinity, then return −2N−1.
+                            // Else if z is positive infinity, then return 2N−1−1.
+                            // Else if trunc(z) is less than −2N−1, then return −2N−1.
+                            // Else if trunc(z) is greater than 2N−1−1, then return 2N−1−1.
+                            // Else, return trunc(z).
+                            //
+                            // I don't think there's a C# convention (or even an x86 op) for this.
+                            // We're going to implement this by hand.
+                            {
+                                float fval = *(float*)&pstk[this.stackPos];
+                                this.stackPos -= 4; // Pop 4 bytes, pushed 8 bytes.
+
+                                if(float.IsNaN(fval) == true)
+                                    *(long*)&pstk[this.stackPos] = 0;
+                                else if(float.IsNegativeInfinity(fval) == true)
+                                    *(long*)&pstk[this.stackPos] = long.MinValue;
+                                else if(float.IsPositiveInfinity(fval) == true)
+                                    *(long*)&pstk[this.stackPos] = long.MaxValue;
+                                else if(fval < long.MinValue)
+                                    *(long*)&pstk[this.stackPos] = long.MinValue;
+                                else if(fval > long.MaxValue)
+                                    *(long*)&pstk[this.stackPos] = long.MaxValue;
+                                else
+                                    *(long*)&pstk[this.stackPos] = (long)fval;
+                            }
                             break;
 
                         case Instruction._i64_trunc_sat_f32_u:
-                            *(ulong*)&pstk[this.stackPos - 4] = (ulong)*(float*)&pstk[this.stackPos];
-                            this.stackPos -= 4;
-                            // Pop 4 bytes, pushed 8 bytes.
+                            // Saturating Truncate. A float to int operator that has rules
+                            // for handling/converting floating point errors and codes.
+                            // 
+                            // https://webassembly.github.io/spec/core/exec/numerics.html#op-trunc-sat-u
+                            //
+                            // If z is a NaN, then return 0.
+                            // Else if z is negative infinity, then return 0.
+                            // Else if z is positive infinity, then return 2N−1.
+                            // Else if trunc(z) is less than 0, then return 0.
+                            // Else if trunc(z) is greater than 2N−1, then return 2N−1.
+                            // Else, return trunc(z).
+                            //
+                            // I don't think there's a C# convention (or even an x86 op) for this.
+                            // We're going to implement this by hand.
+                            {
+                                float fval = *(float*)&pstk[this.stackPos];
+                                this.stackPos -= 4; // Pop 4 bytes, pushed 8 bytes.
+
+                                if (float.IsNaN(fval) == true)
+                                    *(ulong*)&pstk[this.stackPos] = 0;
+                                else if(float.IsNegativeInfinity(fval) == true)
+                                    *(ulong*)&pstk[this.stackPos] = 0;
+                                else if(float.IsPositiveInfinity(fval) == true)
+                                    *(ulong*)&pstk[this.stackPos] = ulong.MaxValue;
+                                else if(fval < 0.0f)
+                                    *(ulong*)&pstk[this.stackPos] = 0;
+                                else if (fval > ulong.MaxValue)
+                                    *(ulong*)&pstk[this.stackPos] = ulong.MaxValue;
+                                else 
+                                    *(ulong*)&pstk[this.stackPos] = (ulong)fval;
+
+                            }
                             break;
 
                         case Instruction._i64_trunc_sat_f64_s:
-                            *(long*)&pstk[this.stackPos] = (long)*(double*)&pstk[this.stackPos];
-                            // Pop 8 bytes, pushed 8 bytes. No stack change
+                            // Saturating Truncate. A float to int operator that has rules
+                            // for handling/converting floating point errors and codes.
+                            // 
+                            // https://webassembly.github.io/spec/core/exec/numerics.html#op-trunc-sat-s
+                            // 
+                            // If z is a NaN, then return 0.
+                            // Else if z is negative infinity, then return −2N−1.
+                            // Else if z is positive infinity, then return 2N−1−1.
+                            // Else if trunc(z) is less than −2N−1, then return −2N−1.
+                            // Else if trunc(z) is greater than 2N−1−1, then return 2N−1−1.
+                            // Else, return trunc(z).
+                            //
+                            // I don't think there's a C# convention (or even an x86 op) for this.
+                            // We're going to implement this by hand.
+                            {
+                                double dval = *(double*)&pstk[this.stackPos];
+                                // Pop 8 bytes, pushed 8 bytes. No stack change
+
+                                if(double.IsNaN(dval) == true)
+                                    *(long*)&pstk[this.stackPos] = 0;
+                                else if(double.IsNegativeInfinity(dval) == true)
+                                    *(long*)&pstk[this.stackPos] = long.MinValue;
+                                else if(double.IsPositiveInfinity(dval) == true)
+                                    *(long*)&pstk[this.stackPos] = long.MaxValue;
+                                else if(dval < long.MinValue)
+                                    *(long*)&pstk[this.stackPos] = long.MinValue;
+                                else if (dval > long.MaxValue)
+                                    *(long*)&pstk[this.stackPos] = long.MaxValue;
+                                else
+                                    *(long*)&pstk[this.stackPos] = (long)dval;
+                            }
                             break;
 
                         case Instruction._i64_trunc_sat_f64_u:
-                            *(ulong*)&pstk[this.stackPos] = (ulong)*(double*)&pstk[this.stackPos];
-                            // Pop 8 bytes, pushed 8 bytes. No stack change
+                            // Saturating Truncate. A float to int operator that has rules
+                            // for handling/converting floating point errors and codes.
+                            // 
+                            // https://webassembly.github.io/spec/core/exec/numerics.html#op-trunc-sat-u
+                            //
+                            // If z is a NaN, then return 0.
+                            // Else if z is negative infinity, then return 0.
+                            // Else if z is positive infinity, then return 2N−1.
+                            // Else if trunc(z) is less than 0, then return 0.
+                            // Else if trunc(z) is greater than 2N−1, then return 2N−1.
+                            // Else, return trunc(z).
+                            //
+                            // I don't think there's a C# convention (or even an x86 op) for this.
+                            // We're going to implement this by hand.
+                            {
+                                double dval = *(double*)&pstk[this.stackPos];
+                                // Pop 8 bytes, pushed 8 bytes. No stack change
+
+                                if(double.IsNaN(dval) == true)
+                                    *(ulong*)&pstk[this.stackPos] = 0;
+                                else if(double.IsNegativeInfinity(dval) == true)
+                                    *(ulong*)&pstk[this.stackPos] = 0;
+                                else if(double.IsPositiveInfinity(dval) == true)
+                                    *(ulong*)&pstk[this.stackPos] = ulong.MaxValue;
+                                else if(dval < 0.0)
+                                    *(ulong*)&pstk[this.stackPos] = 0;
+                                else if(dval > ulong.MaxValue)
+                                    *(ulong*)&pstk[this.stackPos] = ulong.MaxValue;
+                                else
+                                    *(ulong*)&pstk[this.stackPos] = (ulong)dval;
+                            }
                             break;
 
                         case Instruction._memory_fill:
