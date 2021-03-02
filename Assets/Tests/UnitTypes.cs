@@ -107,4 +107,16 @@ namespace Tests
             this.c = c;
         }
     }
+
+    public struct MixedPair<tya, tyb>
+    { 
+        public tya a;
+        public tyb b;
+
+        public MixedPair(tya a, tyb b)
+        { 
+            this.a = a;
+            this.b = b;
+        }
+    }
 }
