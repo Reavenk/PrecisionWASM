@@ -30,13 +30,13 @@ namespace Tests
         }
     }
 
-    public struct IntTrippplet
+    public struct IntTripplet
     {
         public int a;
         public int b;
         public int c;
 
-        public IntTrippplet(int a, int b, int c)
+        public IntTripplet(int a, int b, int c)
         {
             this.a = a;
             this.b = b;

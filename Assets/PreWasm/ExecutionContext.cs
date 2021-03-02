@@ -1007,41 +1007,62 @@ namespace PxPre.WASM
                             *(int*)(&pstk[stackPos + 4]) =
                                 *(int*)(&pstk[stackPos]) + *(int*)(&pstk[stackPos + 4]);
 
-                            stackPos += 4;
+                            this.stackPos += 4;
                             break;
 
                         case Instruction.i32_sub:
                             *(int*)(&pstk[stackPos + 4]) =
                                 *(int*)(&pstk[stackPos + 4]) - *(int*)(&pstk[stackPos]);
 
-                            stackPos += 4;
+                            this.stackPos += 4;
                             break;
 
                         case Instruction.i32_mul:
                             *(int*)(&pstk[stackPos + 4]) =
                                 *(int*)(&pstk[stackPos + 4]) * *(int*)(&pstk[stackPos]);
 
-                            stackPos += 4;
+                            this.stackPos += 4;
                             break;
 
                         case Instruction.i32_div_s:
-                            *(int*)(&pstk[stackPos + 4]) =
-                                *(int*)(&pstk[stackPos + 4]) / *(int*)(&pstk[stackPos]);
+                            // HELP: It's unknown why this divide will still raise overflow exceptions.
+                            // The same probably goes for all the other integer divides.
+                            unchecked
+                            {
+                                *(int*)(&pstk[stackPos + 4]) =
+                                    *(int*)(&pstk[stackPos + 4]) / *(int*)(&pstk[stackPos]);
+                            }
+
+                            this.stackPos += 4;
                             break;
 
                         case Instruction.i32_div_u:
-                            *(uint*)(&pstk[stackPos + 4]) =
-                                *(uint*)(&pstk[stackPos + 4]) / *(uint*)(&pstk[stackPos]);
+                            unchecked
+                            {
+                                *(uint*)(&pstk[stackPos + 4]) =
+                                   *(uint*)(&pstk[stackPos + 4]) / *(uint*)(&pstk[stackPos]);
+                            }
+                            this.stackPos += 4;
                             break;
 
                         case Instruction.i32_rem_s:
-                            *(int*)(&pstk[stackPos + 4]) =
-                                *(int*)(&pstk[stackPos + 4]) % *(int*)(&pstk[stackPos]);
+                            unchecked
+                            {
+                                *(int*)(&pstk[stackPos + 4]) =
+                                    *(int*)(&pstk[stackPos + 4]) % *(int*)(&pstk[stackPos]);
+                            }
+
+                            this.stackPos += 4;
                             break;
 
                         case Instruction.i32_rem_u:
-                            *(uint*)(&pstk[stackPos + 4]) =
-                                *(uint*)(&pstk[stackPos + 4]) % *(uint*)(&pstk[stackPos]);
+                            unchecked
+                            {
+                                *(uint*)(&pstk[stackPos + 4]) =
+                                    *(uint*)(&pstk[stackPos + 4]) % *(uint*)(&pstk[stackPos]);
+                            }
+
+                            this.stackPos += 4;
                             break;
 
                         case Instruction.i32_and:
@@ -1066,79 +1087,64 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.i32_shl:
-                            *(int*)(&pstk[stackPos + 4]) =
-                                *(int*)(&pstk[stackPos + 4]) << *(int*)(&pstk[stackPos]);
-
+                            {
+                                * (int*)(&pstk[stackPos + 4]) =
+                                    *(int*)(&pstk[stackPos + 4]) << *(int*)(&pstk[stackPos]);
+                            }
                             stackPos += 4;
                             break;
 
                         case Instruction.i32_shr_s:
                             // Right shift, but bit extend the most significant value
                             {
-                                int val = *(int*)(&pstk[stackPos + 4]);
-                                bool hibit = ((1 << 31) & val) != 0;
-
-                                int shiftAmt = *(int*)(&pstk[stackPos]);
-                                if (hibit == false)
-                                {
-                                    *(int*)(&pstk[stackPos + 4]) = val >> shiftAmt;
-                                }
-                                else
-                                {
-                                    *(int*)(&pstk[stackPos + 4]) = 
-                                        (val >> shiftAmt) | ((~0) << (32 - shiftAmt));
-                                }
+                                *(int*)(&pstk[stackPos + 4]) =
+                                    *(int*)(&pstk[stackPos + 4]) >> *(int*)(&pstk[stackPos]);
 
                                 stackPos += 4;
                             }
                             break;
 
                         case Instruction.i32_shr_u:
-                            *(int*)(&pstk[stackPos + 4]) =
-                                *(int*)(&pstk[stackPos + 4]) >> *(int*)(&pstk[stackPos]);
+                            *(uint*)(&pstk[stackPos + 4]) =
+                                *(uint*)(&pstk[stackPos + 4]) >> *(int*)(&pstk[stackPos]);
 
                             stackPos += 4;
                             break;
 
                         case Instruction.i32_rotl:
                             {
-                                int val = *(int*)(&pstk[stackPos + 4]);
+                                uint val = *(uint*)(&pstk[stackPos + 4]);
                                 int shiftAmt = *(int*)(&pstk[stackPos]);
 
-                                int wrap = val >> (32 - shiftAmt);
-                                int pushed = val << shiftAmt;
-
-                                stackPos += 4;
-                                *(int*)(&pstk[stackPos]) = wrap | pushed;
+                                
+                                *(uint*)(&pstk[this.stackPos + 4]) = ((val << shiftAmt) | (val >> (32 - shiftAmt)));
+                                this.stackPos += 4;
                             }
                             break;
 
                         case Instruction.i32_rotr:
                             {
-                                int val = *(int*)(&pstk[stackPos + 4]);
+                                uint val = *(uint*)(&pstk[stackPos + 4]);
                                 int shiftAmt = *(int*)(&pstk[stackPos]);
 
-                                int wrap = val << (32 - shiftAmt);
-                                int pushed = val >> shiftAmt;
-
-                                stackPos += 4;
-                                *(int*)(&pstk[stackPos]) = wrap | pushed;
+                                *(uint*)(&pstk[this.stackPos + 4]) = ((val >> shiftAmt) | (val << (32 - shiftAmt)));
+                                this.stackPos += 4;
                             }
                             break;
 
                         case Instruction.i64_clz:
                             {
                                 // Count leading zero bits
-                                long topi = *(long*)(&pstk[stackPos]);
+                                long topi = *(long*)(&pstk[this.stackPos]);
                                 if (topi == 0)
-                                    *(long*)(&pstk[stackPos]) = 64;
+                                    *(long*)(&pstk[this.stackPos]) = 64;
                                 else
                                 {
                                     for (int i = 0; i < 64; ++i)
                                     {
                                         if ((topi & ((1 << 63) >> i)) != 0)
                                         {
-                                            *(long*)(&pstk[stackPos]) = i;
+                                            *(long*)(&pstk[this.stackPos]) = i;
                                             break;
                                         }
                                     }
@@ -1149,16 +1155,16 @@ namespace PxPre.WASM
                         case Instruction.i64_ctz:
                             {
                                 // Count trailing zero bits
-                                long topi = *(long*)(&pstk[stackPos]);
+                                long topi = *(long*)(&pstk[this.stackPos]);
                                 if (topi == 0)
-                                    *(long*)(&pstk[stackPos]) = 64;
+                                    *(long*)(&pstk[this.stackPos]) = 64;
                                 else
                                 {
                                     for (int i = 0; i < 64; ++i)
                                     {
                                         if ((topi & (1 << i)) != 0)
                                         {
-                                            *(long*)(&pstk[stackPos]) = i;
+                                            *(long*)(&pstk[this.stackPos]) = i;
                                             break;
                                         }
                                     }
@@ -1169,143 +1175,137 @@ namespace PxPre.WASM
                         case Instruction.i64_popcnt:
                             {
                                 // Count non-zero bits
-                                long topi = *(long*)(&pstk[stackPos]);
+                                long topi = *(long*)(&pstk[this.stackPos]);
                                 long v = 0;
                                 for (int i = 0; i < 64; ++i)
                                 {
                                     if ((topi & (1 << i)) != 0)
                                         ++v;
                                 }
-                                *(long*)(&pstk[stackPos]) = v;
+                                *(long*)(&pstk[this.stackPos]) = v;
                             }
                             break;
 
                         case Instruction.i64_add:
                             {
-                                *(long*)(&pstk[stackPos + 8]) =
-                                    *(long*)(&pstk[stackPos + 8]) + *(long*)(&pstk[stackPos]);
+                                *(long*)(&pstk[this.stackPos + 8]) =
+                                    *(long*)(&pstk[this.stackPos + 8]) + *(long*)(&pstk[this.stackPos]);
 
                                 stackPos += 8;
                             }
                             break;
 
                         case Instruction.i64_sub:
-                            *(long*)(&pstk[stackPos + 8]) =
-                                *(long*)(&pstk[stackPos + 8]) - *(long*)(&pstk[stackPos]);
+                            *(long*)(&pstk[this.stackPos + 8]) =
+                                *(long*)(&pstk[this.stackPos + 8]) - *(long*)(&pstk[this.stackPos]);
 
-                            stackPos += 8;
+                            this.stackPos += 8;
                             break;
 
                         case Instruction.i64_mul:
-                            *(long*)(&pstk[stackPos + 8]) =
-                                *(long*)(&pstk[stackPos + 8]) * *(long*)(&pstk[stackPos]);
+                            *(long*)(&pstk[this.stackPos + 8]) =
+                                *(long*)(&pstk[this.stackPos + 8]) * *(long*)(&pstk[this.stackPos]);
 
                             stackPos += 8;
                             break;
 
                         case Instruction.i64_div_s:
-                            *(long*)(&pstk[stackPos + 8]) =
-                                *(long*)(&pstk[stackPos + 8]) / *(long*)(&pstk[stackPos]);
+                            unchecked
+                            {
+                                *(long*)(&pstk[this.stackPos + 8]) =
+                                   *(long*)(&pstk[this.stackPos + 8]) / *(long*)(&pstk[this.stackPos]);
+                            }
 
-                            stackPos += 8;
+                            this.stackPos += 8;
                             break;
 
                         case Instruction.i64_div_u:
-                            *(ulong*)(&pstk[stackPos + 8]) =
-                                *(ulong*)(&pstk[stackPos + 8]) / *(ulong*)(&pstk[stackPos]);
+                            unchecked
+                            {
+                                *(ulong*)(&pstk[this.stackPos + 8]) =
+                                   *(ulong*)(&pstk[this.stackPos + 8]) / *(ulong*)(&pstk[this.stackPos]);
+                            }
 
-                            stackPos += 8;
+                            this.stackPos += 8;
                             break;
 
                         case Instruction.i64_rem_s:
-                            *(long*)(&pstk[stackPos + 8]) =
-                                *(long*)(&pstk[stackPos + 8]) % *(long*)(&pstk[stackPos]);
+                            *(long*)(&pstk[this.stackPos + 8]) =
+                                *(long*)(&pstk[this.stackPos + 8]) % *(long*)(&pstk[this.stackPos]);
 
-                            stackPos += 8;
+                            this.stackPos += 8;
                             break;
 
                         case Instruction.i64_rem_u:
-                            *(ulong*)(&pstk[stackPos + 8]) =
-                                *(ulong*)(&pstk[stackPos + 8]) % *(ulong*)(&pstk[stackPos]);
+                            *(ulong*)(&pstk[this.stackPos + 8]) =
+                                *(ulong*)(&pstk[this.stackPos + 8]) % *(ulong*)(&pstk[this.stackPos]);
 
-                            stackPos += 8;
+                            this.stackPos += 8;
                             break;
 
                         case Instruction.i64_and:
-                            *(long*)(&pstk[stackPos + 8]) =
-                                *(long*)(&pstk[stackPos + 8]) & *(long*)(&pstk[stackPos]);
+                            *(long*)(&pstk[this.stackPos + 8]) =
+                                *(long*)(&pstk[this.stackPos + 8]) & *(long*)(&pstk[this.stackPos]);
 
-                            stackPos += 8;
+                            this.stackPos += 8;
                             break;
 
                         case Instruction.i64_or:
-                            *(long*)(&pstk[stackPos + 8]) =
-                                *(long*)(&pstk[stackPos + 8]) | *(long*)(&pstk[stackPos]);
+                            *(long*)(&pstk[this.stackPos + 8]) =
+                                *(long*)(&pstk[this.stackPos + 8]) | *(long*)(&pstk[this.stackPos]);
 
-                            stackPos += 8;
+                            this.stackPos += 8;
                             break;
 
                         case Instruction.i64_xor:
-                            *(long*)(&pstk[stackPos + 8]) =
-                                *(long*)(&pstk[stackPos + 8]) ^ *(long*)(&pstk[stackPos]);
+                            *(long*)(&pstk[this.stackPos + 8]) =
+                                *(long*)(&pstk[this.stackPos + 8]) ^ *(long*)(&pstk[this.stackPos]);
 
-                            stackPos += 8;
+                            this.stackPos += 8;
                             break;
 
                         case Instruction.i64_shl:
-                            *(long*)(&pstk[stackPos + 8]) =
-                                *(long*)(&pstk[stackPos + 8]) << *(int*)(&pstk[stackPos]);
+                            *(long*)(&pstk[this.stackPos + 8]) =
+                                *(long*)(&pstk[this.stackPos + 8]) << *(int*)(&pstk[this.stackPos]);
 
-                            stackPos += 8;
+                            this.stackPos += 8;
                             break;
 
                         case Instruction.i64_shr_s:
                             {
-                                long val = *(long*)(&pstk[stackPos + 8]);
-                                long shift = *(int*)(&pstk[stackPos]);
+                                long val = *(long*)(&pstk[this.stackPos + 8]);
+                                long shift = *(long*)(&pstk[this.stackPos]);
 
-                                bool sign = (val << (1 & 63)) != 0;
-
-                                if(sign == false)
-                                    * (long*)(&pstk[stackPos + 8]) = val << (int)shift;
-                                else
-                                    *(long*)(&pstk[stackPos + 8]) = (val << (int)shift) & (~(long)0 << (64 - (int)shift));
-
-                                stackPos += 8;
+                                this.stackPos += 8;
+                                *(long*)(&pstk[this.stackPos]) = val >> (int)shift;
                             }
                             break;
 
                         case Instruction.i64_shr_u:
-                            *(long*)(&pstk[stackPos + 8]) =
-                                *(long*)(&pstk[stackPos + 8]) >> *(int*)(&pstk[stackPos]);
+                            *(ulong*)(&pstk[this.stackPos + 8]) =
+                                *(ulong*)(&pstk[this.stackPos + 8]) >> *(int*)(&pstk[this.stackPos]);
 
-                            stackPos += 8;
+                            this.stackPos += 8;
                             break;
 
                         case Instruction.i64_rotl:
                             {
-                                long val = *(long*)(&pstk[stackPos + 8]);
-                                long shift = *(int*)(&pstk[stackPos]);
+                                ulong val = *(ulong*)(&pstk[stackPos + 8]);
+                                int shiftAmt = (int)*(long*)(&pstk[stackPos]) % 64;
 
-                                long push = val << (int)shift;
-                                long wrap = val >> (int)(64 - shift);
-
-                                stackPos += 8;
-                                *(long*)(&pstk[stackPos]) = push | wrap;
+                                this.stackPos += 8;
+                                *(ulong*)(&pstk[this.stackPos]) = (val << shiftAmt) | (val >> (64 - shiftAmt));
                             }
                             break;
 
                         case Instruction.i64_rotr:
                             {
                                 {
-                                    long val = *(long*)(&pstk[stackPos + 8]);
-                                    long shift = *(int*)(&pstk[stackPos]);
+                                    ulong val = *(ulong*)(&pstk[stackPos + 8]);
+                                    int shiftAmt = (int)*(long*)(&pstk[stackPos]) % 64;
 
-                                    long push = val >> (int)shift;
-                                    long wrap = val << (int)(64 - shift);
-
-                                    stackPos += 8;
-                                    *(long*)(&pstk[stackPos]) = push | wrap;
+                                    this.stackPos += 8;
+                                    *(ulong*)(&pstk[this.stackPos]) = (val >> shiftAmt) | (val << (64 - shiftAmt));
                                 }
                             }
                             break;

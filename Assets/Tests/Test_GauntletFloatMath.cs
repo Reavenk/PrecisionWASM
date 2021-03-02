@@ -132,8 +132,6 @@ namespace Tests
             CompareGaunletDouble(expected, valRes.GetFloat64(), testName, testId, operands);
         }
 
-
-
         [Test]
         public void Test_f32_abs()
         {
