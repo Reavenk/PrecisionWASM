@@ -81,7 +81,7 @@ namespace Tests
                 
         }
 
-        public static void CompareGaunletFloat(float expected, float result, string testName, int testId, params double[] operands)
+        public static void CompareGaunletFloat(float expected, float result, string testName, int testId, params float [] operands)
         {
             if (float.IsNaN(expected) == true)
             {
@@ -92,7 +92,7 @@ namespace Tests
                 throw new System.Exception($"Invalid return value for {testName} : Unexpected result, expected {expected}, received {result}.");
         }
 
-        public static void CompareGaunletFloat( float expected, PxPre.Datum.Val valRes, string testName, int testId, params double[] operands)
+        public static void CompareGaunletFloat( float expected, PxPre.Datum.Val valRes, string testName, int testId, params float [] operands)
         {
             if(valRes.wrapType != PxPre.Datum.Val.Type.Float)
                 throw new System.Exception($"Invalid return value for {testName} : Expected float return.");
