@@ -89,7 +89,7 @@ public static class WASMDatum
         FunctionType fnty = fn.parentModule.types[(int)fn.typeidx];
 
         if (ps.Length < fnty.paramTypes.Count)
-            throw new System.Exception("Invalid parameters");
+            throw new System.Exception($"Invalid parameter count, expected {fnty.paramTypes.Count} but got {ps.Length}");
 
         int origStackPos = ex.stackPos;
 
