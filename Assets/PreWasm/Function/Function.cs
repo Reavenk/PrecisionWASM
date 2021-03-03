@@ -627,8 +627,8 @@ namespace PxPre.WASM
                                 vmgr.PushOpd(StackOpd.i32);
                                 TransferInstruction(expanded, instr);
 
-                                uint cval = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                TransferInt32u(expanded, cval);
+                                int cval = BinParse.LoadSignedLEB32(pb, ref idx);
+                                TransferInt32s(expanded, cval);
 
                             }
                             break;
@@ -638,8 +638,8 @@ namespace PxPre.WASM
                                 vmgr.PushOpd(StackOpd.i64);
                                 TransferInstruction(expanded, instr);
 
-                                ulong cval = BinParse.LoadUnsignedLEB64(pb, ref idx);
-                                TransferInt64u(expanded, cval);
+                                long cval = BinParse.LoadSignedLEB64(pb, ref idx);
+                                TransferInt64s(expanded, cval);
                             }
                             break;
 
