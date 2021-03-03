@@ -96,7 +96,7 @@ namespace Tests
                 throw new System.Exception("Invalid return type : expected int.");
 
             int nret = ret.GetInt();
-            CompareGaunletInt(it.c, nret, testName, testID, it.a, it.b);
+            CompareGaunlet(it.c, nret, testName, testID, it.a, it.b);
         }
 
         public static void RunBiNOpGaunletThroughTripplet(
@@ -120,51 +120,80 @@ namespace Tests
 
             long lret = ret.GetInt64();
 
-            CompareGaunletLong(lt.c, lret, testName, testID, lt.a, lt.b);
+            CompareGaunlet(lt.c, lret, testName, testID, lt.a, lt.b);
 
         }
 
-        public static void ThrowGauntletIntError(string testName, int testId, string reason, int expected, int result, params int[] operands)
+        private static void ThrowGauntletError(string testName, int testId, string reason, object expected, object result, params object [] operands)
         {
             throw new System.Exception($"Invalid return value for {testName}, test {testId} with operands ({string.Join(", ", operands)}): {reason}.");
         }
 
-        public static void CompareGaunletInt(int expected, int result, string testName, int testId, params int[] operands)
+        private static void CompareGaunlet<ty>(ty expected, ty result, string testName, int testId, params object[] operands)
+            where ty : System.IEquatable<ty>
         {
+
             Debug.Log($"Testing {testName} with operands ({string.Join(", ", operands)}), expecting the value {expected} and with {result}");
 
-            if (expected != result)
-                ThrowGauntletIntError(testName, testId, $"Expected {expected} but got {result}", expected, result, operands);
+            // https://stackoverflow.com/a/8982693
+            if (!EqualityComparer<ty>.Default.Equals(expected, result))
+                ThrowGauntletError(testName, testId, $"Expected {expected} but got {result}", expected, result, operands);
         }
 
-        public static void CompareGaunletInt(int expected, PxPre.Datum.Val valRes, string testName, int testId, params int[] operands)
+        public static void CompareGaunletBool(bool expected, PxPre.Datum.Val valRes, string testName, int testId, params object[] operands)
         {
             if (valRes.wrapType != PxPre.Datum.Val.Type.Int)
-                ThrowGauntletIntError(testName, testId, "Incorrect type, expected int.", expected, valRes.GetInt(), operands);
+                ThrowGauntletError(testName, testId, "Incorrect type, expected int (bool).", expected, valRes.GetInt(), operands);
 
-            CompareGaunletInt(expected, valRes.GetInt(), testName, testId, operands);
+            CompareGaunlet((expected == true) ? 1 : 0, valRes.GetInt(), testName, testId, operands);
         }
 
-
-        public static void ThrowGauntletLongError(string testName, int testId, string reason, long expected, long result, params long[] operands)
+        public static void CompareGaunletInt(int expected, PxPre.Datum.Val valRes, string testName, int testId, params object [] operands)
         {
-            throw new System.Exception($"Invalid return value for {testName}, test {testId} with operands ({string.Join(", ", operands)}): {reason}.");
+            if (valRes.wrapType != PxPre.Datum.Val.Type.Int)
+                ThrowGauntletError(testName, testId, "Incorrect type, expected int.", expected, valRes.GetInt(), operands);
+
+            CompareGaunlet(expected, valRes.GetInt(), testName, testId, operands);
         }
 
-        public static void CompareGaunletLong(long expected, long result, string testName, int testId, params long[] operands)
+        public static void CompareGaunletFloat(float expected, PxPre.Datum.Val valRes, string testName, int testId, params object [] operands)
         {
-            Debug.Log($"Testing {testName} with operands ({string.Join(", ", operands)}), expecting the value {expected} and with {result}");
+            if (valRes.wrapType != PxPre.Datum.Val.Type.Float)
+                ThrowGauntletError(testName, testId, "Incorrect type, expected float.", expected, valRes.GetFloat(), operands);
 
-            if (expected != result)
-                ThrowGauntletLongError(testName, testId, $"Expected {expected} but got {result}", expected, result, operands);
+            if(float.IsNaN(expected) == true)
+            { 
+                if(float.IsNaN(valRes.GetFloat()) == false)
+                    ThrowGauntletError(testName, testId, "Mishandled NaN.", expected, valRes.GetFloat(), operands);
+
+                return;
+            }
+
+            CompareGaunlet(expected, valRes.GetFloat(), testName, testId, operands);
         }
 
-        public static void CompareGaunletLong(long expected, PxPre.Datum.Val valRes, string testName, int testId, params long[] operands)
+        public static void CompareGaunletLong(long expected, PxPre.Datum.Val valRes, string testName, int testId, params object [] operands)
         {
             if (valRes.wrapType != PxPre.Datum.Val.Type.Int64)
-                ThrowGauntletLongError(testName, testId, "Incorrect type, expected int64.", expected, valRes.GetInt(), operands);
+                ThrowGauntletError(testName, testId, "Incorrect type, expected int64.", expected, valRes.GetInt(), operands);
 
-            CompareGaunletLong(expected, valRes.GetInt64(), testName, testId, operands);
+            CompareGaunlet(expected, valRes.GetInt64(), testName, testId, operands);
+        }
+
+        public static void CompareGaunletFloat64(double expected, PxPre.Datum.Val valRes, string testName, int testId, params object[] operands)
+        {
+            if (valRes.wrapType != PxPre.Datum.Val.Type.Float64)
+                ThrowGauntletError(testName, testId, "Incorrect type, expected int64.", expected, valRes.GetInt(), operands);
+
+            if(double.IsNaN(expected) == true)
+            {
+                if (double.IsNaN(valRes.GetFloat64()) == false)
+                    ThrowGauntletError(testName, testId, "Mishandled NaN.", expected, valRes.GetFloat(), operands);
+
+                return;
+            }
+
+            CompareGaunlet(expected, valRes.GetFloat64(), testName, testId, operands);
         }
     }
 }

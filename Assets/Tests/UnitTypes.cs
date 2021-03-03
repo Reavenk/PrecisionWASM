@@ -52,6 +52,42 @@ namespace Tests
         }
     }
 
+    public struct FloatPair
+    {
+        public float left;
+        public float right;
+
+        public FloatPair(float left, float right)
+        {
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    public struct Int64Pair
+    {
+        public long left;
+        public long right;
+
+        public Int64Pair(long left, long right)
+        {
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    public struct Float64Pair
+    {
+        public double left;
+        public double right;
+
+        public Float64Pair(double left, double right)
+        {
+            this.left = left;
+            this.right = right;
+        }
+    }
+
     public struct IntTripplet
     {
         public int a;

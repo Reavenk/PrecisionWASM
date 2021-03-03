@@ -55,105 +55,6 @@ namespace Tests
             throw new System.Exception($"Invalid return value for {testName}, test {testId} with operands ({string.Join(", ", operands)}): {reason}.");
         }
 
-        public static void RunBiNOpGaunletThroughTripplet(
-            PxPre.WASM.ExecutionContext exProgInst, 
-            PxPre.WASM.Module mod,
-            FloatTrippplet ft, 
-            string testName, 
-            int testID)
-        {
-            Debug.Log( $"Running binop float test for {testName}, test number {testID}");
-
-            PxPre.Datum.Val ret =
-            exProgInst.Invoke_SingleRet(
-                mod,
-                "Test",
-                PxPre.Datum.Val.Make(ft.a),
-                PxPre.Datum.Val.Make(ft.b));
-
-            if (ret.wrapType != PxPre.Datum.Val.Type.Float)
-                throw new System.Exception("Invalid return type : expected float.");
-
-            float fret = ret.GetFloat();
-            CompareGaunletFloat(ft.c, fret, testName, testID, ft.a, ft.b);
-        }
-
-        public static void RunBiNOpGaunletThroughTripplet(
-            PxPre.WASM.ExecutionContext exProgInst,
-            PxPre.WASM.Module mod,
-            DoubleTripplet dt,
-            string testName,
-            int testID)
-        {
-            Debug.Log($"Running binop float test for {testName}, test number {testID}");
-
-            PxPre.Datum.Val ret =
-            exProgInst.Invoke_SingleRet(
-                mod,
-                "Test",
-                PxPre.Datum.Val.Make(dt.a),
-                PxPre.Datum.Val.Make(dt.b));
-
-            if (ret.wrapType != PxPre.Datum.Val.Type.Float64)
-                throw new System.Exception("Invalid return type : expected float64.");
-
-            double fret = ret.GetFloat64();
-
-            CompareGaunletDouble(dt.c, fret, testName, testID, dt.a, dt.b);
-                
-        }
-
-        public static void CompareGaunletFloat(float expected, float result, string testName, int testId, params float [] operands)
-        {
-            if (float.IsNaN(expected) == true)
-            {
-                if (float.IsNaN(result) == false)
-                    throw new System.Exception($"Invalid return value for {testName} : Mishandled NaN.");
-            }
-            else if (expected != result)
-                throw new System.Exception($"Invalid return value for {testName} : Unexpected result, expected {expected}, received {result}.");
-        }
-
-        public static void CompareGaunletFloat( float expected, PxPre.Datum.Val valRes, string testName, int testId, params float [] operands)
-        {
-            if(valRes.wrapType != PxPre.Datum.Val.Type.Float)
-                throw new System.Exception($"Invalid return value for {testName} : Expected float return.");
-            
-            CompareGaunletFloat(expected, valRes.GetFloat(), testName, testId, operands);
-        }
-
-        public static void ThrowGauntletDoubleError(string testName, int testId, string reason, double expected, double result, params double[] operands)
-        {
-            throw new System.Exception($"Invalid return value for {testName}, test {testId} with operands ({string.Join(", ", operands)}): {reason}.");
-        }
-
-        public static void CompareGaunletDouble(double expected, double result, string testName, int testId, params double [] operands)
-        {
-            if (double.IsNaN(expected) == true)
-            {
-                if (double.IsNaN(result) == false)
-                    ThrowGauntletDoubleError(testName, testId, "Mishandled NaN", expected, result, operands);
-            }
-            else if (expected != result)
-            {
-                ThrowGauntletDoubleError(
-                    testName, 
-                    testId, 
-                    $"Expected {expected} but got {result}", 
-                    expected, 
-                    result, 
-                    operands);
-            }
-        }
-
-        public static void CompareGaunletDouble(double expected, PxPre.Datum.Val valRes, string testName, int testId, params double[] operands)
-        {
-            if (valRes.wrapType != PxPre.Datum.Val.Type.Float64)
-                ThrowGauntletDoubleError(testName, testId, "Invalid return type, expected Float64", expected, valRes.GetFloat64(), operands);
-
-            CompareGaunletDouble(expected, valRes.GetFloat64(), testName, testId, operands);
-        }
-
         [Test]
         public void Test_f32_abs()
         {
@@ -172,7 +73,7 @@ namespace Tests
                         "Test",
                         PxPre.Datum.Val.Make(tv));
 
-                CompareGaunletFloat((float)System.Math.Abs(tv), ret.GetFloat(), "f32.abs", i, tv);
+                UnitUtil.CompareGaunletFloat((float)System.Math.Abs(tv), ret, "f32.abs", i, tv);
             }
         }
         
@@ -194,7 +95,7 @@ namespace Tests
                         "Test",
                         PxPre.Datum.Val.Make(tv));
 
-                CompareGaunletFloat(-tv, ret.GetFloat(), "f32.neg", i, tv);
+                UnitUtil.CompareGaunletFloat(-tv, ret, "f32.neg", i, tv);
             }
         }
         
@@ -216,7 +117,7 @@ namespace Tests
                         "Test",
                         PxPre.Datum.Val.Make(tv));
 
-                CompareGaunletFloat((float)System.Math.Ceiling(tv), ret.GetFloat(), "f32.ceil", i, tv);
+                UnitUtil.CompareGaunletFloat((float)System.Math.Ceiling(tv), ret, "f32.ceil", i, tv);
             }
         }
         
@@ -269,7 +170,7 @@ namespace Tests
                         "Test",
                         PxPre.Datum.Val.Make(tv));
 
-                CompareGaunletFloat((float)System.Math.Truncate(tv), ret.GetFloat(), "f32.trunc", i, tv);
+                UnitUtil.CompareGaunletFloat((float)System.Math.Truncate(tv), ret, "f32.trunc", i, tv);
             }
         }
         
@@ -291,7 +192,7 @@ namespace Tests
                         "Test",
                         PxPre.Datum.Val.Make(tv));
 
-                CompareGaunletFloat((float)System.Math.Round(tv), ret, "f64.nearest", i, tv);
+                UnitUtil.CompareGaunletFloat((float)System.Math.Round(tv), ret, "f64.nearest", i, tv);
             }
         }
         
@@ -313,7 +214,7 @@ namespace Tests
                         "Test",
                         PxPre.Datum.Val.Make(tv));
 
-                CompareGaunletFloat((float)System.Math.Sqrt(tv), ret, "f32.sqrt", i, tv);
+                UnitUtil.CompareGaunletFloat((float)System.Math.Sqrt(tv), ret, "f32.sqrt", i, tv);
             }
         }
         
@@ -335,7 +236,7 @@ namespace Tests
                         "Test",
                         PxPre.Datum.Val.Make(tv));
 
-                CompareGaunletDouble(System.Math.Abs(tv), ret, "f64.abs", i, tv);
+                UnitUtil.CompareGaunletFloat64(System.Math.Abs(tv), ret, "f64.abs", i, tv);
             }
         }
         
@@ -357,7 +258,7 @@ namespace Tests
                         "Test",
                         PxPre.Datum.Val.Make(tv));
 
-                CompareGaunletDouble(-tv, ret, "f64.neg", i, tv);
+                UnitUtil.CompareGaunletFloat64(-tv, ret, "f64.neg", i, tv);
             }
         }
         
@@ -379,7 +280,7 @@ namespace Tests
                         "Test",
                         PxPre.Datum.Val.Make(tv));
 
-                CompareGaunletDouble(System.Math.Ceiling(tv), ret, "f64.ceil", i, tv);
+                UnitUtil.CompareGaunletFloat64(System.Math.Ceiling(tv), ret, "f64.ceil", i, tv);
             }
         }
         
@@ -401,7 +302,7 @@ namespace Tests
                         "Test",
                         PxPre.Datum.Val.Make(tv));
 
-                CompareGaunletDouble(System.Math.Floor(tv), ret, "f64.floor", i, tv);
+                UnitUtil.CompareGaunletFloat64(System.Math.Floor(tv), ret, "f64.floor", i, tv);
             }
         }
         
@@ -423,7 +324,7 @@ namespace Tests
                         "Test",
                         PxPre.Datum.Val.Make(tv));
 
-                CompareGaunletDouble(System.Math.Truncate(tv), ret, "f64.trunc", i, tv);
+                UnitUtil.CompareGaunletFloat64(System.Math.Truncate(tv), ret, "f64.trunc", i, tv);
             }
         }
         
@@ -444,7 +345,7 @@ namespace Tests
                         "Test",
                         PxPre.Datum.Val.Make(tv));
 
-                CompareGaunletDouble(System.Math.Round(tv), ret, "f64.nearest", i, tv);
+                UnitUtil.CompareGaunletFloat64(System.Math.Round(tv), ret, "f64.nearest", i, tv);
             }
         }
         
@@ -456,6 +357,7 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
+            int idx = 0;
             foreach (double tv in doubleTestValues)
             {
                 PxPre.Datum.Val ret =
@@ -464,17 +366,8 @@ namespace Tests
                         "Test",
                         PxPre.Datum.Val.Make(tv));
 
-                if (ret.wrapType != PxPre.Datum.Val.Type.Float64)
-                    throw new System.Exception("Invalid return type.");
-
-                if (double.IsNaN(ret.GetFloat64()) != double.IsNaN(System.Math.Sqrt(tv)))
-                    throw new System.Exception("Invalid handling float errors");
-
-                if (double.IsNaN(ret.GetFloat64()) == true)
-                    continue;
-
-                if (ret.GetFloat64() != System.Math.Sqrt(tv))
-                    throw new System.Exception("Invalid return value.");
+                UnitUtil.CompareGaunletFloat64(System.Math.Sqrt(tv), ret, "f64.abs", idx, tv);
+                ++idx;
             }
         }
         
@@ -540,7 +433,7 @@ namespace Tests
                         PxPre.Datum.Val.Make(tva),
                         PxPre.Datum.Val.Make(tvb));
 
-                    CompareGaunletFloat(tva - tvb, ret, "f32.mul", idx, tva, tvb);
+                    UnitUtil.CompareGaunletFloat(tva - tvb, ret, "f32.mul", idx, tva, tvb);
                     ++idx;
                 }
             }
@@ -566,7 +459,7 @@ namespace Tests
                         PxPre.Datum.Val.Make(tva),
                         PxPre.Datum.Val.Make(tvb));
 
-                    CompareGaunletFloat(tva * tvb, ret, "f32.mul", idx, tva, tvb);
+                    UnitUtil.CompareGaunletFloat(tva * tvb, ret, "f32.mul", idx, tva, tvb);
                     ++idx;
                 }
             }
@@ -592,7 +485,7 @@ namespace Tests
                         PxPre.Datum.Val.Make(tva),
                         PxPre.Datum.Val.Make(tvb));
 
-                    CompareGaunletFloat(tva / tvb, ret, "f32.mul", idx, tva, tvb);
+                    UnitUtil.CompareGaunletFloat(tva / tvb, ret, "f32.div", idx, tva, tvb);
                 }
             } 
         }
@@ -638,7 +531,8 @@ namespace Tests
             for(int i = 0; i < testItems.Count; ++i)
             { 
                 FloatTrippplet ft = testItems[i];
-                RunBiNOpGaunletThroughTripplet(ex, mod, ft, "f32.min", i);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(ft.a), PxPre.Datum.Val.Make(ft.b));
+                UnitUtil.CompareGaunletFloat(ft.c, ret, "f32.copysign", i, ft.a, ft.b);
             }
         }
         
@@ -683,7 +577,8 @@ namespace Tests
             for (int i = 0; i < testItems.Count; ++i)
             {
                 FloatTrippplet ft = testItems[i];
-                RunBiNOpGaunletThroughTripplet(ex, mod, ft, "f32.min", i);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(ft.a), PxPre.Datum.Val.Make(ft.b));
+                UnitUtil.CompareGaunletFloat(ft.c, ret, "f32.max", i, ft.a, ft.b);
             }
         }
         
@@ -730,7 +625,8 @@ namespace Tests
                 for (int i = 0; i < testItems.Count; ++i)
                 {
                     FloatTrippplet ft = testItems[i];
-                    RunBiNOpGaunletThroughTripplet(ex, mod, ft, "f32.copysign", i);
+                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(ft.a), PxPre.Datum.Val.Make(ft.b));
+                    UnitUtil.CompareGaunletFloat(ft.c, ret, "f32.copysign", i, ft.a, ft.b);
                 }
             }
         
@@ -748,13 +644,13 @@ namespace Tests
                 foreach (double tvb in doubleTestValues)
                 {
                     PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tva),
-                        PxPre.Datum.Val.Make(tvb));
+                        ex.Invoke_SingleRet(
+                            mod,
+                            "Test",
+                            PxPre.Datum.Val.Make(tva),
+                            PxPre.Datum.Val.Make(tvb));
 
-                    CompareGaunletDouble(tva + tvb, ret, "f64.add", idx, tva, tvb);
+                    UnitUtil.CompareGaunletFloat64(tva + tvb, ret, "f64.add", idx, tva, tvb);
                     ++idx;
                 }
             }
@@ -774,13 +670,13 @@ namespace Tests
                 foreach (double tvb in doubleTestValues)
                 {
                     PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tva),
-                        PxPre.Datum.Val.Make(tvb));
+                        ex.Invoke_SingleRet(
+                            mod,
+                            "Test",
+                            PxPre.Datum.Val.Make(tva),
+                            PxPre.Datum.Val.Make(tvb));
 
-                    CompareGaunletDouble(tva - tvb, ret, "f64.sub", idx, tva, tvb);
+                    UnitUtil.CompareGaunletFloat64(tva - tvb, ret, "f64.sub", idx, tva, tvb);
                     ++idx;
                 }
             }
@@ -806,7 +702,7 @@ namespace Tests
                         PxPre.Datum.Val.Make(tva),
                         PxPre.Datum.Val.Make(tvb));
 
-                    CompareGaunletDouble(tva * tvb, ret, "f64.mul", idx, tva, tvb);
+                    UnitUtil.CompareGaunletFloat64(tva * tvb, ret, "f64.mul", idx, tva, tvb);
                     ++idx;
                 }
             }
@@ -832,7 +728,7 @@ namespace Tests
                         PxPre.Datum.Val.Make(tva),
                         PxPre.Datum.Val.Make(tvb));
 
-                    CompareGaunletDouble(tva / tvb, ret, "f64.div", idx, tva, tvb);
+                    UnitUtil.CompareGaunletFloat64(tva / tvb, ret, "f64.div", idx, tva, tvb);
                     ++idx;
                 }
             }
@@ -878,8 +774,9 @@ namespace Tests
 
             for (int i = 0; i < testItems.Count; ++i)
             {
-                DoubleTripplet ft = testItems[i];
-                RunBiNOpGaunletThroughTripplet(ex, mod, ft, "f64.min", i);
+                DoubleTripplet dt = testItems[i];
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(dt.a), PxPre.Datum.Val.Make(dt.b));
+                UnitUtil.CompareGaunletFloat64(dt.c, ret, "f64.min", i, dt.a, dt.b);
             }
         }
         
@@ -923,8 +820,9 @@ namespace Tests
 
             for (int i = 0; i < testItems.Count; ++i)
             {
-                DoubleTripplet ft = testItems[i];
-                RunBiNOpGaunletThroughTripplet(ex, mod, ft, "f64.max", i);
+                DoubleTripplet dt = testItems[i];
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(dt.a), PxPre.Datum.Val.Make(dt.b));
+                UnitUtil.CompareGaunletFloat64(dt.c, ret, "f64.max", i, dt.a, dt.b);
             }
         }
         
@@ -965,7 +863,9 @@ namespace Tests
             for (int i = 0; i < testItems.Count; ++i)
             {
                 DoubleTripplet dt = testItems[i];
-                RunBiNOpGaunletThroughTripplet(ex, mod, dt, "f64.copysign", i);
+
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(dt.a), PxPre.Datum.Val.Make(dt.b));
+                UnitUtil.CompareGaunletFloat64(dt.c, ret, "f64.copysign", i, dt.a, dt.b);
             }
         }
     }

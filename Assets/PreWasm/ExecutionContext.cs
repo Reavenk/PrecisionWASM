@@ -767,16 +767,16 @@ namespace PxPre.WASM
 
                         case Instruction.i64_eqz:
                             {
-                                bool b = *(long*)(&pstk[stackPos]) == 0;
-                                stackPos += 4;
-                                *(int*)(&pstk[stackPos]) = b ? 1 : 0;
+                                bool b = *(long*)(&pstk[this.stackPos]) == 0;
+                                stackPos += 12; // Pop 2 longs, Push 1 int;
+                                *(int*)(&pstk[this.stackPos]) = b ? 1 : 0;
                             }
                             break;
 
                         case Instruction.i64_eq:
                             {
-                                bool b = *(long*)(&pstk[stackPos + 8]) >= *(long*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                bool b = *(long*)(&pstk[stackPos + 8]) == *(long*)(&pstk[stackPos]);
+                                stackPos += 12; // Pop 2 longs, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -784,15 +784,15 @@ namespace PxPre.WASM
                         case Instruction.i64_ne:
                             {
                                 bool b = *(long*)(&pstk[stackPos + 8]) != *(long*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                stackPos += 12; // Pop 2 longs, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
 
                         case Instruction.i64_lt_s:
                             {
-                                bool b = *(long*)(&pstk[stackPos + 8]) >= *(long*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                bool b = *(long*)(&pstk[stackPos + 8]) < *(long*)(&pstk[stackPos]);
+                                stackPos += 12; // Pop 2 longs, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -800,7 +800,7 @@ namespace PxPre.WASM
                         case Instruction.i64_lt_u:
                             {
                                 bool b = *(ulong*)(&pstk[stackPos + 8]) < *(ulong*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                stackPos += 12; // Pop 2 longs, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -808,7 +808,7 @@ namespace PxPre.WASM
                         case Instruction.i64_gt_s:
                             {
                                 bool b = *(long*)(&pstk[stackPos + 8]) > *(long*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                stackPos += 12; // Pop 2 longs, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -816,7 +816,7 @@ namespace PxPre.WASM
                         case Instruction.i64_gt_u:
                             {
                                 bool b = *(ulong*)(&pstk[stackPos + 8]) > *(ulong*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                stackPos += 12; // Pop 2 longs, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -824,7 +824,7 @@ namespace PxPre.WASM
                         case Instruction.i64_le_s:
                             {
                                 bool b = *(long*)(&pstk[stackPos + 8]) <= *(long*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                stackPos += 12; // Pop 2 longs, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -832,7 +832,7 @@ namespace PxPre.WASM
                         case Instruction.i64_le_u:
                             {
                                 bool b = *(ulong*)(&pstk[stackPos + 8]) <= *(ulong*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                stackPos += 12; // Pop 2 longs, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -840,7 +840,7 @@ namespace PxPre.WASM
                         case Instruction.i64_ge_s:
                             {
                                 bool b = *(long*)(&pstk[stackPos + 8]) >= *(long*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                stackPos += 12; // Pop 2 longs, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -848,7 +848,7 @@ namespace PxPre.WASM
                         case Instruction.i64_ge_u:
                             {
                                 bool b = *(ulong*)(&pstk[stackPos + 8]) >= *(ulong*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                stackPos += 12; // Pop 2 longs, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -856,7 +856,7 @@ namespace PxPre.WASM
                         case Instruction.f32_eq:
                             {
                                 bool b = *(float*)(&pstk[stackPos + 4]) == *(float*)(&pstk[stackPos]);
-                                stackPos += 4;
+                                stackPos += 4; // Pop 2 floats, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -864,7 +864,7 @@ namespace PxPre.WASM
                         case Instruction.f32_ne:
                             {
                                 bool b = *(float*)(&pstk[stackPos + 4]) != *(float*)(&pstk[stackPos]);
-                                stackPos += 4;
+                                stackPos += 4; // Pop 2 floats, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -872,7 +872,7 @@ namespace PxPre.WASM
                         case Instruction.f32_lt:
                             {
                                 bool b = *(float*)(&pstk[stackPos + 4]) < *(float*)(&pstk[stackPos]);
-                                stackPos += 4;
+                                stackPos += 4; // Pop 2 floats, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -880,7 +880,7 @@ namespace PxPre.WASM
                         case Instruction.f32_gt:
                             {
                                 bool b = *(float*)(&pstk[stackPos + 4]) > *(float*)(&pstk[stackPos]);
-                                stackPos += 4;
+                                stackPos += 4; // Pop 2 floats, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -888,7 +888,7 @@ namespace PxPre.WASM
                         case Instruction.f32_le:
                             {
                                 bool b = *(float*)(&pstk[stackPos + 4]) <= *(float*)(&pstk[stackPos]);
-                                stackPos += 4;
+                                stackPos += 4; // Pop 2 floats, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -896,7 +896,7 @@ namespace PxPre.WASM
                         case Instruction.f32_ge:
                             {
                                 bool b = *(float*)(&pstk[stackPos + 4]) >= *(float*)(&pstk[stackPos]);
-                                stackPos += 4;
+                                stackPos += 4; // Pop 2 floats, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -904,7 +904,7 @@ namespace PxPre.WASM
                         case Instruction.f64_eq:
                             {
                                 bool b = *(double*)(&pstk[stackPos + 8]) == *(double*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                stackPos += 12; // Pop 2 floats, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -912,7 +912,7 @@ namespace PxPre.WASM
                         case Instruction.f64_ne:
                             {
                                 bool b = *(double*)(&pstk[stackPos + 8]) != *(double*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                stackPos += 12; // Pop 2 floats, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -920,7 +920,7 @@ namespace PxPre.WASM
                         case Instruction.f64_lt:
                             {
                                 bool b = *(double*)(&pstk[stackPos + 8]) < *(double*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                stackPos += 12; // Pop 2 floats, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -928,7 +928,7 @@ namespace PxPre.WASM
                         case Instruction.f64_gt:
                             {
                                 bool b = *(double*)(&pstk[stackPos + 8]) > *(double*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                stackPos += 12; // Pop 2 floats, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
@@ -936,7 +936,7 @@ namespace PxPre.WASM
                         case Instruction.f64_le:
                             {
                                 bool b = *(double*)(&pstk[stackPos + 8]) <= *(double*)(&pstk[stackPos]);
-                                stackPos += 12;
+                                stackPos += 12; // Pop 2 floats, Push 1 int;
                                 *(int*)(&pstk[stackPos]) = b ? 1 : 0;
                             }
                             break;
