@@ -63,17 +63,11 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            for(int i = 0; i < floatTestValues.Length; ++i)
+            int idx = 0;
+            foreach (float tv in floatTestValues)
             {
-                float tv = floatTestValues[i];
-
-                PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tv));
-
-                UnitUtil.CompareGaunletFloat((float)System.Math.Abs(tv), ret, "f32.abs", i, tv);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(tv));
+                UnitUtil.CompareGaunletFloat((float)System.Math.Abs(tv), ret, "f32.abs", idx++, tv);
             }
         }
         
@@ -85,17 +79,11 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            for (int i = 0; i < floatTestValues.Length; ++i)
+            int idx = 0;
+            foreach (float tv in floatTestValues)
             {
-                float tv = floatTestValues[i];
-
-                PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tv));
-
-                UnitUtil.CompareGaunletFloat(-tv, ret, "f32.neg", i, tv);
+                PxPre.Datum.Val ret =  ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tv));
+                UnitUtil.CompareGaunletFloat(-tv, ret, "f32.neg", idx++, tv);
             }
         }
         
@@ -107,17 +95,11 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            for (int i = 0; i < floatTestValues.Length; ++i)
+            int idx = 0;
+            foreach (float tv in floatTestValues)
             {
-                float tv = floatTestValues[i];
-
-                PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tv));
-
-                UnitUtil.CompareGaunletFloat((float)System.Math.Ceiling(tv), ret, "f32.ceil", i, tv);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tv));
+                UnitUtil.CompareGaunletFloat((float)System.Math.Ceiling(tv), ret, "f32.ceil", idx++, tv);
             }
         }
         
@@ -129,26 +111,11 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
+            int idx = 0;
             foreach (float tv in floatTestValues)
             {
-                PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tv));
-
-                if (ret.wrapType != PxPre.Datum.Val.Type.Float)
-                    throw new System.Exception("Invalid return type.");
-
-                if (float.IsNaN(tv) == true)
-                {
-                    if (float.IsNaN(ret.GetFloat()) == false)
-                        throw new System.Exception("Invalid return value : Mishandled NaN.");
-                }
-                // Not only do we give leniency for FPE, we need to also check 
-                // exact equality for handling infinity operations.
-                else if (ret.GetFloat() != tv && UnitUtil.FloatEpsilon( ret.GetFloat(), Mathf.Floor(tv)) == false)
-                    throw new System.Exception("Invalid return value.");
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tv));
+                UnitUtil.CompareGaunletFloat((float)System.Math.Floor(tv), ret, "f32.ceil", idx++ , tv);
             }
         }
         
@@ -160,17 +127,11 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            for (int i = 0; i < floatTestValues.Length; ++i)
+            int idx = 0;
+            foreach (float tv in floatTestValues)
             {
-                float tv = floatTestValues[i];
-
-                PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tv));
-
-                UnitUtil.CompareGaunletFloat((float)System.Math.Truncate(tv), ret, "f32.trunc", i, tv);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tv));
+                UnitUtil.CompareGaunletFloat((float)System.Math.Truncate(tv), ret, "f32.trunc", idx++, tv);
             }
         }
         
@@ -182,17 +143,11 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            for (int i = 0; i < floatTestValues.Length; ++i)
+            int idx = 0;
+            foreach (float tv in floatTestValues)
             {
-                float tv = floatTestValues[i];
-
-                PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tv));
-
-                UnitUtil.CompareGaunletFloat((float)System.Math.Round(tv), ret, "f64.nearest", i, tv);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tv));
+                UnitUtil.CompareGaunletFloat((float)System.Math.Round(tv), ret, "f64.nearest", idx++, tv);
             }
         }
         
@@ -204,17 +159,11 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            for (int i = 0; i < floatTestValues.Length; ++i)
+            int idx = 0;
+            foreach (float tv in floatTestValues)
             {
-                float tv = floatTestValues[i];
-
-                PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tv));
-
-                UnitUtil.CompareGaunletFloat((float)System.Math.Sqrt(tv), ret, "f32.sqrt", i, tv);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(tv));
+                UnitUtil.CompareGaunletFloat((float)System.Math.Sqrt(tv), ret, "f32.sqrt", idx++, tv);
             }
         }
         
@@ -226,17 +175,11 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            for (int i = 0; i < doubleTestValues.Length; ++i)
+            int idx = 0;
+            foreach (double tv in doubleTestValues)
             {
-                double tv = doubleTestValues[i];
-
-                PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tv));
-
-                UnitUtil.CompareGaunletFloat64(System.Math.Abs(tv), ret, "f64.abs", i, tv);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tv));
+                UnitUtil.CompareGaunletFloat64(System.Math.Abs(tv), ret, "f64.abs", idx++, tv);
             }
         }
         
@@ -248,17 +191,11 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            for (int i = 0; i < doubleTestValues.Length; ++i)
+            int idx = 0;
+            foreach (double tv in doubleTestValues)
             {
-                double tv = doubleTestValues[i];
-
-                PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tv));
-
-                UnitUtil.CompareGaunletFloat64(-tv, ret, "f64.neg", i, tv);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tv));
+                UnitUtil.CompareGaunletFloat64(-tv, ret, "f64.neg", idx++, tv);
             }
         }
         
@@ -270,17 +207,11 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            for (int i = 0; i < doubleTestValues.Length; ++i)
+            int idx = 0;
+            foreach (double tv in doubleTestValues)
             {
-                double tv = doubleTestValues[i];
-
-                PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tv));
-
-                UnitUtil.CompareGaunletFloat64(System.Math.Ceiling(tv), ret, "f64.ceil", i, tv);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tv));
+                UnitUtil.CompareGaunletFloat64(System.Math.Ceiling(tv), ret, "f64.ceil", idx++, tv);
             }
         }
         
@@ -292,17 +223,11 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            for (int i = 0; i < doubleTestValues.Length; ++i)
+            int idx = 0;
+            foreach (double tv in doubleTestValues)
             {
-                double tv = doubleTestValues[i];
-
-                PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tv));
-
-                UnitUtil.CompareGaunletFloat64(System.Math.Floor(tv), ret, "f64.floor", i, tv);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tv));
+                UnitUtil.CompareGaunletFloat64(System.Math.Floor(tv), ret, "f64.floor", idx++, tv);
             }
         }
         
@@ -314,17 +239,11 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            for (int i = 0; i < doubleTestValues.Length; ++i)
+            int idx = 0;
+            foreach (double tv in doubleTestValues)
             {
-                double tv = doubleTestValues[i];
-
-                PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tv));
-
-                UnitUtil.CompareGaunletFloat64(System.Math.Truncate(tv), ret, "f64.trunc", i, tv);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(tv));
+                UnitUtil.CompareGaunletFloat64(System.Math.Truncate(tv), ret, "f64.trunc", idx++, tv);
             }
         }
         
@@ -336,16 +255,11 @@ namespace Tests
             UnitUtil.AssertHasStart(mod, false);
             ex.InvokeStart();
 
-            for (int i = 0; i < doubleTestValues.Length; ++i)
+            int idx = 0;
+            foreach (double tv in doubleTestValues)
             {
-                double tv = doubleTestValues[i];
-                PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tv));
-
-                UnitUtil.CompareGaunletFloat64(System.Math.Round(tv), ret, "f64.nearest", i, tv);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(tv));
+                UnitUtil.CompareGaunletFloat64(System.Math.Round(tv), ret, "f64.nearest", idx++, tv);
             }
         }
         
@@ -360,14 +274,8 @@ namespace Tests
             int idx = 0;
             foreach (double tv in doubleTestValues)
             {
-                PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tv));
-
-                UnitUtil.CompareGaunletFloat64(System.Math.Sqrt(tv), ret, "f64.abs", idx, tv);
-                ++idx;
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tv));
+                UnitUtil.CompareGaunletFloat64(System.Math.Sqrt(tv), ret, "f64.abs", idx++, tv);
             }
         }
         
@@ -426,15 +334,8 @@ namespace Tests
             {
                 foreach (float tvb in floatTestValues)
                 {
-                    PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tva),
-                        PxPre.Datum.Val.Make(tvb));
-
-                    UnitUtil.CompareGaunletFloat(tva - tvb, ret, "f32.mul", idx, tva, tvb);
-                    ++idx;
+                    PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tva), PxPre.Datum.Val.Make(tvb));
+                    UnitUtil.CompareGaunletFloat(tva - tvb, ret, "f32.mul", idx++, tva, tvb);
                 }
             }
         }
@@ -452,15 +353,8 @@ namespace Tests
             {
                 foreach (float tvb in floatTestValues)
                 {
-                    PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tva),
-                        PxPre.Datum.Val.Make(tvb));
-
-                    UnitUtil.CompareGaunletFloat(tva * tvb, ret, "f32.mul", idx, tva, tvb);
-                    ++idx;
+                    PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tva), PxPre.Datum.Val.Make(tvb));
+                    UnitUtil.CompareGaunletFloat(tva * tvb, ret, "f32.mul", idx++, tva, tvb);
                 }
             }
         }
@@ -478,14 +372,8 @@ namespace Tests
             {
                 foreach (float tvb in floatTestValues)
                 {
-                    PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tva),
-                        PxPre.Datum.Val.Make(tvb));
-
-                    UnitUtil.CompareGaunletFloat(tva / tvb, ret, "f32.div", idx, tva, tvb);
+                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(tva), PxPre.Datum.Val.Make(tvb));
+                    UnitUtil.CompareGaunletFloat(tva / tvb, ret, "f32.div", idx++, tva, tvb);
                 }
             } 
         }
@@ -622,13 +510,13 @@ namespace Tests
                 };
 
 
-                for (int i = 0; i < testItems.Count; ++i)
-                {
-                    FloatTrippplet ft = testItems[i];
-                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(ft.a), PxPre.Datum.Val.Make(ft.b));
-                    UnitUtil.CompareGaunletFloat(ft.c, ret, "f32.copysign", i, ft.a, ft.b);
-                }
+            int idx = 0;
+            foreach (FloatTrippplet ft in testItems)
+            {
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(ft.a), PxPre.Datum.Val.Make(ft.b));
+                UnitUtil.CompareGaunletFloat(ft.c, ret, "f32.copysign", idx++, ft.a, ft.b);
             }
+        }
         
         [Test]
         public void Test_f64_add()
@@ -643,15 +531,8 @@ namespace Tests
             {
                 foreach (double tvb in doubleTestValues)
                 {
-                    PxPre.Datum.Val ret =
-                        ex.Invoke_SingleRet(
-                            mod,
-                            "Test",
-                            PxPre.Datum.Val.Make(tva),
-                            PxPre.Datum.Val.Make(tvb));
-
-                    UnitUtil.CompareGaunletFloat64(tva + tvb, ret, "f64.add", idx, tva, tvb);
-                    ++idx;
+                    PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tva), PxPre.Datum.Val.Make(tvb));
+                    UnitUtil.CompareGaunletFloat64(tva + tvb, ret, "f64.add", idx++, tva, tvb);
                 }
             }
         }
@@ -669,15 +550,8 @@ namespace Tests
             {
                 foreach (double tvb in doubleTestValues)
                 {
-                    PxPre.Datum.Val ret =
-                        ex.Invoke_SingleRet(
-                            mod,
-                            "Test",
-                            PxPre.Datum.Val.Make(tva),
-                            PxPre.Datum.Val.Make(tvb));
-
-                    UnitUtil.CompareGaunletFloat64(tva - tvb, ret, "f64.sub", idx, tva, tvb);
-                    ++idx;
+                    PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tva), PxPre.Datum.Val.Make(tvb));
+                    UnitUtil.CompareGaunletFloat64(tva - tvb, ret, "f64.sub", idx++, tva, tvb);
                 }
             }
         }
@@ -695,15 +569,8 @@ namespace Tests
             {
                 foreach (double tvb in doubleTestValues)
                 {
-                    PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tva),
-                        PxPre.Datum.Val.Make(tvb));
-
-                    UnitUtil.CompareGaunletFloat64(tva * tvb, ret, "f64.mul", idx, tva, tvb);
-                    ++idx;
+                    PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tva), PxPre.Datum.Val.Make(tvb));
+                    UnitUtil.CompareGaunletFloat64(tva * tvb, ret, "f64.mul", idx++, tva, tvb);
                 }
             }
         }
@@ -721,15 +588,8 @@ namespace Tests
             {
                 foreach (double tvb in doubleTestValues)
                 {
-                    PxPre.Datum.Val ret =
-                    ex.Invoke_SingleRet(
-                        mod,
-                        "Test",
-                        PxPre.Datum.Val.Make(tva),
-                        PxPre.Datum.Val.Make(tvb));
-
-                    UnitUtil.CompareGaunletFloat64(tva / tvb, ret, "f64.div", idx, tva, tvb);
-                    ++idx;
+                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(tva), PxPre.Datum.Val.Make(tvb));
+                    UnitUtil.CompareGaunletFloat64(tva / tvb, ret, "f64.div", idx++, tva, tvb);
                 }
             }
         }
@@ -772,11 +632,11 @@ namespace Tests
                     new DoubleTripplet(-78.9,                  -12.3,                       -78.9),
                 };
 
-            for (int i = 0; i < testItems.Count; ++i)
+            int idx = 0;
+            foreach (DoubleTripplet dt in testItems)
             {
-                DoubleTripplet dt = testItems[i];
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(dt.a), PxPre.Datum.Val.Make(dt.b));
-                UnitUtil.CompareGaunletFloat64(dt.c, ret, "f64.min", i, dt.a, dt.b);
+                UnitUtil.CompareGaunletFloat64(dt.c, ret, "f64.min", idx++, dt.a, dt.b);
             }
         }
         
@@ -818,11 +678,11 @@ namespace Tests
                     new DoubleTripplet(-78.9,                       -12.3,                     -12.3),
                 };
 
-            for (int i = 0; i < testItems.Count; ++i)
+            int idx = 0;
+            foreach (DoubleTripplet dt in testItems)
             {
-                DoubleTripplet dt = testItems[i];
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(dt.a), PxPre.Datum.Val.Make(dt.b));
-                UnitUtil.CompareGaunletFloat64(dt.c, ret, "f64.max", i, dt.a, dt.b);
+                UnitUtil.CompareGaunletFloat64(dt.c, ret, "f64.max", idx++, dt.a, dt.b);
             }
         }
         
@@ -859,13 +719,11 @@ namespace Tests
                     new DoubleTripplet(-77.77,          -22.4,          -77.77),
                 };
 
-
-            for (int i = 0; i < testItems.Count; ++i)
+            int idx = 0;
+            foreach (DoubleTripplet dt in testItems)
             {
-                DoubleTripplet dt = testItems[i];
-
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(dt.a), PxPre.Datum.Val.Make(dt.b));
-                UnitUtil.CompareGaunletFloat64(dt.c, ret, "f64.copysign", i, dt.a, dt.b);
+                UnitUtil.CompareGaunletFloat64(dt.c, ret, "f64.copysign", idx++, dt.a, dt.b);
             }
         }
     }
