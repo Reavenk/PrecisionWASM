@@ -118,6 +118,38 @@ namespace Tests
             };
 
         [Test]
+        public void Test_i32_eqz()
+        {
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i32.eqz.wasm");
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
+            UnitUtil.AssertHasStart(mod, false);
+            ex.InvokeStart();
+
+            int idx = 0;
+            for(int i = -5; i < 5; ++i)
+            {
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(i));
+                UnitUtil.CompareGaunletBool(i == 0, ret, "i32.eqz", idx++, i);
+            }
+        }
+
+        [Test]
+        public void Test_i64_eqz()
+        {
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i64.eqz.wasm");
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
+            UnitUtil.AssertHasStart(mod, false);
+            ex.InvokeStart();
+
+            int idx = 0;
+            for (long i = -5; i < 5; ++i)
+            {
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(i));
+                UnitUtil.CompareGaunletBool(i == 0, ret, "i64.eqz", idx++, i);
+            }
+        }
+
+        [Test]
         public void Test_i32_eq()
         {
             PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/i32.eq.wasm");
