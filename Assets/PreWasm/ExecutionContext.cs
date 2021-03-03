@@ -154,7 +154,7 @@ namespace PxPre.WASM
             byte * pbMem = null;
             byte * pbTable = null;
 
-            fixed(byte * pb = fn.expression, pstk = this.stack)
+            fixed (byte * pb = fn.expression, pstk = this.stack)
             {
                 while(true)
                 { 
@@ -501,92 +501,77 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.i32_store:
+                        case Instruction.f32_store:
                             {
-                                int memid = *(int*)&pstk[this.stackPos];
-                                this.stackPos += 4;
+                                int memid = *(int*)&pstk[this.stackPos + 4];
 
-                                *(int*)pbMem[memid] = *(int*)&pstk[this.stackPos];
-                                this.stackPos += 4;
+                                // We essentially want to do this - except setting memory
+                                // values via pointers throws an exception.
+                                // *(int*)&pbMem[memid] = *(int*)&pstk[this.stackPos];
+                                //
+                                // I'm not a fan of this bannanas require to a marshal with 
+                                // bannanas casting. Hopefully good compilers can optimize
+                                // the function call out.
+                                System.Runtime.InteropServices.Marshal.WriteInt32((System.IntPtr)(int*)&pbMem[memid], *(int*)&pstk[this.stackPos]);
+                                this.stackPos += 8; // Pop an int, and a 4byte param
                             }
                             break;
 
                         case Instruction.i64_store:
-                            {
-                                int memid = *(int*)&pstk[this.stackPos];
-                                this.stackPos += 4;
-
-                                *(long*)pbMem[memid] = *(long*)&pstk[this.stackPos];
-                                this.stackPos += 8;
-                            }
-                            break;
-
-                        case Instruction.f32_store:
-                            {
-                                int memid = *(int*)&pstk[this.stackPos];
-                                this.stackPos += 4;
-
-                                *(float*)pbMem[memid] = *(float*)&pstk[this.stackPos];
-                                this.stackPos += 4;
-                            }
-                            break;
-
                         case Instruction.f64_store:
                             {
-                                int memid = *(int*)&pstk[this.stackPos];
-                                this.stackPos += 4;
+                                int memid = *(int*)&pstk[this.stackPos + 8];
 
-                                *(double*)pbMem[memid] = *(double*)&pstk[this.stackPos];
-                                this.stackPos += 8;
+                                // We essentially want to do this - except setting memory
+                                // values via pointers throws an exception.
+                                // *(long*)&pbMem[memid] = *(long*)&pstk[this.stackPos];
+                                //
+                                // I'm not a fan of this bannanas require to a marshal with 
+                                // bannanas casting. Hopefully good compilers can optimize
+                                // the function call out.
+                                System.Runtime.InteropServices.Marshal.WriteInt64((System.IntPtr)(long*)&pbMem[memid], *(long*)&pstk[this.stackPos]);
+                                this.stackPos += 12; // Pop an int, and a 8 byte param
                             }
                             break;
 
                         case Instruction.i32_store8:
                             {
-                                int memid = *(int*)&pstk[this.stackPos];
-                                this.stackPos += 4;
-
-                                pbMem[memid] = pstk[this.stackPos]; // Not known if correct
-                                this.stackPos += 4;
+                                int memid = *(int*)&pstk[this.stackPos + 4];
+                                System.Runtime.InteropServices.Marshal.WriteByte((System.IntPtr)(byte*)&pbMem[memid], *(byte*)&pstk[this.stackPos]); // Leave casts to byte in
+                                this.stackPos += 8; // Pop 2 ints
                             }
                             break;
 
                         case Instruction.i32_store16:
                             {
-                                int memid = *(int*)&pstk[this.stackPos];
-                                this.stackPos += 4;
-
-                                *(uint*)pbMem[memid] = *(ushort*)&pstk[this.stackPos];
-                                this.stackPos += 4;
+                                int memid = *(int*)&pstk[this.stackPos + 4];
+                                System.Runtime.InteropServices.Marshal.WriteInt16((System.IntPtr)(short*)&pbMem[memid], *(short*)&pstk[this.stackPos]); // Leave casts to byte in
+                                this.stackPos += 4; // Pop 2 ints
                             }
                             break;
 
                         case Instruction.i64_store8:
                             {
-                                int memid = *(int*)&pstk[this.stackPos];
-                                this.stackPos += 4;
-
-                                pbMem[memid] = pstk[this.stackPos];
-                                this.stackPos += 8;
+                                int memid = *(int*)&pstk[this.stackPos + 8];
+                                System.Runtime.InteropServices.Marshal.WriteByte((System.IntPtr)(byte*)&pbMem[memid], *(byte*)&pstk[this.stackPos]); // Leave casts to byte in
+                                this.stackPos += 12; // Pop an int, and an int64
                             }
                             break;
 
                         case Instruction.i64_store16:
                             {
-                                int memid = *(int*)&pstk[this.stackPos];
-                                this.stackPos += 4;
-
+                                int memid = *(int*)&pstk[this.stackPos + 8];
+                                System.Runtime.InteropServices.Marshal.WriteInt16((System.IntPtr)(short*)&pbMem[memid], *(short*)&pstk[this.stackPos]); // Leave casts to byte in
                                 *(ushort*)&pbMem[memid] = *(ushort*)&pstk[this.stackPos];
-                                this.stackPos += 8;
+                                this.stackPos += 12; // Pop an int, and an int64
                             }
                             break;
 
                         case Instruction.i64_store32:
                             {
-                                int memid = *(int*)&pstk[this.stackPos];
-                                this.stackPos += 4;
-
-                                *(uint*)&pbMem[memid] = *(uint*)&pstk[this.stackPos];
-                                this.stackPos += 4;
+                                int memid = *(int*)&pstk[this.stackPos + 8];
+                                System.Runtime.InteropServices.Marshal.WriteInt32((System.IntPtr)(int*)&pbMem[memid], *(int*)&pstk[this.stackPos]); // Leave casts to byte in
+                                this.stackPos += 12; // Pop an int, and an int64
                             }
                             break;
                             
