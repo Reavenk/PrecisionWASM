@@ -20,12 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Collections;
-using System.Collections.Generic;
-using NUnit.Framework;
-using UnityEngine.TestTools;
-using UnityEngine;
-
 namespace Tests
 {
     public struct FloatIntPair
