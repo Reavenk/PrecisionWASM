@@ -195,5 +195,149 @@ namespace Tests
 
             CompareGaunlet(expected, valRes.GetFloat64(), testName, testId, operands);
         }
+
+        public static void ExecuteAndCompareIntGuarded(
+            System.Func<int> fn, 
+            PxPre.WASM.Module mod,
+            PxPre.WASM.ExecutionContext exexCtx,
+            string testName, 
+            int testId, 
+            params PxPre.Datum.Val [] operands)
+        { 
+
+            List<string> operandStr = new List<string>();
+            foreach(PxPre.Datum.Val v in operands)
+                operandStr.Add(v.GetString());
+
+            PxPre.Datum.Val ret = null;
+            int truth = 0;
+
+            System.Exception truthException = null;
+            System.Exception testException = null;
+
+            try
+            { 
+                truth = fn.Invoke();
+            }
+            catch(System.Exception ex)
+            {
+                truthException = ex;
+            }
+
+            try
+            { 
+                ret = exexCtx.Invoke_SingleRet(mod, "Test", operands);
+            }
+            catch(System.Exception ex)
+            { 
+                testException = ex;
+            }
+
+            if(truthException != null)
+            { 
+                if(testException == null)
+                    ThrowGauntletError(testName, testId, "Did not throw expected exception.", null, null, operandStr.ToString());
+
+                return;
+            }
+            else if (testException != null)
+                ThrowGauntletError(testName, testId, "Uncountered unexpected exception.", null, null, operandStr.ToString());
+
+            CompareGaunletInt(truth, ret, testName, testId, operandStr.ToArray());
+        }
+
+        public static void ExecuteAndCompareInt64Guarded(
+            System.Func<long> fn,
+            PxPre.WASM.Module mod,
+            PxPre.WASM.ExecutionContext exexCtx,
+            string testName,
+            int testId,
+            params PxPre.Datum.Val[] operands)
+        {
+
+            List<string> operandStr = new List<string>();
+            foreach (PxPre.Datum.Val v in operands)
+                operandStr.Add(v.GetString());
+
+            PxPre.Datum.Val ret = null;
+            long truth = 0;
+
+            System.Exception truthException = null;
+            System.Exception testException = null;
+
+            try
+            {
+                truth = fn.Invoke();
+            }
+            catch (System.Exception ex)
+            {
+                truthException = ex;
+            }
+
+            try
+            {
+                ret = exexCtx.Invoke_SingleRet(mod, "Test", operands);
+            }
+            catch (System.Exception ex)
+            {
+                testException = ex;
+            }
+
+            if (truthException != null)
+            {
+                if (testException == null)
+                    ThrowGauntletError(testName, testId, "Did not throw expected exception.", null, null, operandStr.ToString());
+
+                return;
+            }
+            else if (testException != null)
+                ThrowGauntletError(testName, testId, "Uncountered unexpected exception.", null, null, operandStr.ToString());
+
+            CompareGaunletLong(truth, ret, testName, testId, operandStr.ToArray());
+        }
+
+        public static IEnumerable<IntPair> PermuZipLongToInt(List<long> lstA, List<long> lstB)
+        { 
+            foreach(long a in lstA)
+            { 
+                foreach(long b in lstB)
+                { 
+                    yield return new IntPair((int)a, (int)b);
+                }
+            }
+        }
+
+        public static IEnumerable<UIntPair> PermuZipLongToUInt(List<long> lstA, List<long> lstB)
+        {
+            foreach (long a in lstA)
+            {
+                foreach (long b in lstB)
+                {
+                    yield return new UIntPair((uint)a, (uint)b);
+                }
+            }
+        }
+
+        public static IEnumerable<Int64Pair> PermuZipLongToInt64(List<long> lstA, List<long> lstB)
+        {
+            foreach (long a in lstA)
+            {
+                foreach (long b in lstB)
+                {
+                    yield return new Int64Pair(a, b);
+                }
+            }
+        }
+
+        public static IEnumerable<UInt64Pair> PermuZipLongToUInt64(List<long> lstA, List<long> lstB)
+        {
+            foreach (long a in lstA)
+            {
+                foreach (long b in lstB)
+                {
+                    yield return new UInt64Pair((ulong)a, (ulong)b);
+                }
+            }
+        }
     }
 }

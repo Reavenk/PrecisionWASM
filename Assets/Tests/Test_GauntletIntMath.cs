@@ -238,16 +238,10 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach(long a in testSamples)
-            { 
-                foreach(long b in testSamples)
-                {
-                    int na = (int)a;
-                    int nb = (int)b;
-
-                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(na), PxPre.Datum.Val.Make(nb));
-                    UnitUtil.CompareGaunletInt(na + nb, ret, "i32.add", idx++, na, nb);
-                }
+            foreach (IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
+            {
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
+                UnitUtil.CompareGaunletInt(t.left + t.right, ret, "i32.add", idx++, t.left, t.right);
             }
         }
             
@@ -260,16 +254,10 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach(IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    int na = (int)a;
-                    int nb = (int)b;
-
-                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(na), PxPre.Datum.Val.Make(nb));
-                    UnitUtil.CompareGaunletInt(na - nb, ret, "i32.sub", idx++, na, nb);
-                }
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
+                UnitUtil.CompareGaunletInt(t.left - t.right, ret, "i32.sub", idx++, t.left, t.right);
             }
         }
             
@@ -282,17 +270,10 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    int na = (int)a;
-                    int nb = (int)b;
-
-                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(na), PxPre.Datum.Val.Make(nb));
-                    UnitUtil.CompareGaunletInt(na * nb, ret, "i32.mul", idx++, na, nb);
-
-                }
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
+                UnitUtil.CompareGaunletInt(t.left * t.right, ret, "i32.mul", idx++, t.left, t.right);
             }
         }
             
@@ -305,47 +286,16 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    int na = (int)a;
-                    int nb = (int)b;
-
-                    PxPre.Datum.Val ret;
-                    if (nb == 0)
-                    {
-                        bool threw = false;
-                        try
-                        {
-                            ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(na), PxPre.Datum.Val.Make(nb));
-                        }
-                        catch(System.Exception)
-                        { 
-                            threw = true;
-                        }
-
-                        if(threw == false)
-                            throw new System.Exception("Missing expected exception for integer divide by zero.");
-
-                        ++idx;
-                        continue;
-                    }
-
-                    try
-                    {
-                        ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(na), PxPre.Datum.Val.Make(nb));
-                    }
-                    catch (System.Exception)
-                    {
-                        // Overflow is still throwing exceptions, so they need to be caught and they
-                        // will be ignored for now.
-                        ++idx;
-                        continue;
-                    }
-
-                    UnitUtil.CompareGaunletInt(na / nb, ret, "i32.div_s", idx++, na, nb);
-                }
+                UnitUtil.ExecuteAndCompareIntGuarded(
+                    () => t.left / t.right,
+                    mod,
+                    ex,
+                    "i32.div_s",
+                    idx++,
+                    PxPre.Datum.Val.Make(t.left),
+                    PxPre.Datum.Val.Make(t.right));
             }
         }
             
@@ -360,46 +310,16 @@ namespace Tests
             // While this is for unsigned values, casting it to ints should be find as long as 
             // both the results and the truth are casted at the end.
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (UIntPair t in UnitUtil.PermuZipLongToUInt(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    uint na = (uint)a;
-                    uint nb = (uint)b;
-
-                    PxPre.Datum.Val ret;
-                    if (nb == 0)
-                    {
-                        bool threw = false;
-                        try
-                        {
-                            ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(na), PxPre.Datum.Val.Make(nb));
-                        }
-                        catch (System.Exception)
-                        {
-                            threw = true;
-                        }
-
-                        if (threw == false)
-                            throw new System.Exception("Missing expected exception for integer divide by zero.");
-
-                        ++idx;
-                        continue;
-                    }
-
-                    try
-                    {
-                        ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(na), PxPre.Datum.Val.Make(nb));
-                    }
-                    catch (System.Exception)
-                    {
-                        // Overflow is still throwing exceptions, so they need to be caught and they
-                        // will be ignored for now.
-                        ++idx;
-                        continue;
-                    }
-                    UnitUtil.CompareGaunletInt((int)(na / nb), ret, "i32.div_u", idx++, (int)na, (int)nb);
-                }
+                UnitUtil.ExecuteAndCompareIntGuarded(
+                    () => (int)(t.a/t.b), 
+                    mod, 
+                    ex, 
+                    "i32.div_u", 
+                    idx++, 
+                    PxPre.Datum.Val.Make(t.a),
+                    PxPre.Datum.Val.Make(t.b));
             }
         }
             
@@ -412,47 +332,16 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    int na = (int)a;
-                    int nb = (int)b;
-
-                    PxPre.Datum.Val ret = null;
-                    if (nb == 0)
-                    {
-                        bool threw = false;
-                        try
-                        {
-                            ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(na), PxPre.Datum.Val.Make(nb));
-                        }
-                        catch (System.Exception)
-                        {
-                            threw = true;
-                        } 
-
-                        if (threw == false)
-                            throw new System.Exception("Missing expected exception for remainder to zero.");
-
-                        ++idx;
-                        continue;
-                    }
-
-                    try
-                    {
-                        ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(na), PxPre.Datum.Val.Make(nb));
-                    }
-                    catch (System.Exception)
-                    {
-                        // Overflow is still throwing exceptions, so they need to be caught and they
-                        // will be ignored for now.
-                        ++idx;
-                        continue;
-                    }
-
-                    UnitUtil.CompareGaunletInt(na % nb, ret, "i32.rem_s", idx++, na, nb);
-                }
+                UnitUtil.ExecuteAndCompareIntGuarded(
+                    () => t.left % t.right,
+                    mod,
+                    ex,
+                    "i32.rem_s",
+                    idx++,
+                    PxPre.Datum.Val.Make(t.left),
+                    PxPre.Datum.Val.Make(t.right));
             }
         }
             
@@ -465,47 +354,17 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (UIntPair t in UnitUtil.PermuZipLongToUInt(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    uint na = (uint)a;
-                    uint nb = (uint)b;
 
-                    PxPre.Datum.Val ret = null;
-                    if (nb == 0)
-                    {
-                        bool threw = false;
-                        try
-                        {
-                            ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(na), PxPre.Datum.Val.Make(nb));
-                        }
-                        catch (System.Exception)
-                        {
-                            threw = true;
-                        }
-
-                        if (threw == false)
-                            throw new System.Exception("Missing expected exception for remainder to zero.");
-
-                        ++idx;
-                        continue;
-                    }
-
-                    try
-                    {
-                        ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(na), PxPre.Datum.Val.Make(nb));
-                    }
-                    catch (System.Exception)
-                    {
-                        // Overflow is still throwing exceptions, so they need to be caught and they
-                        // will be ignored for now.
-                        ++idx;
-                        continue;
-                    }
-
-                    UnitUtil.CompareGaunletInt((int)(na % nb), ret, "i32.rem_u", idx++, (int)na, (int)nb);
-                }
+                UnitUtil.ExecuteAndCompareIntGuarded(
+                        () => (int)(t.a % t.b),
+                        mod,
+                        ex,
+                        "i32.rem_u",
+                        idx++,
+                        PxPre.Datum.Val.Make(t.a),
+                        PxPre.Datum.Val.Make(t.b));
             }
         }
             
@@ -518,16 +377,10 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    int na = (int)a;
-                    int nb = (int)b;
-
-                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(na), PxPre.Datum.Val.Make(nb));
-                    UnitUtil.CompareGaunletInt(na & nb, ret, "i32.and", idx++, na, nb);
-                }
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
+                UnitUtil.CompareGaunletInt(t.left & t.right, ret, "i32.and", idx++, t.left, t.right);
             }
         }
             
@@ -540,16 +393,10 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    int na = (int)a;
-                    int nb = (int)b;
-
-                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(na), PxPre.Datum.Val.Make(nb));
-                    UnitUtil.CompareGaunletInt(na | nb, ret, "i32.or", idx++, na, nb);
-                }
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
+                UnitUtil.CompareGaunletInt(t.left | t.right, ret, "i32.or", idx++, t.left, t.right);
             }
         }
             
@@ -562,16 +409,10 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach(IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    int na = (int)a;
-                    int nb = (int)b;
-
-                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(na), PxPre.Datum.Val.Make(nb));
-                    UnitUtil.CompareGaunletInt(na ^ nb, ret, "i32.or", idx++, na, nb);
-                }
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
+                UnitUtil.CompareGaunletInt(t.left ^ t.right, ret, "i32.or", idx++, t.left, t.right);
             }
         }
             
@@ -772,13 +613,10 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(a), PxPre.Datum.Val.Make(b));
-                    UnitUtil.CompareGaunletLong(a + b, ret, "i64.add", idx++, a, b);
-                }
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
+                UnitUtil.CompareGaunletLong(t.left + t.right, ret, "i64.add", idx++, t.left, t.right);
             }
         }
             
@@ -791,13 +629,10 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(a), PxPre.Datum.Val.Make(b));
-                    UnitUtil.CompareGaunletLong(a - b, ret, "i64.sub", idx++, a, b);
-                }
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
+                UnitUtil.CompareGaunletLong(t.left - t.right, ret, "i64.sub", idx++, t.left, t.right);
             }
         }
             
@@ -810,13 +645,10 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(a), PxPre.Datum.Val.Make(b));
-                    UnitUtil.CompareGaunletLong(a * b, ret, "i64.mul", idx++, a, b);
-                }
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
+                UnitUtil.CompareGaunletLong(t.left * t.right, ret, "i64.mul", idx++, t.left, t.right);
             }
         }
             
@@ -829,44 +661,15 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    PxPre.Datum.Val ret;
-                    if (b == 0)
-                    {
-                        bool threw = false;
-                        try
-                        {
-                            ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(a), PxPre.Datum.Val.Make(b));
-                        }
-                        catch (System.Exception)
-                        {
-                            threw = true;
-                        }
-
-                        if (threw == false)
-                            throw new System.Exception("Missing expected exception for integer divide by zero.");
-
-                        ++idx;
-                        continue;
-                    }
-
-                    try
-                    {
-                        ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(a), PxPre.Datum.Val.Make(b));
-                    }
-                    catch (System.Exception)
-                    {
-                        // Overflow is still throwing exceptions, so they need to be caught and they
-                        // will be ignored for now.
-                        ++idx;
-                        continue;
-                    }
-
-                    UnitUtil.CompareGaunletLong(a / b, ret, "i64.div_s", idx++, a, b);
-                }
+                UnitUtil.ExecuteAndCompareInt64Guarded(
+                        () => t.left / t.right,
+                        mod, ex,
+                        "i64.div_s",
+                        idx++,
+                        PxPre.Datum.Val.Make(t.left),
+                        PxPre.Datum.Val.Make(t.right));
             }
         }
             
@@ -879,47 +682,15 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (UInt64Pair t in UnitUtil.PermuZipLongToUInt64(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    ulong ua = (ulong)a;
-                    ulong ub = (ulong)b;
-
-                    PxPre.Datum.Val ret;
-                    if (ub == 0)
-                    {
-                        bool threw = false;
-                        try
-                        {
-                            ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(ua), PxPre.Datum.Val.Make(ub));
-                        }
-                        catch (System.Exception)
-                        {
-                            threw = true;
-                        }
-
-                        if (threw == false)
-                            throw new System.Exception("Missing expected exception for integer divide by zero.");
-
-                        ++idx;
-                        continue;
-                    }
-
-                    try
-                    {
-                        ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(ua), PxPre.Datum.Val.Make(ub));
-                    }
-                    catch (System.Exception)
-                    {
-                        // Overflow is still throwing exceptions, so they need to be caught and they
-                        // will be ignored for now.
-                        ++idx;
-                        continue;
-                    }
-
-                    UnitUtil.CompareGaunletLong((long)(ua / ub), ret, "i64.div_u", idx++, (long)ua, (long)ub);
-                }
+                UnitUtil.ExecuteAndCompareInt64Guarded(
+                    () => (long)(t.a / t.b),
+                    mod, ex,
+                    "i64.div_u",
+                    idx++,
+                    PxPre.Datum.Val.Make(t.a),
+                    PxPre.Datum.Val.Make(t.b));
             }
         }
             
@@ -932,44 +703,15 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    PxPre.Datum.Val ret = null;
-                    if (b == 0)
-                    {
-                        bool threw = false;
-                        try
-                        {
-                            ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(a), PxPre.Datum.Val.Make(b));
-                        }
-                        catch (System.Exception)
-                        {
-                            threw = true;
-                        }
-
-                        if (threw == false)
-                            throw new System.Exception("Missing expected exception for remainder to zero.");
-
-                        ++idx;
-                        continue;
-                    }
-
-                    try
-                    {
-                        ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(a), PxPre.Datum.Val.Make(b));
-                    }
-                    catch (System.Exception)
-                    {
-                        // Overflow is still throwing exceptions, so they need to be caught and they
-                        // will be ignored for now.
-                        ++idx;
-                        continue;
-                    }
-
-                    UnitUtil.CompareGaunletLong(a % b, ret, "i64.rem_s", idx++, a, b);
-                }
+                UnitUtil.ExecuteAndCompareInt64Guarded(
+                    ()=> t.left % t.right,
+                    mod, ex,
+                    "i64.rem_s",
+                    idx++,
+                    PxPre.Datum.Val.Make(t.left),
+                    PxPre.Datum.Val.Make(t.right));
             }
         }
             
@@ -982,47 +724,15 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (UInt64Pair t in UnitUtil.PermuZipLongToUInt64(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    ulong ua = (ulong)a;
-                    ulong ub = (ulong)b;
-
-                    PxPre.Datum.Val ret = null;
-                    if (ub == 0)
-                    {
-                        bool threw = false;
-                        try
-                        {
-                            ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(ua), PxPre.Datum.Val.Make(ub));
-                        }
-                        catch (System.Exception)
-                        {
-                            threw = true;
-                        }
-
-                        if (threw == false)
-                            throw new System.Exception("Missing expected exception for remainder to zero.");
-
-                        ++idx;
-                        continue;
-                    }
-
-                    try
-                    {
-                        ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(ua), PxPre.Datum.Val.Make(ub));
-                    }
-                    catch (System.Exception)
-                    {
-                        // Overflow is still throwing exceptions, so they need to be caught and they
-                        // will be ignored for now.
-                        ++idx;
-                        continue;
-                    }
-
-                    UnitUtil.CompareGaunletLong((long)(ua % ub), ret, "i32.rem_u", idx++, (long)ua, (long)ub);
-                }
+                UnitUtil.ExecuteAndCompareInt64Guarded(
+                    () => (long)(t.a % t.b),
+                    mod, ex,
+                    "i64.rem_u",
+                    idx++,
+                    PxPre.Datum.Val.Make(t.a),
+                    PxPre.Datum.Val.Make(t.b));
             }
         }
             
@@ -1035,13 +745,10 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(a), PxPre.Datum.Val.Make(b));
-                    UnitUtil.CompareGaunletLong(a & b, ret, "i64.and", idx++, a, b);
-                }
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
+                UnitUtil.CompareGaunletLong(t.left & t.right, ret, "i64.and", idx++, t.left, t.right);
             }
         }
             
@@ -1054,13 +761,10 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(a), PxPre.Datum.Val.Make(b));
-                    UnitUtil.CompareGaunletLong(a | b, ret, "i64.or", idx++, a, b);
-                }
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
+                UnitUtil.CompareGaunletLong(t.left | t.right, ret, "i64.or", idx++, t.left, t.right);
             }
         }
             
@@ -1073,13 +777,10 @@ namespace Tests
             ex.InvokeStart();
 
             int idx = 0;
-            foreach (long a in testSamples)
+            foreach(Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
-                foreach (long b in testSamples)
-                {
-                    PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(a), PxPre.Datum.Val.Make(b));
-                    UnitUtil.CompareGaunletLong(a ^ b, ret, "i64.or", idx++, a, b);
-                }
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
+                UnitUtil.CompareGaunletLong(t.left ^ t.right, ret, "i64.or", idx++, t.left, t.right);
             }
         }
             
@@ -1205,7 +906,7 @@ namespace Tests
             foreach (LongTripplet it in extraTests)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(it.a), PxPre.Datum.Val.Make(it.b));
-                UnitUtil.CompareGaunletLong(it.c, ret, "i64.shr_s", ++idx, it.a, it.b);
+                UnitUtil.CompareGaunletLong(it.c, ret, "i64.shr_s", idx++, it.a, it.b);
             }
         }
             

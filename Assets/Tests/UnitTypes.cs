@@ -28,6 +28,7 @@ using UnityEngine;
 
 namespace Tests
 {
+    // TODO: Rename left to a and b to right for everything.
     public struct FloatIntPair
     {
         public float left;
@@ -52,6 +53,18 @@ namespace Tests
         }
     }
 
+    public struct UIntPair
+    {
+        public uint a;
+        public uint b;
+
+        public UIntPair(uint a, uint b)
+        {
+            this.a = a;
+            this.b = b;
+        }
+    }
+
     public struct FloatPair
     {
         public float left;
@@ -73,6 +86,18 @@ namespace Tests
         {
             this.left = left;
             this.right = right;
+        }
+    }
+
+    public struct UInt64Pair
+    {
+        public ulong a;
+        public ulong b;
+
+        public UInt64Pair(ulong a, ulong b)
+        {
+            this.a = a;
+            this.b = b;
         }
     }
 
