@@ -43,19 +43,19 @@ for t in tests:
     t = t.strip()
     toks = t.split('_')
     
-    operandName = toks[0] + '.' + toks[1] + '_' + toks[2]
+    operatorName = toks[0] + '.' + toks[1] + '_' + toks[2]
     if len(toks) > 3:
-        operandName += '_' + toks[3]
+        operatorName += '_' + toks[3]
         
-    prog = ";; " + operandName + "\n"
+    prog = ";; " + operatorName + "\n"
     prog += "(module\n"
     prog += "\t(func (export \"Test\") (param " + toks[2] + ") ( result " + toks[0] + ")\n"
     prog += "\tlocal.get 0\n"
-    prog += "\t" + operandName + "\n"
+    prog += "\t" + operatorName + "\n"
     prog += "))"
     
-    print("Writing minimal test for " + operandName)
-    outFile = open(operandName + ".WAT", "w")
+    print("Writing minimal test for " + operatorName)
+    outFile = open(operatorName + ".WAT", "w")
     outFile.write(prog)
     outFile.close()
     
@@ -79,17 +79,17 @@ for t in selfExtendSTests:
     t = t.strip()
     toks = t.split('_')
     
-    operandName = toks[0] + '.' + toks[1] + '_' + toks[2]
+    operatorName = toks[0] + '.' + toks[1] + '_' + toks[2]
         
-    prog = ";; " + operandName + "\n"
+    prog = ";; " + operatorName + "\n"
     prog += "(module\n"
     prog += "\t(func (export \"Test\") (param " + toks[0] + ") ( result " + toks[0] + ")\n"
     prog += "\tlocal.get 0\n"
-    prog += "\t" + operandName + "\n"
+    prog += "\t" + operatorName + "\n"
     prog += "))"
     
-    print("Writing minimal test for " + operandName)
-    outFile = open(operandName + ".WAT", "w")
+    print("Writing minimal test for " + operatorName)
+    outFile = open(operatorName + ".WAT", "w")
     outFile.write(prog)
     outFile.close()
         

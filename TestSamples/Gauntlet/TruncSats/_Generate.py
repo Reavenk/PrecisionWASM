@@ -13,16 +13,16 @@ for t in OneParamTests:
     t = t.strip()
     toks = t.split('_')
     
-    operandName = toks[0] + '.' + toks[1] + '_' + toks[2] + '_' + toks[3] + '_' + toks[4]
+    operatorName = toks[0] + '.' + toks[1] + '_' + toks[2] + '_' + toks[3] + '_' + toks[4]
         
-    prog = ";; " + operandName + "\n"
+    prog = ";; " + operatorName + "\n"
     prog += "(module\n"
     prog += "\t(func (export \"Test\") (param " + toks[3] + ") ( result " + toks[0] + ")\n"
     prog += "\tlocal.get 0\n"
-    prog += "\t" + operandName + "\n"
+    prog += "\t" + operatorName + "\n"
     prog += "))"
     
-    print("Writing minimal test for " + operandName)
-    outFile = open(operandName + ".WAT", "w")
+    print("Writing minimal test for " + operatorName)
+    outFile = open(operatorName + ".WAT", "w")
     outFile.write(prog)
     outFile.close()

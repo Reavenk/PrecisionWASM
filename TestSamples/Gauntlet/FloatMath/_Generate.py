@@ -18,17 +18,17 @@ for t in OneParamTests:
     t = t.strip()
     toks = t.split('_')
     
-    operandName = toks[0] + '.' + toks[1]
+    operatorName = toks[0] + '.' + toks[1]
         
-    prog = ";; " + operandName + "\n"
+    prog = ";; " + operatorName + "\n"
     prog += "(module\n"
     prog += "\t(func (export \"Test\") (param " + toks[0] + ") ( result " + toks[0] + ")\n"
     prog += "\tlocal.get 0\n"
-    prog += "\t" + operandName + "\n"
+    prog += "\t" + operatorName + "\n"
     prog += "))"
     
-    print("Writing minimal test for " + operandName)
-    outFile = open(operandName + ".WAT", "w")
+    print("Writing minimal test for " + operatorName)
+    outFile = open(operatorName + ".WAT", "w")
     outFile.write(prog)
     outFile.close()
     
@@ -53,17 +53,17 @@ for t in TwoParamTests:
     t = t.strip()
     toks = t.split('_')
     
-    operandName = toks[0] + '.' + toks[1]
+    operatorName = toks[0] + '.' + toks[1]
         
-    prog = ";; " + operandName + "\n"
+    prog = ";; " + operatorName + "\n"
     prog += "(module\n"
     prog += "\t(func (export \"Test\") (param " + toks[0] + " " + toks[0] + ") ( result " + toks[0] + ")\n"
     prog += "\tlocal.get 0\n"
     prog += "\tlocal.get 1\n"
-    prog += "\t" + operandName + "\n"
+    prog += "\t" + operatorName + "\n"
     prog += "))"
     
-    print("Writing minimal test for " + operandName)
-    outFile = open(operandName + ".WAT", "w")
+    print("Writing minimal test for " + operatorName)
+    outFile = open(operatorName + ".WAT", "w")
     outFile.write(prog)
     outFile.close()
