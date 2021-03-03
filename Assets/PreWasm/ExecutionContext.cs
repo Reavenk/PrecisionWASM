@@ -1285,13 +1285,11 @@ namespace PxPre.WASM
 
                         case Instruction.i64_rotr:
                             {
-                                {
-                                    ulong val = *(ulong*)(&pstk[stackPos + 8]);
-                                    int shiftAmt = (int)*(long*)(&pstk[stackPos]) % 64;
+                                ulong val = *(ulong*)(&pstk[stackPos + 8]);
+                                int shiftAmt = (int)*(long*)(&pstk[stackPos]) % 64;
 
-                                    this.stackPos += 8;
-                                    *(ulong*)(&pstk[this.stackPos]) = (val >> shiftAmt) | (val << (64 - shiftAmt));
-                                }
+                                this.stackPos += 8;
+                                *(ulong*)(&pstk[this.stackPos]) = (val >> shiftAmt) | (val << (64 - shiftAmt));
                             }
                             break;
 
