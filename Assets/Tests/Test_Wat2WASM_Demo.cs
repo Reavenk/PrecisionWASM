@@ -46,19 +46,19 @@ namespace Tests
 
             foreach(IntPair np in tests)
             {
-                int expected = np.left + np.right;
-                Debug.Log($"Testing addTwo({np.left}, {np.right}) and expecting {expected}");
+                int expected = np.a + np.b;
+                Debug.Log($"Testing addTwo({np.a}, {np.b}) and expecting {expected}");
 
 
                 PxPre.Datum.Val ret = 
                     ex.Invoke_SingleRet( 
                         mod, 
                         "addTwo", 
-                        new PxPre.Datum.ValInt(np.left), 
-                        new PxPre.Datum.ValInt(np.right));
+                        new PxPre.Datum.ValInt(np.a), 
+                        new PxPre.Datum.ValInt(np.b));
 
                 if (ret.GetInt() != expected)
-                    throw new System.Exception($"Test of addTwo({np.left}, {np.right}) failed with result of {ret.GetInt()} instead of {expected}");
+                    throw new System.Exception($"Test of addTwo({np.a}, {np.b}) failed with result of {ret.GetInt()} instead of {expected}");
             }
 
 
@@ -176,13 +176,13 @@ namespace Tests
 
             foreach(FloatIntPair fip in tests)
             { 
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "f", new PxPre.Datum.ValFloat(fip.left));
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "f", new PxPre.Datum.ValFloat(fip.f));
 
                 if(ret.wrapType != PxPre.Datum.Val.Type.Int)
                     throw new System.Exception("saturingfloattoint.wasm expected i32 return.");
 
-                if(ret.GetInt() != fip.right)
-                    throw new System.Exception($"saturatingfloattoint.wasm with f{fip.left} expected {fip.right} but got {ret.GetInt()}");
+                if(ret.GetInt() != fip.n)
+                    throw new System.Exception($"saturatingfloattoint.wasm with f{fip.f} expected {fip.n} but got {ret.GetInt()}");
             }
         }
 
@@ -207,10 +207,10 @@ namespace Tests
 
             foreach(IntPair ip in tests)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "f", new PxPre.Datum.ValInt(ip.left));
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "f", new PxPre.Datum.ValInt(ip.a));
                 
-                if(ret.GetInt() != ip.right)
-                    throw new System.Exception($"signextension.wasm with f({ip.left}) expected {ip.right} but got {ret.GetInt()}");
+                if(ret.GetInt() != ip.b)
+                    throw new System.Exception($"signextension.wasm with f({ip.a}) expected {ip.b} but got {ret.GetInt()}");
             }
 
         }

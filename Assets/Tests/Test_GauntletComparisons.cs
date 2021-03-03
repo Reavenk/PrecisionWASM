@@ -128,8 +128,8 @@ namespace Tests
             int idx = 0;
             foreach (IntPair t in testKeysIntInt)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left == t.right, ret, "i32.eq", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a == t.b, ret, "i32.eq", idx++, t.a, t.b);
             }
         }
 
@@ -144,8 +144,8 @@ namespace Tests
             int idx = 0;
             foreach (IntPair t in testKeysIntInt)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left != t.right, ret, "i32.ne", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a != t.b, ret, "i32.ne", idx++, t.a, t.b);
             }
         }
 
@@ -160,8 +160,8 @@ namespace Tests
             int idx = 0;
             foreach (IntPair t in testKeysIntInt)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left < t.right, ret, "i32.lt_s", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a < t.b, ret, "i32.lt_s", idx++, t.a, t.b);
             }
         }
 
@@ -176,8 +176,8 @@ namespace Tests
             int idx = 0;
             foreach (IntPair t in testKeysIntInt)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool((uint)t.left < (uint)t.right, ret, "i32.lt_u", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool((uint)t.a < (uint)t.b, ret, "i32.lt_u", idx++, t.a, t.b);
             }
         }
 
@@ -192,8 +192,8 @@ namespace Tests
             int idx = 0;
             foreach (IntPair t in testKeysIntInt)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left > t.right, ret, "i32.gt_s", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a > t.b, ret, "i32.gt_s", idx++, t.a, t.b);
             }
         }
 
@@ -208,8 +208,8 @@ namespace Tests
             int idx = 0;
             foreach (IntPair t in testKeysIntInt)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool((uint)t.left > (uint)t.right, ret, "i32.gt_u", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool((uint)t.a > (uint)t.b, ret, "i32.gt_u", idx++, t.a, t.b);
             }
         }
 
@@ -224,8 +224,8 @@ namespace Tests
             int idx = 0;
             foreach (IntPair t in testKeysIntInt)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left <= t.right, ret, "i32.le_s", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a <= t.b, ret, "i32.le_s", idx++, t.a, t.b);
             }
         }
 
@@ -240,8 +240,8 @@ namespace Tests
             int idx = 0;
             foreach (IntPair t in testKeysIntInt)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool((uint)t.left <= (uint)t.right, ret, "i32.le_u", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool((uint)t.a <= (uint)t.b, ret, "i32.le_u", idx++, t.a, t.b);
             }
         }
 
@@ -256,8 +256,8 @@ namespace Tests
             int idx = 0;
             foreach (IntPair t in testKeysIntInt)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left >= t.right, ret, "i32.ge_s", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a >= t.b, ret, "i32.ge_s", idx++, t.a, t.b);
             }
         }
 
@@ -272,8 +272,8 @@ namespace Tests
             int idx = 0;
             foreach (IntPair t in testKeysIntInt)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool((uint)t.left >= (uint)t.right, ret, "i32.ge_u", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool((uint)t.a >= (uint)t.b, ret, "i32.ge_u", idx++, t.a, t.b);
             }
         }
 
@@ -288,8 +288,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in testKeysLongLong)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left == t.right, ret, "i64.eq", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a == t.b, ret, "i64.eq", idx++, t.a, t.b);
             }
         }
 
@@ -304,8 +304,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in testKeysLongLong)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left != t.right, ret, "i64.ne", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a != t.b, ret, "i64.ne", idx++, t.a, t.b);
             }
         }
 
@@ -320,8 +320,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in testKeysLongLong)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left < t.right, ret, "i64.lt_s", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a < t.b, ret, "i64.lt_s", idx++, t.a, t.b);
             }
         }
 
@@ -336,8 +336,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in testKeysLongLong)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool((ulong)t.left < (ulong)t.right, ret, "i64.lt_u", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool((ulong)t.a < (ulong)t.b, ret, "i64.lt_u", idx++, t.a, t.b);
             }
         }
 
@@ -352,8 +352,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in testKeysLongLong)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left > t.right, ret, "i64.gt_s", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a > t.b, ret, "i64.gt_s", idx++, t.a, t.b);
             }
         }
 
@@ -368,8 +368,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in testKeysLongLong)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool((ulong)t.left > (ulong)t.right, ret, "i64.gt_u", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool((ulong)t.a > (ulong)t.b, ret, "i64.gt_u", idx++, t.a, t.b);
             }
         }
 
@@ -384,8 +384,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in testKeysLongLong)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left <= t.right, ret, "i64.le_s", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a <= t.b, ret, "i64.le_s", idx++, t.a, t.b);
             }
         }
 
@@ -400,8 +400,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in testKeysLongLong)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool((ulong)t.left <= (ulong)t.right, ret, "i64.le_u", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool((ulong)t.a <= (ulong)t.b, ret, "i64.le_u", idx++, t.a, t.b);
             }
         }
 
@@ -416,8 +416,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in testKeysLongLong)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left >= t.right, ret, "i64.ge_s", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a >= t.b, ret, "i64.ge_s", idx++, t.a, t.b);
             }
         }
 
@@ -432,8 +432,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in testKeysLongLong)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool((ulong)t.left >= (ulong)t.right, ret, "i64.ge_u", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool((ulong)t.a >= (ulong)t.b, ret, "i64.ge_u", idx++, t.a, t.b);
             }
         }
 
@@ -448,8 +448,8 @@ namespace Tests
             int idx = 0;
             foreach (FloatPair t in testKeysFloatFloat)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left == t.right, ret, "f32.eq", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a == t.b, ret, "f32.eq", idx++, t.a, t.b);
             }
         }
 
@@ -464,8 +464,8 @@ namespace Tests
             int idx = 0;
             foreach (FloatPair t in testKeysFloatFloat)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left != t.right, ret, "f32.ne", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a != t.b, ret, "f32.ne", idx++, t.a, t.b);
             }
         }
 
@@ -480,8 +480,8 @@ namespace Tests
             int idx = 0;
             foreach (FloatPair t in testKeysFloatFloat)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left < t.right, ret, "f32.lt", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a < t.b, ret, "f32.lt", idx++, t.a, t.b);
             }
         }
 
@@ -496,8 +496,8 @@ namespace Tests
             int idx = 0;
             foreach (FloatPair t in testKeysFloatFloat)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left > t.right, ret, "f32.gt", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a > t.b, ret, "f32.gt", idx++, t.a, t.b);
             }
         }
 
@@ -512,8 +512,8 @@ namespace Tests
             int idx = 0;
             foreach (FloatPair t in testKeysFloatFloat)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left <= t.right, ret, "f32.le", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a <= t.b, ret, "f32.le", idx++, t.a, t.b);
             }
         }
 
@@ -528,8 +528,8 @@ namespace Tests
             int idx = 0;
             foreach (FloatPair t in testKeysFloatFloat)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left >= t.right, ret, "f32.ge", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a >= t.b, ret, "f32.ge", idx++, t.a, t.b);
             }
         }
 
@@ -544,8 +544,8 @@ namespace Tests
             int idx = 0;
             foreach (Float64Pair t in testKeysDoubleDouble)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left == t.right, ret, "f64.eq", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a == t.b, ret, "f64.eq", idx++, t.a, t.b);
             }
         }
 
@@ -560,8 +560,8 @@ namespace Tests
             int idx = 0;
             foreach (Float64Pair t in testKeysDoubleDouble)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left != t.right, ret, "f64.ne", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a != t.b, ret, "f64.ne", idx++, t.a, t.b);
             }
         }
 
@@ -576,8 +576,8 @@ namespace Tests
             int idx = 0;
             foreach (Float64Pair t in testKeysDoubleDouble)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left < t.right, ret, "f64.lt", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a < t.b, ret, "f64.lt", idx++, t.a, t.b);
             }
         }
 
@@ -592,8 +592,8 @@ namespace Tests
             int idx = 0;
             foreach (Float64Pair t in testKeysDoubleDouble)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left > t.right, ret, "f64.gt", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a > t.b, ret, "f64.gt", idx++, t.a, t.b);
             }
         }
 
@@ -608,8 +608,8 @@ namespace Tests
             int idx = 0;
             foreach (Float64Pair t in testKeysDoubleDouble)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left <= t.right, ret, "f64.le", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a <= t.b, ret, "f64.le", idx++, t.a, t.b);
             }
         }
 
@@ -624,8 +624,8 @@ namespace Tests
             int idx = 0;
             foreach (Float64Pair t in testKeysDoubleDouble)
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletBool(t.left >= t.right, ret, "f64.ge", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletBool(t.a >= t.b, ret, "f64.ge", idx++, t.a, t.b);
             }
         }
     }

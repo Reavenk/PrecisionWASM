@@ -28,28 +28,27 @@ using UnityEngine;
 
 namespace Tests
 {
-    // TODO: Rename left to a and b to right for everything.
     public struct FloatIntPair
     {
-        public float left;
-        public int right;
+        public float f;
+        public int n;
 
-        public FloatIntPair(float left, int right)
+        public FloatIntPair(float f, int n)
         {
-            this.left = left;
-            this.right = right;
+            this.f = f;
+            this.n = n;
         }
     }
 
     public struct IntPair
     {
-        public int left;
-        public int right;
+        public int a;
+        public int b;
 
-        public IntPair(int left, int right)
+        public IntPair(int a, int b)
         {
-            this.left = left;
-            this.right = right;
+            this.a = a;
+            this.b = b;
         }
     }
 
@@ -67,25 +66,25 @@ namespace Tests
 
     public struct FloatPair
     {
-        public float left;
-        public float right;
+        public float a;
+        public float b;
 
-        public FloatPair(float left, float right)
+        public FloatPair(float a, float b)
         {
-            this.left = left;
-            this.right = right;
+            this.a = a;
+            this.b = b;
         }
     }
 
     public struct Int64Pair
     {
-        public long left;
-        public long right;
+        public long a;
+        public long b;
 
-        public Int64Pair(long left, long right)
+        public Int64Pair(long a, long b)
         {
-            this.left = left;
-            this.right = right;
+            this.a = a;
+            this.b = b;
         }
     }
 
@@ -103,13 +102,13 @@ namespace Tests
 
     public struct Float64Pair
     {
-        public double left;
-        public double right;
+        public double a;
+        public double b;
 
-        public Float64Pair(double left, double right)
+        public Float64Pair(double a, double b)
         {
-            this.left = left;
-            this.right = right;
+            this.a = a;
+            this.b = b;
         }
     }
 

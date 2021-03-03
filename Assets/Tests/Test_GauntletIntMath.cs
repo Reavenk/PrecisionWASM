@@ -240,8 +240,8 @@ namespace Tests
             int idx = 0;
             foreach (IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletInt(t.left + t.right, ret, "i32.add", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletInt(t.a + t.b, ret, "i32.add", idx++, t.a, t.b);
             }
         }
             
@@ -256,8 +256,8 @@ namespace Tests
             int idx = 0;
             foreach(IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletInt(t.left - t.right, ret, "i32.sub", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletInt(t.a - t.b, ret, "i32.sub", idx++, t.a, t.b);
             }
         }
             
@@ -272,8 +272,8 @@ namespace Tests
             int idx = 0;
             foreach (IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletInt(t.left * t.right, ret, "i32.mul", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletInt(t.a * t.b, ret, "i32.mul", idx++, t.a, t.b);
             }
         }
             
@@ -289,13 +289,13 @@ namespace Tests
             foreach (IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
                 UnitUtil.ExecuteAndCompareIntGuarded(
-                    () => t.left / t.right,
+                    () => t.a / t.b,
                     mod,
                     ex,
                     "i32.div_s",
                     idx++,
-                    PxPre.Datum.Val.Make(t.left),
-                    PxPre.Datum.Val.Make(t.right));
+                    PxPre.Datum.Val.Make(t.a),
+                    PxPre.Datum.Val.Make(t.b));
             }
         }
             
@@ -335,13 +335,13 @@ namespace Tests
             foreach (IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
                 UnitUtil.ExecuteAndCompareIntGuarded(
-                    () => t.left % t.right,
+                    () => t.a % t.b,
                     mod,
                     ex,
                     "i32.rem_s",
                     idx++,
-                    PxPre.Datum.Val.Make(t.left),
-                    PxPre.Datum.Val.Make(t.right));
+                    PxPre.Datum.Val.Make(t.a),
+                    PxPre.Datum.Val.Make(t.b));
             }
         }
             
@@ -379,8 +379,8 @@ namespace Tests
             int idx = 0;
             foreach (IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletInt(t.left & t.right, ret, "i32.and", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletInt(t.a & t.b, ret, "i32.and", idx++, t.a, t.b);
             }
         }
             
@@ -395,8 +395,8 @@ namespace Tests
             int idx = 0;
             foreach (IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletInt(t.left | t.right, ret, "i32.or", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletInt(t.a | t.b, ret, "i32.or", idx++, t.a, t.b);
             }
         }
             
@@ -411,8 +411,8 @@ namespace Tests
             int idx = 0;
             foreach(IntPair t in UnitUtil.PermuZipLongToInt(testSamples, testSamples))
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletInt(t.left ^ t.right, ret, "i32.or", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletInt(t.a ^ t.b, ret, "i32.or", idx++, t.a, t.b);
             }
         }
             
@@ -615,8 +615,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletLong(t.left + t.right, ret, "i64.add", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletLong(t.a + t.b, ret, "i64.add", idx++, t.a, t.b);
             }
         }
             
@@ -631,8 +631,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletLong(t.left - t.right, ret, "i64.sub", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletLong(t.a - t.b, ret, "i64.sub", idx++, t.a, t.b);
             }
         }
             
@@ -647,8 +647,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletLong(t.left * t.right, ret, "i64.mul", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletLong(t.a * t.b, ret, "i64.mul", idx++, t.a, t.b);
             }
         }
             
@@ -664,12 +664,12 @@ namespace Tests
             foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
                 UnitUtil.ExecuteAndCompareInt64Guarded(
-                        () => t.left / t.right,
+                        () => t.a / t.b,
                         mod, ex,
                         "i64.div_s",
                         idx++,
-                        PxPre.Datum.Val.Make(t.left),
-                        PxPre.Datum.Val.Make(t.right));
+                        PxPre.Datum.Val.Make(t.a),
+                        PxPre.Datum.Val.Make(t.b));
             }
         }
             
@@ -706,12 +706,12 @@ namespace Tests
             foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
                 UnitUtil.ExecuteAndCompareInt64Guarded(
-                    ()=> t.left % t.right,
+                    ()=> t.a % t.b,
                     mod, ex,
                     "i64.rem_s",
                     idx++,
-                    PxPre.Datum.Val.Make(t.left),
-                    PxPre.Datum.Val.Make(t.right));
+                    PxPre.Datum.Val.Make(t.a),
+                    PxPre.Datum.Val.Make(t.b));
             }
         }
             
@@ -747,8 +747,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletLong(t.left & t.right, ret, "i64.and", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletLong(t.a & t.b, ret, "i64.and", idx++, t.a, t.b);
             }
         }
             
@@ -763,8 +763,8 @@ namespace Tests
             int idx = 0;
             foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletLong(t.left | t.right, ret, "i64.or", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletLong(t.a | t.b, ret, "i64.or", idx++, t.a, t.b);
             }
         }
             
@@ -779,8 +779,8 @@ namespace Tests
             int idx = 0;
             foreach(Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
-                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.left), PxPre.Datum.Val.Make(t.right));
-                UnitUtil.CompareGaunletLong(t.left ^ t.right, ret, "i64.or", idx++, t.left, t.right);
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
+                UnitUtil.CompareGaunletLong(t.a ^ t.b, ret, "i64.or", idx++, t.a, t.b);
             }
         }
             
