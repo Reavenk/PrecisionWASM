@@ -597,18 +597,15 @@ namespace PxPre.WASM
 
                         case Instruction.MemorySize:
                             {
+                                this.stackPos -= 4;
 
-                                // memory.size comes with an additional unused parameter (+4)
-                                // But we also push a return value as a 32 bit int (-4)
-                                //this.stackPos += 0; 
-
-                                if (this.memories.Count == 0 || this.memories[0].CalculatePageCt() == 0)
-                                    *(int*)pstk[this.stackPos] = -1;
+                                if (curMemStore == null)
+                                    *(int*)&pstk[this.stackPos] = -1;
                                 else
                                 {
                                     // The return is a page size, and we're following the rule that the memory size is always
                                     // a multiple of the page size.
-                                    *(uint*)pstk[this.stackPos] = this.memories[0].CalculatePageCt();
+                                    *(int*)&pstk[this.stackPos] = (int)curMemStore.CalculatePageCt();
                                 }
                             }
                             break;
@@ -617,25 +614,34 @@ namespace PxPre.WASM
                             { 
                                 int newPages = *(int*)&pstk[this.stackPos];
 
-                                // I don't even know if we should allow adding a memory if one wasn't
-                                // defined. While we're trying to gracefully what's arguably an error
-                                // condition, we may need to just throw an exception/trap.
-                                if (this.memories.Count == 0)
+                                // The stackpop is popped, but another 32 bit values is put on the 
+                                // stack. No stack position modification.
+
+                                if(newPages < 0)
                                 {
-                                    this.memories.Add(
-                                        new Memory(0, new LimitsPaged(0, 1)));
-                                }
-
-                                // The stackpop is popped, but another 32 bit values is put on the stack. No stack modification.
-                                uint oldPageSz = this.memories[0].CalculatePageCt();
-
-                                DataStore.ExpandRet expRet = this.memories[0].ExpandPageCt((int)(oldPageSz + newPages));
-
-                                // NOTE: This probably isn't to-spec.
-                                if(expRet == DataStore.ExpandRet.Successful)
-                                    *(uint*)&pstk[this.stackPos] = oldPageSz;
-                                else
                                     *(int*)&pstk[this.stackPos] = -1;
+                                }
+                                else
+                                {
+                                    // The signed/unsigned mixing may need some review. It's pretty washy.
+
+                                    uint oldPageSz = curMemStore.CalculatePageCt();
+                                    if(newPages == 0)
+                                        *(int*)&pstk[this.stackPos] = (int)oldPageSz;
+                                    else
+                                    { 
+                                        DataStore.ExpandRet expRet = 
+                                            this.memories[0].ExpandPageCt((int)(oldPageSz + newPages));
+
+                                        if (expRet == DataStore.ExpandRet.Successful)
+                                        {
+                                            *(uint*)&pstk[this.stackPos] = oldPageSz;
+                                            pbMem = this.memories[0].store.pdata;
+                                        }
+                                        else
+                                            *(int*)&pstk[this.stackPos] = -1;
+                                    }
+                                }
                             }
                             break;
 

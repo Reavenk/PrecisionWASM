@@ -619,7 +619,20 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.MemorySize:
+                            ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
+
+                            ++idx; // Skip reserved/unused following zero byte.
+                            vmgr.PushOpd(StackOpd.i32);
+                            TransferInstruction(expanded, instr);
+                            break;
+
                         case Instruction.MemoryGrow:
+                            ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
+
+                            ++idx; // Skip reserved/unused following zero byte.
+                            vmgr.PopOpd(StackOpd.i32);
+                            vmgr.PushOpd(StackOpd.i32);
+                            TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.i32_const:

@@ -27,6 +27,45 @@ namespace Tests
 {
     public static class UnitUtil
     {
+        // Matches the text string in the memories of the WASMS
+        const string MatchingTestDefMem = "I am the very model of a modern Major-Gineral\nI've information vegetable, animal, and mineral,\nI know the kings of England, and I quote the fights historical\nFrom Marathon to Waterloo, in order categorical;";
+
+        public static byte[] GetTestString_U()
+        {
+            return System.Text.ASCIIEncoding.ASCII.GetBytes(MatchingTestDefMem);
+        }
+
+        /// <summary>
+        /// A GetTestString_* used to set pulling signed data. Because the memory of the 
+        /// unit tests are ASCII strings, they will never have a sign bit flipped on
+        /// without some coercion.
+        /// </summary>
+        /// <param name="mem">The memory to perform the same operation on, to keep
+        /// the memory for the tests equivalent.</param>
+        /// <returns></returns>
+        public static byte[] GetTestString_S(PxPre.WASM.Memory mem)
+        {
+            // We add a sign bit to every other byte, or else the ASCII string will never 
+            // have any negative values in it since every ASCII character code has the sign
+            // bit off.
+            byte[] rb = System.Text.ASCIIEncoding.ASCII.GetBytes(MatchingTestDefMem);
+            for (int i = 0; i < rb.Length; i += 3)
+            {
+                rb[i] = (byte)(rb[i] | (1 << 7));
+                mem.store.data[i] = (byte)(mem.store.data[i] | (1 << 7));
+            }
+            return rb;
+        }
+
+        public static void TestBytesMatchesForLen(byte[] rbtruth, byte[] rbtest, int len, string testName, int testId)
+        {
+            for (int i = 0; i < len; ++i)
+            {
+                if (rbtruth[i] != rbtest[i])
+                    throw new System.Exception($"Error for test {testName} on iteration {testId} : the byte array index {i} expected {rbtruth[i]} but got {rbtest[i]}");
+            }
+        }
+
         public static byte[] LoadTestBytes(string path)
         {
             byte[] rb = System.IO.File.ReadAllBytes(path);
@@ -169,6 +208,7 @@ namespace Tests
             CompareGaunlet(expected, valRes.GetFloat(), testName, testId, operands);
         }
 
+        // TODO: Rename to *Int64
         public static void CompareGaunletLong(long expected, PxPre.Datum.Val valRes, string testName, int testId, params object [] operands)
         {
             if (valRes.wrapType != PxPre.Datum.Val.Type.Int64)
