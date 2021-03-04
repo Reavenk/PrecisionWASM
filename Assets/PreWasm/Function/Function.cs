@@ -461,16 +461,20 @@ namespace PxPre.WASM
                                 uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
 
-                                vmgr.PopOpd(ValiMgr.ConvertToStackType(ty.type));
+                                vmgr.PopOpd(ValiMgr.ConvertToStackType(ty.type)); 
                                 vmgr.PushOpd(ValiMgr.ConvertToStackType(ty.type));
                                 if (ty.size == 4)
+                                {
                                     TransferInstruction(expanded, Instruction._local_tee32);
+                                    TransferInt32u(expanded, this.totalStackSize - ty.offset - 4);
+                                }
                                 else if (ty.size == 8)
+                                {
                                     TransferInstruction(expanded, Instruction._local_tee64);
+                                    TransferInt32u(expanded, this.totalStackSize - ty.offset - 8);
+                                }
                                 else
                                     vmgr.EmitValidationError("Setting parameter of illegal size.");
-
-                                TransferInt32u(expanded, ty.offset);
                             }
                             break;
                         case Instruction.global_get:

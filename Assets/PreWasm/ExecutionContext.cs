@@ -324,6 +324,7 @@ namespace PxPre.WASM
                             {
                                 int offs = *(int*)&pb[ip];
                                 ip += 4;
+                                // A tee "returns" the value, so it pretty much places the value back on the stack
                                 *(int*)&pstk[startStack + offs] = *(int*)&pstk[this.stackPos];
                             }
                             break;

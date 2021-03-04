@@ -135,16 +135,16 @@ public static class WASMDatum
                 if (doi.size == 4)
                 {
                     if (doi.isFloat == true)
-                        v = new PxPre.Datum.ValFloat(*(float*)(&pstk[ex.stackPos + doi.offset]));
+                        v = new PxPre.Datum.ValFloat(*(float*)(&pstk[ex.stackPos + fnty.totalResultSize - doi.offset - 4]));
                     else
-                        v = new PxPre.Datum.ValInt(*(int*)(&pstk[ex.stackPos + doi.offset]));
+                        v = new PxPre.Datum.ValInt(*(int*)(&pstk[ex.stackPos + fnty.totalResultSize - doi.offset - 4]));
                 }
                 else if (doi.size == 8)
                 {
                     if (doi.isFloat == true)
-                        v = new PxPre.Datum.ValFloat64(*(double*)(&pstk[ex.stackPos + doi.offset]));
+                        v = new PxPre.Datum.ValFloat64(*(double*)(&pstk[ex.stackPos + fnty.totalResultSize - doi.offset - 8]));
                     else
-                        v = new PxPre.Datum.ValInt64(*(long*)(&pstk[ex.stackPos + doi.offset]));
+                        v = new PxPre.Datum.ValInt64(*(long*)(&pstk[ex.stackPos + fnty.totalResultSize - doi.offset - 8]));
                 }
                 else
                 { } // TODO: Error
