@@ -46,7 +46,6 @@ namespace PxPre.WASM
         /// </summary>
         public readonly Module parentModule;
 
-
         /// <summary>
         /// A listing of the types for the function's local working space
         /// on the stack. These will appear on the stack after the parameters.
@@ -376,12 +375,28 @@ namespace PxPre.WASM
                                     TransferInstruction(expanded, Instruction._call_import);
                                     TransferInt32u(expanded, (uint)fie.index);
                                 }
+
+                                // For now we're going to be conservative about other functions 
+                                // potentially changing the state of memory - especially if they
+                                // resize the memory buffer which could invalidate the current
+                                // memory we have cached.
+                                memoryStore.SetInvalid();
+                                globalStore.SetInvalid();
+                                tableStore.SetInvalid();
                             }
                             break;
 
                         case Instruction.call_indirect:
                             vmgr.PopOpd(StackOpd.i32);
                             TransferInstruction(expanded, instr);
+
+                            // For now we're going to be conservative about other functions 
+                            // potentially changing the state of memory - especially if they
+                            // resize the memory buffer which could invalidate the current
+                            // memory we have cached.
+                            memoryStore.SetInvalid();
+                            globalStore.SetInvalid();
+                            tableStore.SetInvalid();
                             break;
 
                         case Instruction.drop:
