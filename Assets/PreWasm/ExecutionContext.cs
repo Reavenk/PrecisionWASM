@@ -505,14 +505,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos + 4];
 
-                                // We essentially want to do this - except setting memory
-                                // values via pointers throws an exception.
-                                // *(int*)&pbMem[memid] = *(int*)&pstk[this.stackPos];
-                                //
-                                // I'm not a fan of this bannanas require to a marshal with 
-                                // bannanas casting. Hopefully good compilers can optimize
-                                // the function call out.
-                                System.Runtime.InteropServices.Marshal.WriteInt32((System.IntPtr)(int*)&pbMem[memid], *(int*)&pstk[this.stackPos]);
+                                *(int*)&pbMem[memid] = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 8; // Pop an int, and a 4byte param
                             }
                             break;
@@ -522,14 +515,7 @@ namespace PxPre.WASM
                             {
                                 int memid = *(int*)&pstk[this.stackPos + 8];
 
-                                // We essentially want to do this - except setting memory
-                                // values via pointers throws an exception.
-                                // *(long*)&pbMem[memid] = *(long*)&pstk[this.stackPos];
-                                //
-                                // I'm not a fan of this bannanas require to a marshal with 
-                                // bannanas casting. Hopefully good compilers can optimize
-                                // the function call out.
-                                System.Runtime.InteropServices.Marshal.WriteInt64((System.IntPtr)(long*)&pbMem[memid], *(long*)&pstk[this.stackPos]);
+                                *(long*)&pbMem[memid] = *(long*)&pstk[this.stackPos];
                                 this.stackPos += 12; // Pop an int, and a 8 byte param
                             }
                             break;
@@ -537,7 +523,7 @@ namespace PxPre.WASM
                         case Instruction.i32_store8:
                             {
                                 int memid = *(int*)&pstk[this.stackPos + 4];
-                                System.Runtime.InteropServices.Marshal.WriteByte((System.IntPtr)(byte*)&pbMem[memid], *(byte*)&pstk[this.stackPos]); // Leave casts to byte in
+                                pbMem[memid] = pstk[this.stackPos];
                                 this.stackPos += 8; // Pop 2 ints
                             }
                             break;
@@ -545,7 +531,7 @@ namespace PxPre.WASM
                         case Instruction.i32_store16:
                             {
                                 int memid = *(int*)&pstk[this.stackPos + 4];
-                                System.Runtime.InteropServices.Marshal.WriteInt16((System.IntPtr)(short*)&pbMem[memid], *(short*)&pstk[this.stackPos]); // Leave casts to byte in
+                                *(short*)&pbMem[memid] = *(short*)&pstk[this.stackPos];
                                 this.stackPos += 4; // Pop 2 ints
                             }
                             break;
@@ -553,7 +539,7 @@ namespace PxPre.WASM
                         case Instruction.i64_store8:
                             {
                                 int memid = *(int*)&pstk[this.stackPos + 8];
-                                System.Runtime.InteropServices.Marshal.WriteByte((System.IntPtr)(byte*)&pbMem[memid], *(byte*)&pstk[this.stackPos]); // Leave casts to byte in
+                                pbMem[memid] = pstk[this.stackPos];
                                 this.stackPos += 12; // Pop an int, and an int64
                             }
                             break;
@@ -561,8 +547,7 @@ namespace PxPre.WASM
                         case Instruction.i64_store16:
                             {
                                 int memid = *(int*)&pstk[this.stackPos + 8];
-                                System.Runtime.InteropServices.Marshal.WriteInt16((System.IntPtr)(short*)&pbMem[memid], *(short*)&pstk[this.stackPos]); // Leave casts to byte in
-                                *(ushort*)&pbMem[memid] = *(ushort*)&pstk[this.stackPos];
+                                *(short*)&pbMem[memid] = *(short*)&pstk[this.stackPos];
                                 this.stackPos += 12; // Pop an int, and an int64
                             }
                             break;
@@ -570,7 +555,7 @@ namespace PxPre.WASM
                         case Instruction.i64_store32:
                             {
                                 int memid = *(int*)&pstk[this.stackPos + 8];
-                                System.Runtime.InteropServices.Marshal.WriteInt32((System.IntPtr)(int*)&pbMem[memid], *(int*)&pstk[this.stackPos]); // Leave casts to byte in
+                                *(int*)&pbMem[memid] = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 12; // Pop an int, and an int64
                             }
                             break;
