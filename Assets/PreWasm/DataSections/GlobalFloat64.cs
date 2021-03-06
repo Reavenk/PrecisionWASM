@@ -41,5 +41,10 @@ namespace PxPre.WASM
                 *(double*)this.store.pdata = value;
             }
         }
+
+        public override GlobalFloat64 CastGlobalFloat64()
+        {
+            return this;
+        }
     }
 }

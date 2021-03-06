@@ -44,5 +44,10 @@ namespace PxPre.WASM
             int size = DataStore.GetTypeIDSize(type);
             this.store = new DataStore(size);
         }
+
+        public virtual GlobalInt CastGlobalInt() {return null; }
+        public virtual GlobalFloat CastGlobalFloat() {return null; }
+        public virtual GlobalInt64 CastGlobalInt64() {return null; }
+        public virtual GlobalFloat64 CastGlobalFloat64() {return null; }
     }
 }

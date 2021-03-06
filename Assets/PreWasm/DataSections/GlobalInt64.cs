@@ -41,5 +41,11 @@ namespace PxPre.WASM
                 *(long*)this.store.pdata = value;
             }
         }
+
+        public override GlobalInt64 CastGlobalInt64() 
+        { 
+            return this; 
+        }
+
     }
 }
