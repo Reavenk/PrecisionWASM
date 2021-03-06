@@ -51,7 +51,8 @@ public static class WASMDatum
     public static unsafe PxPre.Datum.Val Invoke_SingleRet(
         this PxPre.WASM.ExecutionContext ex,
         PxPre.WASM.Module module,
-        string fnName, params PxPre.Datum.Val[] ps)
+        string fnName, 
+        params PxPre.Datum.Val[] ps)
     {
         int fnIdx = module.GetExportedFunctionID(fnName);
 
