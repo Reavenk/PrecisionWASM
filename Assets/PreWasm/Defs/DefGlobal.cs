@@ -63,7 +63,42 @@ namespace PxPre.WASM
 
         public Global CreateDefault()
         { 
-            return new Global(this.type, this.mut == Global.Mutability.Variable);
+            bool mutable = this.mut == Global.Mutability.Variable;
+
+            if (this.type == Bin.TypeID.Int32)
+            { 
+                int value = 0;
+                if(this.defaultValue != null && this.defaultValue.Length >= 4)
+                    value = System.BitConverter.ToInt32(this.defaultValue, 0);
+
+                return new GlobalInt(value, mutable);
+            }
+            else if(this.type == Bin.TypeID.Float32)
+            { 
+                float value = 0.0f;
+                if (this.defaultValue != null && this.defaultValue.Length >= 4)
+                    value = System.BitConverter.ToSingle(this.defaultValue, 0);
+
+                return new GlobalFloat(value, mutable);
+            }
+            else if(this.type == Bin.TypeID.Int64)
+            { 
+                long value = 0;
+                if (this.defaultValue != null && this.defaultValue.Length >= 8)
+                    value = System.BitConverter.ToInt64(this.defaultValue, 0);
+
+                return new GlobalInt64(value, mutable);
+            }
+            else if (this.type == Bin.TypeID.Float64)
+            {
+                double value = 0.0;
+                if (this.defaultValue != null && this.defaultValue.Length >= 8)
+                    value = System.BitConverter.ToDouble(this.defaultValue, 0);
+
+                return new GlobalFloat64(value, mutable);
+            }
+
+            throw new System.Exception("Attempting to instanciate global with invalid global type.");
         }
     }
 }

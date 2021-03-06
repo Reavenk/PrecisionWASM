@@ -25,7 +25,7 @@ using System.Collections.Generic;
 
 namespace PxPre.WASM
 {
-    public class Global
+    public abstract class Global
     {
         public enum Mutability
         { 
