@@ -173,8 +173,15 @@ namespace PxPre.WASM
                             // Eats up the case so we don't fall into the default
                             break;
 
-                        case Instruction.loop:
-                            break;
+                        // When we processed with ExpandExpressionToBeUsable, the jumps were
+                        // hard coded
+                        //case Instruction.block:
+                        //    break;
+
+                        // When we processed with ExpandExpressionToBeUsable, the jumps were
+                        // hard coded
+                        //case Instruction.loop:
+                        //    break;
 
                         case Instruction.ifblock:
                             {
@@ -197,25 +204,42 @@ namespace PxPre.WASM
                         // case Instruction.elseblock:
                         //     break;
 
+                        // Doesn't functionally do anything. Just a boundary used to calculate
+                        // proper jumps in ExpandExpressionToBeUsable().
                         // case Instruction.end:
                         //     return;
 
-                        case Instruction.br:
-                            break;
+                        // When we processed with ExpandExpressionToBeUsable, the jump is
+                        // hardcoded as a goto operator.
+                        // case Instruction.br:
+                        //     break;
 
                         case Instruction.br_if:
+                            { 
+                                int jmp = *(int*)&pstk[this.stackPos];
+                                this.stackPos += 4;
+
+                                if(jmp != 0)
+                                    ip = *(int*)&pb[ip];
+                                else
+                                    ip += 4;
+                            }
                             break;
 
                         case Instruction.br_table:
                             break;
 
                         case Instruction.returnblock:
+                            // If we have a return value, ExpandExpressionToBeUsable() would have ensured
+                            // it's placed in the correct location by making sure a _stackbackwrite is used
+                            // right before returnblock.
                             return;
 
                         case Instruction._stackbackwrite:
                             {
                                 int paramSz = *(int*)&pb[ip];
                                 int resultSz = *(int*)&pb[ip + 4];
+                                int shift = paramSz - resultSz;
                                 ip += 8;
 
                                 // Move the return value data on the stack to overwrite
@@ -230,11 +254,11 @@ namespace PxPre.WASM
                                 // be divisible by 4 and copy 32 bit chuncks instead of bytes.
                                 for(int i = resultSz - 1; i >= 0; --i)
                                 { 
-                                    pstk[this.stackPos + paramSz + i] = 
+                                    pstk[this.stackPos + shift + i] = 
                                         pstk[this.stackPos + i]; 
                                 }
 
-                                this.stackPos += (int)paramSz; // We need to figure out the best typing
+                                this.stackPos += (int)(shift); // We need to figure out the best typing
                             }
                             break;
 
@@ -242,8 +266,12 @@ namespace PxPre.WASM
                             {
                                 uint fnid = *(uint*)&pb[ip];
                                 ip += 4;
+                                int stkSz = *(int*)&pb[ip];
+                                ip += 4;
 
+                                this.stackPos -= stkSz;
                                 RunLocalFunction(fn.parentModule, (int)fnid);
+                                //this.stackPos += stkSz;
                             }
                             break;
 
@@ -251,8 +279,12 @@ namespace PxPre.WASM
                             {
                                 uint fnid = *(uint*)&pb[ip];
                                 ip += 4;
+                                int stkSz = *(int*)&pb[ip];
+                                ip += 4;
 
+                                this.stackPos -= stkSz;
                                 RunFunction(this.importData.importFn[(int)fnid]);
+                                //this.stackPos += stkSz;
                             }
                             break;
 
@@ -328,6 +360,7 @@ namespace PxPre.WASM
                             {
                                 int offs = *(int*)&pb[ip];
                                 ip += 4;
+
                                 // A tee "returns" the value, so it pretty much places the value back on the stack
                                 *(int*)&pstk[startStack + offs] = *(int*)&pstk[this.stackPos];
                             }
@@ -337,6 +370,7 @@ namespace PxPre.WASM
                             {
                                 int offs = *(int*)&pb[ip];
                                 ip += 4;
+
                                 *(long*)&pstk[startStack + offs] = *(long*)&pstk[this.stackPos];
                             }
                             break;

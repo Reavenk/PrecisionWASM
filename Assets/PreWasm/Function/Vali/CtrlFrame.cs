@@ -37,6 +37,7 @@ namespace PxPre.WASM.Vali
         public DataStoreIdx memoryStore;
         public DataStoreIdx tableStore;
         public DataStoreIdx globalStore;
+        public uint loopStart = uint.MaxValue;
 
         public List<uint> writePopped;
 
@@ -64,10 +65,15 @@ namespace PxPre.WASM.Vali
 
         unsafe public void FlushEndWrites(List<byte> expanded)
         {
+            this.FlushEndWrites(expanded, (uint)expanded.Count);
+        }
+
+        unsafe public void FlushEndWrites(List<byte> expanded, uint jumpValue)
+        {
             if (this.writePopped == null)
                 return;
 
-            uint idx = (uint)expanded.Count;
+            uint idx = jumpValue;
 
             // Write the current end position (idx) in every position queued
             // to have it written to.

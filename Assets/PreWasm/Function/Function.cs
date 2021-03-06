@@ -60,6 +60,8 @@ namespace PxPre.WASM
         /// </summary>
         public uint totalStackSize;
 
+        public uint totalLocalsSize;
+
         /// <summary>
         /// The bytecode for the function.
         /// 
@@ -92,44 +94,48 @@ namespace PxPre.WASM
 
             this.totalStackSize = this.fnType.totalParamSize;
 
-            for(int i = 0; i < this.localTypes.Count; ++i)
+            for (int i = 0; i < this.localTypes.Count; ++i)
             {
                 FunctionType.DataOrgInfo doi = this.localTypes[i];
                 FunctionType.FillInOrg(ref doi, ref this.totalStackSize);
                 this.localTypes[i] = doi;
             }
+
+            this.totalLocalsSize = totalStackSize - this.fnType.totalParamSize;
         }
 
         unsafe public static void ConsumeTypes(byte * pb, ref uint idx, List<StackOpd> stk)
         {
-            bool c = true;
-            while (c)
+            while (true)
             {
-                switch (pb[idx])
+                switch ((Bin.TypeID)pb[idx])
                 {
-                    case (int)Bin.TypeID.Int32:
+                    case Bin.TypeID.Int32:
                         stk.Add(StackOpd.i32);
                         ++idx;
                         break;
 
-                    case (int)Bin.TypeID.Int64:
+                    case Bin.TypeID.Int64:
                         stk.Add(StackOpd.i64);
                         ++idx;
                         break;
 
-                    case (int)Bin.TypeID.Float32:
+                    case Bin.TypeID.Float32:
                         stk.Add(StackOpd.f32);
                         ++idx;
                         break;
 
-                    case (int)Bin.TypeID.Float64:
+                    case Bin.TypeID.Float64:
                         stk.Add(StackOpd.f64);
                         ++idx;
                         break;
 
+                    case Bin.TypeID.Result: //void return type
+                        ++idx;
+                        return;
+
                     default:
-                        c = false;
-                        break;
+                        return;
                 }
             }
         }
@@ -231,25 +237,29 @@ namespace PxPre.WASM
                                     memoryStore,
                                     globalStore,
                                     tableStore);
-                                TransferInstruction(expanded, instr);
+                                //TransferInstruction(expanded, instr);
                             }
                             break;
 
                         case Instruction.loop:
                             {
-                                List<StackOpd> instk = new List<StackOpd>();
+                                List<StackOpd> instk = new List<StackOpd>(); 
                                 List<StackOpd> outstk = new List<StackOpd>();
                                 ConsumeTypes(pb, ref idx, outstk);
 
                                 vmgr.PopOpds(instk);
-                                vmgr.PushCtrl(
-                                    Instruction.loop, 
-                                    instk, 
-                                    outstk,
-                                    memoryStore,
-                                    globalStore,
-                                    tableStore);
-                                TransferInstruction(expanded, instr);
+
+                                Vali.CtrlFrame loopFrame = 
+                                    vmgr.PushCtrl(
+                                        Instruction.loop, 
+                                        instk, 
+                                        outstk,
+                                        memoryStore,
+                                        globalStore,
+                                        tableStore);
+
+                                loopFrame.loopStart = (uint)expanded.Count;
+                                
                             }
                             break;
 
@@ -312,26 +322,33 @@ namespace PxPre.WASM
 
                         case Instruction.br:
                             {
-                                int n = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                if (vmgr.ctrls.Count < n)
+                                int breakDepth = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                if (vmgr.ctrls.Count < breakDepth)
                                     vmgr.EmitValidationError("Stack mismatch for br");
 
-                                vmgr.PopOpds( vmgr.LabelTypes(vmgr.GetCtrl(n)));
+                                CtrlFrame cf = vmgr.GetCtrl(breakDepth);
+                                vmgr.PopOpds( vmgr.LabelTypes(cf));
                                 vmgr.Unreachable();
-                                TransferInstruction(expanded, instr);
+
+                                TransferInstruction(expanded, Instruction._goto);
+                                cf.QueueEndWrite(expanded);
                             }
                             break;
 
                         case Instruction.br_if:
                             {
-                                int n = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                if(vmgr.ctrls.Count < n)
+                                int breakDepth = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                if(vmgr.ctrls.Count < breakDepth)
                                     vmgr.EmitValidationError("Stack mismatch for br_if");
 
                                 vmgr.PopOpd(StackOpd.i32);
-                                vmgr.PopOpds(vmgr.LabelTypes(vmgr.GetCtrl(n)));
-                                vmgr.PushOpds(vmgr.LabelTypes(vmgr.GetCtrl(n)));
+
+                                CtrlFrame cf = vmgr.GetCtrl(breakDepth);
+                                vmgr.PopOpds(vmgr.LabelTypes(cf));
+                                vmgr.PushOpds(vmgr.LabelTypes(cf));
+
                                 TransferInstruction(expanded, instr);
+                                cf.QueueEndWrite(expanded);
                             }
                             break;
 
@@ -374,14 +391,20 @@ namespace PxPre.WASM
 
                                 if (fie.type == IndexEntry.FnIdxType.Local)
                                 { 
+                                    Function fn = this.parentModule.functions[fie.index];
+
                                     TransferInstruction(expanded, Instruction._call_local);
                                     TransferInt32u(expanded, (uint)fie.index);
+                                    TransferInt32u(expanded, (uint)fn.totalLocalsSize);
 
                                 }
                                 else
                                 {
+                                    DefFunction dfn = this.parentModule.storeDecl.functions[(int)fnidx];
+
                                     TransferInstruction(expanded, Instruction._call_import);
                                     TransferInt32u(expanded, (uint)fie.index);
+                                    TransferInt32u(expanded, 0);
                                 }
 
                                 // For now we're going to be conservative about other functions 

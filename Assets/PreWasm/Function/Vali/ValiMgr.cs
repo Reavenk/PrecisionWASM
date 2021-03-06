@@ -109,7 +109,16 @@ namespace PxPre.WASM.Vali
             { } // TODO: Error
 
             this.ctrls.Pop();
-            frame.FlushEndWrites(expanded);
+
+            if (frame.opcode == Instruction.loop)
+            {
+                //Function.TransferInstruction(expanded, Instruction._goto);
+                //Function.TransferInt32u(expanded, frame.loopStart);
+                frame.FlushEndWrites(expanded, frame.loopStart);
+            }
+            else
+                frame.FlushEndWrites(expanded);
+
             return frame;
         }
 
