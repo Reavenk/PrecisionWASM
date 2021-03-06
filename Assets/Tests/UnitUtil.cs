@@ -79,9 +79,12 @@ namespace Tests
 
         public static PxPre.WASM.Module LoadUnitTestModule(string path)
         {
+            string cwd = System.IO.Directory.GetCurrentDirectory();
+            string loadDir = System.IO.Path.Combine(cwd, path);
+            Debug.Log($"Loading binary {loadDir}");
+
             byte[] rb = LoadTestBytes(path);
 
-            Debug.Log("Loading binary");
             PxPre.WASM.Module mod = PxPre.WASM.Module.LoadBinary(rb);
             if (mod == null)
                 throw new System.Exception($"Error, failure parsing {path} to WASM module");
