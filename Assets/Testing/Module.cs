@@ -324,7 +324,7 @@ namespace PxPre.WASM
 
                         Export export   = new Export();
                         export.name     = name;
-                        export.kind     = kind;
+                        export.kind     = (ImportType)kind;
                         export.index    = index;
                         ret.exports.Add(export);
                     }
@@ -451,16 +451,31 @@ namespace PxPre.WASM
         {
             foreach(Export e in this.exports)
             { 
+                if(e.kind != ImportType.TypeIndex)
+                    continue;
+
                 if(e.name == fnName)
                     return (int)e.index;
             }
             return -1;
         }
 
+        public Function GetExportedFunction(string fnName)
+        { 
+            int fnid = this.GetExportedFunctionID(fnName);
+            if(fnid == -1)
+                return null;
+
+            return this.functions[fnid];
+        }
+
         public int GetExportedFunctionID(string fnName, out FunctionType fnty)
         {
             foreach (Export e in this.exports)
             {
+                if (e.kind != ImportType.TypeIndex)
+                    continue;
+
                 if (e.name == fnName)
                 {
                     fnty = this.types[(int)this.functions[(int)e.index].typeidx];

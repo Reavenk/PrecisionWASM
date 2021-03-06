@@ -2435,5 +2435,84 @@ namespace PxPre.WASM
 
             return true;
         }
+
+        public int GetExportedFunctionIndex(string name)
+        { 
+            return this.instancer.GetExportedFunctionID(name);
+        }
+
+        public Function GetExportedFunction(string name)
+        { 
+            return this.instancer.GetExportedFunction(name);
+        }
+
+        public int GetExportedGlobalIndex(string name)
+        {
+            foreach (Export e in this.instancer.exports)
+            {
+                if (e.kind != Module.ImportType.GlobalType)
+                    continue;
+
+                if (e.name == name)
+                    return (int)e.index;
+            }
+            return -1;
+        }
+
+        public Global GetExportedGlobal(string name)
+        { 
+            int glid = this.GetExportedGlobalIndex(name);
+
+            if(glid == -1)
+                return null;
+
+            return this.globals[glid];
+        }
+
+        public int GetExportedTableIndex(string name)
+        {
+            foreach (Export e in this.instancer.exports)
+            {
+                if (e.kind != Module.ImportType.TableType)
+                    continue;
+
+                if (e.name == name)
+                    return (int)e.index;
+            }
+            return -1;
+        }
+
+        public Table GetExportedTable(string name)
+        { 
+            int tbid = this.GetExportedTableIndex(name);
+
+            if(tbid == -1)
+                return null;
+
+            return this.tables[tbid];
+        }
+
+        public int GetExportedMemoryIndex(string name)
+        {
+            foreach (Export e in this.instancer.exports)
+            {
+                if (e.kind != Module.ImportType.MemType)
+                    continue;
+
+                if (e.name == name)
+                    return (int)e.index;
+            }
+            return -1;
+        }
+
+        public Memory GetExportedMemory(string name)
+        { 
+            int meid = this.GetExportedMemoryIndex(name);
+
+            if(meid == -1)
+                return null;
+
+            return this.memories[meid];
+        }
     }
 }
