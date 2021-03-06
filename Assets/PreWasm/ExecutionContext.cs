@@ -166,10 +166,11 @@ namespace PxPre.WASM
                         default:
                             throw new System.Exception($"Unknown opcode encountered, with code value {instr}");
 
-                        case Instruction.nop:
-                            break;
+                        case Instruction.unreachable:
+                            throw new System.Exception($"Encountered code to execute that's unreachable.");
 
-                        case Instruction.block:
+                        case Instruction.nop: 
+                            // Eats up the case so we don't fall into the default
                             break;
 
                         case Instruction.loop:
