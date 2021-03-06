@@ -223,7 +223,10 @@ namespace PxPre.WASM
 
                         uint flags = BinParse.LoadUnsignedLEB32(pb, ref idx);
                         uint initial = BinParse.LoadUnsignedLEB32(pb, ref idx); 
-                        uint max = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                        uint max = initial;
+                        
+                        if((flags & 0x01) != 0)
+                            max = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
                         ret.storeDecl.AddTableLoc(ty, initial, max);
 
@@ -259,7 +262,55 @@ namespace PxPre.WASM
                     }
                 }
                 else if(sectionCode == Bin.Section.GlobalSec)
-                { 
+                {
+                    uint numGlobals = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                    for(uint i = 0; i < numGlobals; ++i)
+                    {
+                        uint globType = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                        bool mutable = (BinParse.LoadUnsignedLEB32(pb, ref idx) & 0x01) != 0;
+
+                        // For now we're just going to assume they do a type.const, then the value,
+                        // and then an end.
+                        //
+                        // I actually haven't read the specs to see what's allowed here.
+                        if(globType == (int)Bin.TypeID.Int32)
+                        {
+                            AssertConsumeByte(pb, ref idx, (byte)Instruction.i32_const);
+                            int idef = BinParse.LoadSignedLEB32(pb, ref idx);
+                            AssertConsumeByte(pb, ref idx, (byte)Instruction.end);
+
+                            ret.storeDecl.AddGlobalLoc(idef, mutable);
+                        }
+                        else if(globType == (int)Bin.TypeID.Float32)
+                        {
+                            AssertConsumeByte(pb, ref idx, (byte)Instruction.f32_const);
+                            float fdef = *(float*)&pb[idx];
+                            idx += 4;
+                            AssertConsumeByte(pb, ref idx, (byte)Instruction.end);
+
+                            ret.storeDecl.AddGlobalLoc(fdef, mutable);
+                        }
+                        else if(globType == (int)Bin.TypeID.Int64)
+                        {
+                            AssertConsumeByte(pb, ref idx, (byte)Instruction.i64_const);
+                            long ldef = BinParse.LoadSignedLEB64(pb, ref idx);
+                            AssertConsumeByte(pb, ref idx, (byte)Instruction.end);
+
+                            ret.storeDecl.AddGlobalLoc(ldef, mutable);
+                        }
+                        else if (globType == (int)Bin.TypeID.Float64)
+                        {
+                            AssertConsumeByte(pb, ref idx, (byte)Instruction.f64_const);
+                            double ddef = *(float*)&pb[idx];
+                            idx += 8;
+                            AssertConsumeByte(pb, ref idx, (byte)Instruction.end);
+
+                            ret.storeDecl.AddGlobalLoc(ddef, mutable);
+                        }
+                        else
+                            throw new System.Exception("Unexpected global type.");
+                            
+                    }
                 }
                 else if(sectionCode == Bin.Section.ExportSec)
                 { 
@@ -418,6 +469,14 @@ namespace PxPre.WASM
             }
             fnty = null;
             return -1;
+        }
+
+        unsafe private static void AssertConsumeByte(byte* pb, ref uint idx, byte match)
+        { 
+            if(pb[idx] != match)
+                throw new System.Exception($"Unexpected byte. Expecting {match} but encountered {pb[idx]}.");
+
+            ++idx;
         }
 
         //public static Session LoadString(string str)

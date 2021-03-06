@@ -29,15 +29,37 @@ namespace PxPre.WASM
         public readonly Bin.TypeID type;
         public readonly int elements;
         public readonly Global.Mutability mut;
+        public byte [] defaultValue;
 
-        public DefGlobal(int index, Bin.TypeID type, int elements, bool mutable)
+        private DefGlobal(int index, Bin.TypeID type, int elements, bool mutable, byte [] defaultValue)
         { 
             this.index = index;
+            this.defaultValue = defaultValue;
 
             this.type = type;
             this.elements = elements;
             this.mut = mutable ? Global.Mutability.Variable : Global.Mutability.Const;
         }
+
+        public DefGlobal(int index, Bin.TypeID type, bool mutable)
+            : this(index, type, 1, mutable, null)
+        { }
+
+        public DefGlobal(int index, int defaultVal, bool mutable)
+            : this(index, Bin.TypeID.Int32, 1, mutable, System.BitConverter.GetBytes(defaultVal))
+        {}
+
+        public DefGlobal(int index, float defaultVal,  bool mutable)
+            : this(index, Bin.TypeID.Float32, 1, mutable, System.BitConverter.GetBytes(defaultVal))
+        { }
+
+        public DefGlobal(int index, long defaultVal, bool mutable)
+            : this(index, Bin.TypeID.Int64, 1, mutable, System.BitConverter.GetBytes(defaultVal))
+        { }
+
+        public DefGlobal(int index, double defaultVal, bool mutable)
+            : this(index, Bin.TypeID.Float64, 1, mutable, System.BitConverter.GetBytes(defaultVal))
+        { }
 
         public Global CreateDefault()
         { 

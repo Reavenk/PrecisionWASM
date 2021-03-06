@@ -165,13 +165,30 @@ namespace PxPre.WASM
         //
         ////////////////////////////////////////////////////////////////////////////////
 
-        public void AddGlobalLoc(Bin.TypeID type, bool mutable)
-        { 
+        public void AddGlobalLoc(int value, bool mutable)
+        {
+            this.AddGlobalLoc(new DefGlobal(this.globals.Count, value, mutable), mutable);
+        }
+
+        public void AddGlobalLoc(float value, bool mutable)
+        {
+            this.AddGlobalLoc(new DefGlobal(this.globals.Count, value, mutable), mutable);
+        }
+
+        public void AddGlobalLoc(long value, bool mutable)
+        {
+            this.AddGlobalLoc(new DefGlobal(this.globals.Count, value, mutable), mutable);
+        }
+
+        public void AddGlobalLoc(double value, bool mutable)
+        {
+            this.AddGlobalLoc(new DefGlobal(this.globals.Count, value, mutable), mutable);
+        }
+
+        public void AddGlobalLoc(DefGlobal df, bool mutable)
+        {
             this.indexingGlobal.Add(IndexEntry.CreateLocal(this.localGlobalCt));
-
-            DefGlobal global = new DefGlobal(this.globals.Count, type, 1, mutable);
-            this.globals.Add(global);
-
+            this.globals.Add(df);
             ++this.localGlobalCt;
         }
 
@@ -179,7 +196,7 @@ namespace PxPre.WASM
         {
             this.indexingGlobal.Add(IndexEntry.CreateImport(this.importGlobalsCt, module, fieldname));
 
-            DefGlobal global = new DefGlobal(this.globals.Count, type, 1, mutable);
+            DefGlobal global = new DefGlobal(this.globals.Count, type, mutable);
             this.globals.Add(global);
 
             this.GetOrCreateRecord(module).globals.Add(fieldname, global);

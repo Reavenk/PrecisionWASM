@@ -197,7 +197,7 @@ namespace PxPre.WASM
                 globalStore,
                 tableStore);
 
-            FunctionType ft = session.types[index];
+            FunctionType ft = this.fnType;
 
             fixed (byte * pb = this.expression)
             {
@@ -365,10 +365,18 @@ namespace PxPre.WASM
                             {
                                 uint fnidx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 IndexEntry fie = parentModule.storeDecl.IndexingFunction[(int)fnidx];
-                                if(fie.type == IndexEntry.FnIdxType.Local)
+
+                                foreach(FunctionType.DataOrgInfo doi in parentModule.storeDecl.functions[(int)fnidx].fnType.paramTypes)
+                                    vmgr.PopOpd(ValiMgr.ConvertToStackType(doi.type));
+
+                                foreach (FunctionType.DataOrgInfo doi in parentModule.storeDecl.functions[(int)fnidx].fnType.resultTypes)
+                                    vmgr.PushOpd(ValiMgr.ConvertToStackType(doi.type));
+
+                                if (fie.type == IndexEntry.FnIdxType.Local)
                                 { 
                                     TransferInstruction(expanded, Instruction._call_local);
                                     TransferInt32u(expanded, (uint)fie.index);
+
                                 }
                                 else
                                 {
@@ -529,112 +537,391 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.i32_load:
-                            ValiMgr.EnsureDefaultMemory( parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
-
-                            vmgr.PopOpd( StackOpd.i32 );
-                            vmgr.PushOpd(StackOpd.i32 );
-                            TransferInstruction(expanded, instr);
+                            {
+                                ValidateLoad(
+                                    vmgr, 
+                                    parentModule, 
+                                    ref memoryStore, 
+                                    2, 
+                                    "i32.load", 
+                                    StackOpd.i32, 
+                                    expanded, 
+                                    Instruction._i32_load_noO, 
+                                    Instruction._i32_load_Off, 
+                                    pb, 
+                                    ref idx);
+                            }
                             break;
 
                         case Instruction.i64_load:
-                            ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
-
-                            vmgr.PopOpd(StackOpd.i32);
-                            vmgr.PushOpd(StackOpd.i64);
-                            TransferInstruction(expanded, instr);
+                            {
+                                ValidateLoad(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    3, 
+                                    "i64.load",
+                                    StackOpd.i64,
+                                    expanded,
+                                    Instruction._i64_load_noO,
+                                    Instruction._i64_load_Off,
+                                    pb,
+                                    ref idx);
+                            }
                             break;
 
                         case Instruction.f32_load:
-                            ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
-
-                            vmgr.PopOpd(StackOpd.i32);
-                            vmgr.PushOpd(StackOpd.f32);
-                            TransferInstruction(expanded, instr);
+                            {
+                                ValidateLoad(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    2,
+                                    "f32.load",
+                                    StackOpd.f32,
+                                    expanded,
+                                    Instruction._f32_load_noO,
+                                    Instruction._f32_load_Off,
+                                    pb,
+                                    ref idx);
+                            }
                             break;
 
                         case Instruction.f64_load:
-                            ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
-
-                            vmgr.PopOpd(StackOpd.i32);
-                            vmgr.PushOpd(StackOpd.f64);
-                            TransferInstruction(expanded, instr);
+                            {
+                                ValidateLoad(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    3,
+                                    "f64.load",
+                                    StackOpd.f64,
+                                    expanded,
+                                    Instruction._f64_load_noO,
+                                    Instruction._f64_load_Off,
+                                    pb,
+                                    ref idx);
+                            }
                             break;
 
                         case Instruction.i32_load8_s:
+                            {
+                                ValidateLoad(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    0,
+                                    "i32.load8_s",
+                                    StackOpd.i32,
+                                    expanded,
+                                    Instruction._i32_load8_s_noO,
+                                    Instruction._i32_load8_s_Off,
+                                    pb,
+                                    ref idx);
+                            }
+                            break;
                         case Instruction.i32_load8_u:
+                            {
+                                ValidateLoad(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    0,
+                                    "i32.load8_u",
+                                    StackOpd.i32,
+                                    expanded,
+                                    Instruction._i32_load8_u_noO,
+                                    Instruction._i32_load8_u_Off,
+                                    pb,
+                                    ref idx);
+                            }
+                            break;
                         case Instruction.i32_load16_s:
+                            {
+                                ValidateLoad(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    1,
+                                    "i32.load16_s",
+                                    StackOpd.i32,
+                                    expanded,
+                                    Instruction._i32_load16_s_noO,
+                                    Instruction._i32_load16_s_Off,
+                                    pb,
+                                    ref idx);
+                            }
+                            break;
                         case Instruction.i32_load16_u:
                             {
-                                ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
-
-                                uint val = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                vmgr.PushOpd(StackOpd.i32);
-                                TransferInstruction(expanded, instr);
+                                ValidateLoad(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    1,
+                                    "i32.load16_u",
+                                    StackOpd.i32,
+                                    expanded,
+                                    Instruction._i32_load16_u_noO,
+                                    Instruction._i32_load16_u_Off,
+                                    pb,
+                                    ref idx);
                             }
                             break;
 
                         case Instruction.i64_load8_s:
-                        case Instruction.i64_load8_u:
-                        case Instruction.i64_load16_s:
-                        case Instruction.i64_load16_u:
-                        case Instruction.i64_load32_s:
-                        case Instruction.i64_load32_u:
-                            ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
+                            {
+                                ValidateLoad(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    0,
+                                    "i32.load8_u",
+                                    StackOpd.i64,
+                                    expanded,
+                                    Instruction._i64_load8_s_noO,
+                                    Instruction._i64_load8_s_Off,
+                                    pb,
+                                    ref idx);
+                            }
+                            break;
 
-                            BinParse.LoadUnsignedLEB32(pb, ref idx);
-                            vmgr.PushOpd(StackOpd.i64);
-                            TransferInstruction(expanded, instr);
+                        case Instruction.i64_load8_u:
+                            {
+                                ValidateLoad(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    0,
+                                    "i32.load8_u",
+                                    StackOpd.i64,
+                                    expanded,
+                                    Instruction._i64_load8_u_noO,
+                                    Instruction._i64_load8_u_Off,
+                                    pb,
+                                    ref idx);
+                            }
+                            break;
+
+                        case Instruction.i64_load16_s:
+                            {
+                                ValidateLoad(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    1,
+                                    "i32.load16_s",
+                                    StackOpd.i64,
+                                    expanded,
+                                    Instruction._i64_load16_s_noO,
+                                    Instruction._i64_load16_s_Off,
+                                    pb,
+                                    ref idx);
+                            }
+                            break;
+
+                        case Instruction.i64_load16_u:
+                            {
+                                ValidateLoad(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    1,
+                                    "i64.load16_u",
+                                    StackOpd.i64,
+                                    expanded,
+                                    Instruction._i64_load16_s_noO,
+                                    Instruction._i64_load16_s_Off,
+                                    pb,
+                                    ref idx);
+                            }
+                            break;
+
+                        case Instruction.i64_load32_s:
+                            {
+                                ValidateLoad(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    2,
+                                    "i64.load32_s",
+                                    StackOpd.i64,
+                                    expanded,
+                                    Instruction._i64_load32_s_noO,
+                                    Instruction._i64_load32_s_Off,
+                                    pb,
+                                    ref idx);
+                            }
+                            break;
+
+                        case Instruction.i64_load32_u:
+                            {
+                                ValidateLoad(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    2,
+                                    "i64.load32_u",
+                                    StackOpd.i64,
+                                    expanded,
+                                    Instruction._i64_load32_u_noO,
+                                    Instruction._i64_load32_u_Off,
+                                    pb,
+                                    ref idx);
+                            }
                             break;
 
                         case Instruction.i32_store:
-                            ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
-
-                            BinParse.LoadUnsignedLEB32(pb, ref idx);
-                            vmgr.PopOpd(StackOpd.i32);
-                            TransferInstruction(expanded, instr);
+                            {
+                                ValidateStore(
+                                    vmgr, 
+                                    parentModule, 
+                                    ref memoryStore, 
+                                    2, 
+                                    "i32.store", 
+                                    StackOpd.i32, 
+                                    expanded,
+                                    Instruction._i32_store_noO,
+                                    Instruction._i32_store_Off,
+                                    pb,
+                                    ref idx);
+                            }
                             break;
 
                         case Instruction.i64_store:
-                            ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
-
-                            BinParse.LoadUnsignedLEB32(pb, ref idx);
-                            vmgr.PopOpd(StackOpd.i64);
-                            TransferInstruction(expanded, instr);
+                            {
+                                ValidateStore(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    3,
+                                    "i64.store",
+                                    StackOpd.i64,
+                                    expanded,
+                                    Instruction._i64_store_noO,
+                                    Instruction._i64_store_Off,
+                                    pb,
+                                    ref idx);
+                            }
                             break;
 
                         case Instruction.f32_store:
-                            ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
-
-                            BinParse.LoadUnsignedLEB32(pb, ref idx);
-                            vmgr.PopOpd(StackOpd.f32);
-                            TransferInstruction(expanded, instr);
+                            {
+                                ValidateStore(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    2,
+                                    "f32.store",
+                                    StackOpd.f32,
+                                    expanded,
+                                    Instruction._f32_store_noO,
+                                    Instruction._f32_store_Off,
+                                    pb,
+                                    ref idx);
+                            }
                             break;
 
                         case Instruction.f64_store:
-                            ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
-
-                            BinParse.LoadUnsignedLEB32(pb, ref idx);
-                            vmgr.PopOpd(StackOpd.f64);
-                            TransferInstruction(expanded, instr);
+                            {
+                                ValidateStore(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    3,
+                                    "f64.store",
+                                    StackOpd.f64,
+                                    expanded,
+                                    Instruction._f64_store_noO,
+                                    Instruction._f64_store_Off,
+                                    pb,
+                                    ref idx);
+                            }
                             break;
 
                         case Instruction.i32_store8:
-                        case Instruction.i32_store16:
-                            ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
+                            {
+                                ValidateStore(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    1,
+                                    "i32.store8",
+                                    StackOpd.i32,
+                                    expanded,
+                                    Instruction._i32_store8_noO,
+                                    Instruction._i32_store8_Off,
+                                    pb,
+                                    ref idx);
+                            }
+                            break;
 
-                            BinParse.LoadUnsignedLEB32(pb, ref idx);
-                            vmgr.PopOpd(StackOpd.i32);
-                            TransferInstruction(expanded, instr);
+                        case Instruction.i32_store16:
+                            {
+                                ValidateStore(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    2,
+                                    "i32.store16",
+                                    StackOpd.i32,
+                                    expanded,
+                                    Instruction._i32_store16_noO,
+                                    Instruction._i32_store16_Off,
+                                    pb,
+                                    ref idx);
+                            }
                             break;
 
                         case Instruction.i64_store8:
-                        case Instruction.i64_store16:
-                        case Instruction.i64_store32:
-                            ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
+                            {
+                                ValidateStore(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    1,
+                                    "i64.store8",
+                                    StackOpd.i64,
+                                    expanded,
+                                    Instruction._i64_store8_noO,
+                                    Instruction._i64_store8_Off,
+                                    pb,
+                                    ref idx);
+                            }
+                            break;
 
-                            BinParse.LoadUnsignedLEB32(pb, ref idx);
-                            vmgr.PopOpd(StackOpd.i64);
-                            TransferInstruction(expanded, instr);
+                        case Instruction.i64_store16:
+                            {
+                                ValidateStore(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    3,
+                                    "i64.store16",
+                                    StackOpd.i64,
+                                    expanded,
+                                    Instruction._i64_store16_noO,
+                                    Instruction._i64_store16_Off,
+                                    pb,
+                                    ref idx);
+                            }
+                            break;
+
+                        case Instruction.i64_store32:
+                            {
+                                ValidateStore(
+                                    vmgr,
+                                    parentModule,
+                                    ref memoryStore,
+                                    2,
+                                    "i64.store32",
+                                    StackOpd.i64,
+                                    expanded,
+                                    Instruction._i64_store32_noO,
+                                    Instruction._i64_store32_Off,
+                                    pb,
+                                    ref idx);
+                            }
                             break;
 
                         case Instruction.MemorySize:
@@ -1094,6 +1381,74 @@ namespace PxPre.WASM
                 return this.fnType.paramTypes[(int)uidx];
             else
                 return this.localTypes[(int)uidx - fnType.paramTypes.Count];
+        }
+
+        unsafe public static void ValidateLoad(
+            ValiMgr vmgr, 
+            Module parentModule, 
+            ref DataStoreIdx memoryStore, 
+            uint maxAlign, 
+            string opName, 
+            StackOpd pushType, 
+            List<byte> expanded, 
+            Instruction instrZeroOff, 
+            Instruction instrNonZeroOff, 
+            byte * pb, 
+            ref uint idx)
+        {
+            ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
+
+            vmgr.PopOpd(StackOpd.i32);
+            vmgr.PushOpd(pushType);
+
+            uint align = BinParse.LoadUnsignedLEB32(pb, ref idx);
+            uint offset = BinParse.LoadUnsignedLEB32(pb, ref idx);
+
+            if(align < 0 || align > maxAlign)
+                throw new System.Exception($"Invalid alignment of {align} for {opName}. Type limits the alignment between 0 and {maxAlign}.");
+
+            // We throw away the alignment for now, not supported.
+            if(offset == 0)
+                TransferInstruction(expanded, instrZeroOff);
+            else
+            {
+                TransferInstruction(expanded, instrNonZeroOff);
+                TransferInt32u(expanded, offset);
+            }
+        }
+
+        unsafe public static void ValidateStore(
+           ValiMgr vmgr,
+           Module parentModule,
+           ref DataStoreIdx memoryStore,
+           uint maxAlign,
+           string opName,
+           StackOpd popType,
+           List<byte> expanded,
+           Instruction instrZeroOff,
+           Instruction instrNonZeroOff,
+           byte* pb,
+           ref uint idx)
+        {
+            ValiMgr.EnsureDefaultMemory(parentModule.storeDecl.IndexingMemory, expanded, ref memoryStore);
+
+            vmgr.PopOpd(popType);
+            vmgr.PopOpd(StackOpd.i32);
+
+            uint align = BinParse.LoadUnsignedLEB32(pb, ref idx);
+            uint offset = BinParse.LoadUnsignedLEB32(pb, ref idx);
+
+            if (align < 0 || align > maxAlign)
+                throw new System.Exception($"Invalid alignment of {align} for {opName}. Type limits the alignment between 0 and {maxAlign}.");
+
+            // We throw away the alignment for now, not supported.
+            if (offset == 0)
+                TransferInstruction(expanded, instrZeroOff);
+            else
+            {
+                TransferInstruction(expanded, instrNonZeroOff);
+                TransferInt32u(expanded, offset);
+            }
         }
     }
 }

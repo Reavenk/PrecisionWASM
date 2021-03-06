@@ -163,6 +163,9 @@ namespace PxPre.WASM
 
                     switch(instr)
                     {
+                        default:
+                            throw new System.Exception($"Unknown opcode encountered, with code value {instr}");
+
                         case Instruction.nop:
                             break;
 
@@ -389,7 +392,7 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i32_load:
+                        case Instruction._i32_load_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
@@ -397,7 +400,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i64_load:
+                        case Instruction._i32_load_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos];
+                                // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
+                                *(int*)&pstk[this.stackPos] = *(int*)&pbMem[memid + offset];
+                            }
+                            break;
+
+                        case Instruction._i64_load_noO:
                             { 
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
@@ -405,7 +419,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.f32_load:
+                        case Instruction._i64_load_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos];
+                                this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
+                                *(long*)&pstk[this.stackPos] = *(long*)&pbMem[memid + offset];
+                            }
+                            break;
+
+                        case Instruction._f32_load_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
@@ -413,7 +438,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.f64_load:
+                        case Instruction._f32_load_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos];
+                                // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
+                                *(float*)&pstk[this.stackPos] = *(float*)&pbMem[memid + offset];
+                            }
+                            break;
+
+                        case Instruction._f64_load_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
@@ -421,7 +457,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i32_load8_s:
+                        case Instruction._f64_load_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos];
+                                this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
+                                *(double*)&pstk[this.stackPos] = *(double*)&pbMem[memid + offset];
+                            }
+                            break;
+
+                        case Instruction._i32_load8_s_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
@@ -429,7 +476,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i32_load8_u:
+                        case Instruction._i32_load8_s_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos];
+                                // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
+                                *(int*)&pstk[this.stackPos] = (sbyte)pbMem[memid + offset];
+                            }
+                            break;
+
+                        case Instruction._i32_load8_u_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
@@ -437,7 +495,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i32_load16_s:
+                        case Instruction._i32_load8_u_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos];
+                                // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
+                                *(int*)&pstk[this.stackPos] = pbMem[memid + offset];
+                            }
+                            break;
+
+                        case Instruction._i32_load16_s_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
@@ -445,7 +514,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i32_load16_u:
+                        case Instruction._i32_load16_s_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos];
+                                // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
+                                *(int*)&pstk[this.stackPos] = *(short*)&pbMem[memid + offset];
+                            }
+                            break;
+
+                        case Instruction._i32_load16_u_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
@@ -453,7 +533,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i64_load8_s:
+                        case Instruction._i32_load16_u_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos];
+                                // Pop the memory location (+4) but then allocate 32 bits (-4) - no stack position change
+                                *(uint*)&pstk[this.stackPos] = *(ushort*)&pbMem[memid + offset];
+                            }
+                            break;
+
+                        case Instruction._i64_load8_s_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
@@ -461,7 +552,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i64_load8_u:
+                        case Instruction._i64_load8_s_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos];
+                                this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
+                                *(long*)&pstk[this.stackPos] = *(sbyte*)&pbMem[memid + offset];
+                            }
+                            break;
+
+                        case Instruction._i64_load8_u_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
@@ -469,7 +571,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i64_load16_s:
+                        case Instruction._i64_load8_u_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos];
+                                this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
+                                *(ulong*)&pstk[this.stackPos] = (byte)pbMem[memid + offset];
+                            }
+                            break;
+
+                        case Instruction._i64_load16_s_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
@@ -477,7 +590,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i64_load16_u:
+                        case Instruction._i64_load16_s_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos];
+                                this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
+                                *(long*)&pstk[this.stackPos] = *(short*)&pbMem[memid + offset];
+                            }
+                            break;
+
+                        case Instruction._i64_load16_u_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
@@ -485,7 +609,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i64_load32_s:
+                        case Instruction._i64_load16_u_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos];
+                                this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
+                                *(ulong*)&pstk[this.stackPos] = *(ushort*)&pbMem[memid + offset];
+                            }
+                            break;
+
+                        case Instruction._i64_load32_s_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
@@ -493,7 +628,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i64_load32_u:
+                        case Instruction._i64_load32_s_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos];
+                                this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
+                                *(long*)&pstk[this.stackPos] = *(int*)&pbMem[memid + offset];
+                            }
+                            break;
+
+                        case Instruction._i64_load32_u_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos];
                                 this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
@@ -501,27 +647,60 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i32_store:
-                        case Instruction.f32_store:
+                        case Instruction._i64_load32_u_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos];
+                                this.stackPos -= 4;  // Pop the memory location (+4) but then allocate 64 bits (-8)
+                                *(ulong*)&pstk[this.stackPos] = *(uint*)&pbMem[memid + offset];
+                            }
+                            break;
+
+                        case Instruction._i32_store_noO:
+                        case Instruction._f32_store_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos + 4];
-
                                 *(int*)&pbMem[memid] = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 8; // Pop an int, and a 4byte param
                             }
                             break;
 
-                        case Instruction.i64_store:
-                        case Instruction.f64_store:
+                        case Instruction._i32_store_Off:
+                        case Instruction._f32_store_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos + 4];
+                                *(int*)&pbMem[memid + offset] = *(int*)&pstk[this.stackPos];
+                                this.stackPos += 8; // Pop an int, and a 4byte param
+                            }
+                            break;
+
+                        case Instruction._i64_store_noO:
+                        case Instruction._f64_store_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos + 8];
-
                                 *(long*)&pbMem[memid] = *(long*)&pstk[this.stackPos];
                                 this.stackPos += 12; // Pop an int, and a 8 byte param
                             }
                             break;
 
-                        case Instruction.i32_store8:
+                        case Instruction._i64_store_Off:
+                        case Instruction._f64_store_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos + 8];
+                                *(long*)&pbMem[memid + offset] = *(long*)&pstk[this.stackPos];
+                                this.stackPos += 12; // Pop an int, and a 8 byte param
+                            }
+                            break;
+
+                        case Instruction._i32_store8_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos + 4];
                                 pbMem[memid] = pstk[this.stackPos];
@@ -529,7 +708,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i32_store16:
+                        case Instruction._i32_store8_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos + 4];
+                                pbMem[memid + offset] = pstk[this.stackPos];
+                                this.stackPos += 8; // Pop 2 ints
+                            }
+                            break;
+
+                        case Instruction._i32_store16_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos + 4];
                                 *(short*)&pbMem[memid] = *(short*)&pstk[this.stackPos];
@@ -537,7 +727,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i64_store8:
+                        case Instruction._i32_store16_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos + 4];
+                                *(short*)&pbMem[memid + offset] = *(short*)&pstk[this.stackPos];
+                                this.stackPos += 4; // Pop 2 ints
+                            }
+                            break;
+
+                        case Instruction._i64_store8_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos + 8];
                                 pbMem[memid] = pstk[this.stackPos];
@@ -545,7 +746,18 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i64_store16:
+                        case Instruction._i64_store8_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos + 8];
+                                pbMem[memid + offset] = pstk[this.stackPos];
+                                this.stackPos += 12; // Pop an int, and an int64
+                            }
+                            break;
+
+                        case Instruction._i64_store16_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos + 8];
                                 *(short*)&pbMem[memid] = *(short*)&pstk[this.stackPos];
@@ -553,14 +765,36 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.i64_store32:
+                        case Instruction._i64_store16_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos + 8];
+                                *(short*)&pbMem[memid + offset] = *(short*)&pstk[this.stackPos];
+                                this.stackPos += 12; // Pop an int, and an int64
+                            }
+                            break;
+
+                        case Instruction._i64_store32_noO:
                             {
                                 int memid = *(int*)&pstk[this.stackPos + 8];
                                 *(int*)&pbMem[memid] = *(int*)&pstk[this.stackPos];
                                 this.stackPos += 12; // Pop an int, and an int64
                             }
                             break;
-                            
+
+                        case Instruction._i64_store32_Off:
+                            {
+                                int offset = *(int*)&pb[ip];
+                                ip += 4;
+
+                                int memid = *(int*)&pstk[this.stackPos + 8];
+                                *(int*)&pbMem[memid + offset] = *(int*)&pstk[this.stackPos];
+                                this.stackPos += 12; // Pop an int, and an int64
+                            }
+                            break;
+
                         case Instruction._SetMemoryStoreImp:
                             {
                                 int idx = *(int*)&pb[ip]; 
