@@ -148,11 +148,12 @@ namespace PxPre.WASM
 
             int startStack = this.stackPos;
 
-            byte * pbGlob = null;
 
             Memory curMemStore = null;
+            Table curTableStore = null;
             byte * pbMem = null;
             byte * pbTable = null;
+            byte * pbGlob = null;
 
             fixed (byte * pb = fn.expression, pstk = this.stack)
             {
@@ -182,6 +183,36 @@ namespace PxPre.WASM
                         // hard coded
                         //case Instruction.loop:
                         //    break;
+
+                        case Instruction._addstk:
+                            { 
+                                int addAmt = *(int*)&pb[ip];
+                                ip += 4;
+
+                                this.stackPos += addAmt;
+                            }
+                            break;
+
+                        case Instruction._substk:
+                            {
+                                int subAmt = *(int*)&pb[ip];
+                                ip += 4;
+
+                                this.stackPos -= subAmt;
+                            }
+                            break;
+
+                        case Instruction._substkLocal:
+                            {
+                                int subAmt = *(int*)&pb[ip];
+                                ip += 4;
+
+                                //this.stackPos -= subAmt;
+                                //startStack -= subAmt;
+                                this.stackPos -= subAmt;
+                                startStack = this.stackPos;
+                            }
+                            break;
 
                         case Instruction.ifblock:
                             {
@@ -227,6 +258,18 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.br_table:
+                            { 
+                                uint numJumps = *(uint*)&pb[ip];
+                                ip += 4;
+
+                                uint jmp = *(uint*)&pstk[this.stackPos];
+                                this.stackPos += 4;
+
+                                if (jmp < numJumps)
+                                    ip = *(int*)&pb[ip + jmp * 4]; // Jump to the jmp-th int at the lookup table
+                                else
+                                    ip = *(int*)&pb[ip + numJumps * 4]; // // Jump to the default entry int at the lookup table
+                            }
                             break;
 
                         case Instruction.returnblock:
@@ -237,9 +280,9 @@ namespace PxPre.WASM
 
                         case Instruction._stackbackwrite:
                             {
-                                int paramSz = *(int*)&pb[ip];
+                                int stackSz = *(int*)&pb[ip];
                                 int resultSz = *(int*)&pb[ip + 4];
-                                int shift = paramSz - resultSz;
+                                int shift = resultSz - stackSz;
                                 ip += 8;
 
                                 // Move the return value data on the stack to overwrite
@@ -254,11 +297,11 @@ namespace PxPre.WASM
                                 // be divisible by 4 and copy 32 bit chuncks instead of bytes.
                                 for(int i = resultSz - 1; i >= 0; --i)
                                 { 
-                                    pstk[this.stackPos + shift + i] = 
+                                    pstk[this.stackPos + stackSz + i] = 
                                         pstk[this.stackPos + i]; 
                                 }
 
-                                this.stackPos += (int)(shift); // We need to figure out the best typing
+                                this.stackPos += (int)(stackSz); // We need to figure out the best typing
                             }
                             break;
 
@@ -266,10 +309,10 @@ namespace PxPre.WASM
                             {
                                 uint fnid = *(uint*)&pb[ip];
                                 ip += 4;
-                                int stkSz = *(int*)&pb[ip];
-                                ip += 4;
+                                //int stkSz = *(int*)&pb[ip];
+                                //ip += 4;
 
-                                this.stackPos -= stkSz;
+                                //this.stackPos -= stkSz;
                                 RunLocalFunction(fn.parentModule, (int)fnid);
                                 //this.stackPos += stkSz;
                             }
@@ -282,42 +325,83 @@ namespace PxPre.WASM
                                 int stkSz = *(int*)&pb[ip];
                                 ip += 4;
 
-                                this.stackPos -= stkSz;
+                                //this.stackPos -= stkSz; 
                                 RunFunction(this.importData.importFn[(int)fnid]);
                                 //this.stackPos += stkSz;
                             }
                             break;
 
                         case Instruction.call_indirect:
+                            {
+                                int functionIdx = *(int*)&pstk[this.stackPos];
+                                this.stackPos += 4;
+
+                                if(functionIdx < 0 || functionIdx > this.instancer.storeDecl.IndexingFunction.Count)
+                                    throw new System.Exception("Attempted to indirectly call function with bad index.");
+
+                                IndexEntry ie = this.instancer.storeDecl.IndexingFunction[functionIdx];
+                                if(ie.type == IndexEntry.FnIdxType.Local)
+                                    this.RunFunction(this.instancer.functions[ie.index]);
+                                else
+                                {
+                                    ImportFunction impfn = this.importData.GetFunction(ie.index);
+                                    ImportFunctionUtil uti = new ImportFunctionUtil(impfn.functionType, this, this.stackPos);
+                                    impfn.InvokeImpl(uti);
+                                }
+                            }
                             break;
 
+                        case Instruction._SetTableStoreLoc:
+                            {
+                                int tblIdx = *(int*)(&pb[ip]);
+                                ip += 4;
+
+                                curTableStore = this.tables[tblIdx];
+                                pbTable = curTableStore.store.pdata;
+                            }
+                            break;
+
+                        case Instruction._SetTableStoreImp:
+                            {
+                                int tblIdx = *(int*)(&pb[ip]);
+                                ip += 4;
+
+                                curTableStore = this.importData.tables[tblIdx];
+                                pbTable = curTableStore.store.pdata;
+                            }
+                            break;
 
                         case Instruction.drop:
                             // Skip the next operation - Not sure if we need to do more
                             // since we could be skipping an op that has parameters.
-                            byte dropOpSz = pstk[stackPos - 1];
-                            stackPos += dropOpSz;
+                            byte dropOpSz = pstk[this.stackPos - 1];
+                            this.stackPos += dropOpSz;
                             break;
 
-                        case Instruction.select:
-                            int selOperand = *(int*)(&pstk[stackPos]);
-                            stackPos +=6;
-
-                            byte selOpSz = pstk[stackPos - 1];
-                            if (*(int*)(&pstk[stackPos]) == 0)
+                        case Instruction._select32:
+                            if(*(int*)(&pstk[this.stackPos]) == 1)
                             {
-                                // Drop it
-                                stackPos += selOpSz;
+                                // Do nothing, the value at stackPos + 8 is already
+                                // where it needs to be.
                             }
                             else
-                            { 
-                                int oldStk = stackPos;  // Prepare for transfer.
-                                stackPos += selOpSz;    // Drop ahead of time.
+                                *(int*)(&pstk[this.stackPos + 8]) = *(int*)(&pstk[this.stackPos + 4]);
 
-                                // Transfer it.
-                                for(int i = 0; i < selOpSz - 2; ++i)
-                                    pstk[stackPos + i] = pstk[oldStk + i];
+                            // Pop 1 int and 2 4 byte values, push 1 4 byte value
+                            this.stackPos += 8;
+                            break;
+
+                        case Instruction._select64:
+                            if (*(int*)(&pstk[this.stackPos]) == 1)
+                            {
+                                // Do nothing, the value at stackPos + 12 is already
+                                // where it needs to be.
                             }
+                            else
+                                *(long*)(&pstk[this.stackPos + 12]) = *(long*)(&pstk[this.stackPos + 4]);
+
+                            // Pop 1 int and 2 8 byte values, push 1 8 byte value
+                            this.stackPos += 12;
                             break;
 
                         case Instruction._local_get32:

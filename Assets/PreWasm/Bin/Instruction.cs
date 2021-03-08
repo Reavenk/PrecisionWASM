@@ -38,25 +38,22 @@ namespace PxPre.WASM
         br_table            = 0x0E,
         returnblock         = 0x0F,
 
-        call                = 0x10,
-        _call_local         = (0x10 << 8) | 0,
-        _call_import        = (0x10 << 8) | 1,
-        call_indirect       = 0x11,
-
-        _ifblock            = (ifblock << 8),
-        _elseblock          = (elseblock << 8),
-        _br_if              = (br_if << 8),
-        _br_table           = (br_table << 8),
-        _return             = (returnblock << 8),
+        call                    = 0x10,
+        _call_local             = (call << 8) | 0,
+        _call_import            = (call << 8) | 1,
+        call_indirect           = 0x11,
 
         _popn               = (0xFF << 8) | 0,
         _pop4b              = (0xFF << 8) | 1,
         _pop8b              = (0xFF << 8) | 2,
         _goto               = (0xFF << 8) | 3,
-
         // This is a hack until we find a better way to handle return values
         // on the stack - this rewrites a few values on the stack 
-        _stackbackwrite = (0xFF << 8) | 4,  
+        _stackbackwrite     = (0xFF << 8) | 4,
+        //
+        _addstk             = (0xFF << 8) | 5,
+        _substk             = (0xFF << 8) | 6,
+        _substkLocal        = (0xFF << 8) | 7,
 
         drop                = 0x1A,
 
@@ -163,8 +160,10 @@ namespace PxPre.WASM
         MemorySize      = 0x3F,
         MemoryGrow      = 0x40,
 
-        _SetMemoryStoreImp = (MemoryGrow << 8) | 0,
-        _SetMemoryStoreLoc = (MemoryGrow << 8) | 1,
+        _SetMemoryStoreImp  = (MemoryGrow << 8) | 0,
+        _SetMemoryStoreLoc  = (MemoryGrow << 8) | 1,
+        _SetTableStoreImp   = (MemoryGrow << 8) | 2,
+        _SetTableStoreLoc   = (MemoryGrow << 8) | 3,
 
         i32_const       = 0x41,
         i64_const       = 0x42,

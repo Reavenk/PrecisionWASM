@@ -30,6 +30,8 @@ namespace PxPre.WASM
         public readonly uint elements;
         public readonly LimitEntries limits;
 
+        public byte [] defaultValue;
+
         public DefTable(int index, Bin.TypeID type, uint initialElements, uint minEntries, uint maxEntries )
         { 
             this.index = index;
@@ -43,6 +45,11 @@ namespace PxPre.WASM
                     typeSize, 
                     (int)minEntries, 
                     (int)maxEntries);
+
+            this.defaultValue = new byte[initialElements * DataStore.GetTypeIDSize(type)];
+            for(int i = 0; i < this.defaultValue.Length; ++i)
+                this.defaultValue[i] = 0;
+
         }
 
         public Table CreateDefault()
@@ -50,7 +57,8 @@ namespace PxPre.WASM
             return new Table(
                 (int)this.elements, 
                 this.type, 
-                this.limits);
+                this.limits,
+                this.defaultValue);
         }
     }
 }

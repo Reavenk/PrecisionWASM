@@ -335,6 +335,11 @@ namespace PxPre.WASM
             return this.importFn[ie.index];
         }
 
+        public ImportFunction GetFunction(int exportFunctionIndex)
+        {
+            return this.importFn[exportFunctionIndex];
+        }
+
         public Memory GetMemory(string module, string field)
         {
             StoreDeclarations.ModuleRecord mr = this.storeDecl.GetModuleRecord(module);

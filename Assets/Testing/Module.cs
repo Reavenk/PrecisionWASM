@@ -334,7 +334,57 @@ namespace PxPre.WASM
                     ret.startFnIndex = BinParse.LoadUnsignedLEB32(pb, ref idx);
                 }
                 else if(sectionCode == Bin.Section.ElementSec) 
-                { 
+                {
+                    uint numElements = BinParse.LoadUnsignedLEB32(pb, ref idx);
+
+                    for(uint i = 0; i < numElements; ++i)
+                    {
+                        // Table index
+                        uint flags = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                        uint offset = GetConstantUIntExpression(pb, ref idx); // no idea what this is for
+                        uint numElems = BinParse.LoadUnsignedLEB32(pb, ref idx);
+
+                        // Is the index that offset value? Or always hardcoded to zero for now?
+                        byte [] rbTableDefs = ret.storeDecl.tables[0].defaultValue;
+                        Bin.TypeID tabTy = ret.storeDecl.tables[0].type;
+                        int size = DataStore.GetTypeIDSize(tabTy);
+                        fixed(byte * ptabdefs = rbTableDefs)
+                        {
+                            switch (tabTy)
+                            { 
+                                case Bin.TypeID.FuncRef:
+                                case Bin.TypeID.Int32:
+                                    for (int j = 0; j < numElems; ++j)
+                                    {
+                                        ((int*)ptabdefs)[j] = BinParse.LoadSignedLEB32(pb, ref idx);
+                                    }
+                                    break;
+
+                                case Bin.TypeID.Float32:
+                                    for (int j = 0; j < numElems; ++j)
+                                    {
+                                        ((float*)ptabdefs)[j] = *(float*)pb;
+                                        idx += 4;
+                                    }
+                                    break;
+
+                                case Bin.TypeID.Int64:
+                                    for (int j = 0; j < numElems; ++j)
+                                    {
+                                        ((long*)ptabdefs)[j] = BinParse.LoadSignedLEB64(pb, ref idx);
+                                    }
+                                    break;
+
+                                case Bin.TypeID.Float64:
+                                    for (int j = 0; j < numElems; ++j)
+                                    {
+                                        ((double*)ptabdefs)[j] = *(double*)pb;
+                                        idx += 8;
+                                    }
+                                    break;
+                            }
+                        }
+                    }
                 }
                 else if(sectionCode == Bin.Section.CodeSec)
                 { 
@@ -492,6 +542,22 @@ namespace PxPre.WASM
                 throw new System.Exception($"Unexpected byte. Expecting {match} but encountered {pb[idx]}.");
 
             ++idx;
+        }
+
+        unsafe private static uint GetConstantUIntExpression(byte * pb, ref uint idx)
+        { 
+            if(pb[idx] != (byte)Instruction.i32_const)
+                throw new System.Exception("Only constant int instructions are supported for format expressions.");
+
+            ++idx;
+
+            uint ret = BinParse.LoadUnsignedLEB32(pb, ref idx);
+
+            if(pb[idx] != (byte)Instruction.end)
+                throw new System.Exception("Constant int expression did not end with the expected end instruction.");
+
+            ++idx;
+            return ret;
         }
 
         //public static Session LoadString(string str)

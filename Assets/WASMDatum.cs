@@ -97,7 +97,7 @@ public static class WASMDatum
         List<PxPre.Datum.Val> ret = new List<PxPre.Datum.Val>();
 
         // Move the stack position right past where the parameters were written to.
-        ex.stackPos -= (int)fn.totalStackSize;
+        ex.stackPos -= (int)fn.fnType.totalParamSize;
 
         // Transfer parameters to a native version the bytecode works on
         fixed (byte* pb = fn.expression, pstk = ex.stack)
@@ -109,16 +109,16 @@ public static class WASMDatum
                 if (doi.size == 4)
                 {
                     if (doi.isFloat == true)
-                        *(float*)(&pstk[ex.stackPos + fn.totalStackSize - doi.offset - 4]) = ps[i].GetFloat();
+                        *(float*)(&pstk[ex.stackPos + fn.fnType.totalParamSize - doi.offset - 4]) = ps[i].GetFloat();
                     else
-                        *(int*)(&pstk[ex.stackPos + fn.totalStackSize - doi.offset - 4]) = ps[i].GetInt();
+                        *(int*)(&pstk[ex.stackPos + fn.fnType.totalParamSize - doi.offset - 4]) = ps[i].GetInt();
                 }
                 else if (doi.size == 8)
                 {
                     if (doi.isFloat == true)
-                        *(double*)(&pstk[ex.stackPos + fn.totalStackSize - doi.offset - 8]) = ps[i].GetFloat64();
+                        *(double*)(&pstk[ex.stackPos + fn.fnType.totalParamSize - doi.offset - 8]) = ps[i].GetFloat64();
                     else
-                        *(long*)(&pstk[ex.stackPos + fn.totalStackSize - doi.offset - 8]) = ps[i].GetInt64();
+                        *(long*)(&pstk[ex.stackPos + fn.fnType.totalParamSize - doi.offset - 8]) = ps[i].GetInt64();
                 }
                 else
                 { } // TODO: Error

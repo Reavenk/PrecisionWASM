@@ -182,28 +182,33 @@ namespace PxPre.WASM
         { 
             List<byte> expanded = new List<byte>();
 
-            DataStoreIdx memoryStore = new DataStoreIdx();
-            DataStoreIdx globalStore = new DataStoreIdx();
-            DataStoreIdx tableStore = new DataStoreIdx();
+            DataStoreIdx memoryStore    = new DataStoreIdx();
+            DataStoreIdx globalStore    = new DataStoreIdx();
+            DataStoreIdx tableStore     = new DataStoreIdx();
 
             ValiMgr vmgr = new ValiMgr();
             // The algorithm in the appendix of the spec didn't say how vu should be initialized,
             // but an initial ctrl is required on the stack.
             // (wleu 02/18/2021)
-            List<StackOpd> startFrameCtrl = new List<StackOpd>();
+            List<StackOpd> functionReturnOps = new List<StackOpd>();
             foreach(FunctionType.DataOrgInfo doi in this.fnType.resultTypes)
-            {
-                startFrameCtrl.Add(ValiMgr.ConvertToStackType((Bin.TypeID)doi.type));
-            }
+                functionReturnOps.Add(ValiMgr.ConvertToStackType(doi.type));
+            
             vmgr.PushCtrl(
                 Instruction.nop, 
-                new List<StackOpd>(), 
-                startFrameCtrl,
+                new List<StackOpd>(),
+                new List<StackOpd>(),
                 memoryStore,
                 globalStore,
                 tableStore);
 
             FunctionType ft = this.fnType;
+
+            if(this.totalLocalsSize > 0)
+            { 
+                TransferInstruction(expanded, Instruction._substkLocal);
+                TransferInt32u(expanded, this.totalLocalsSize);
+            }
 
             fixed (byte * pb = this.expression)
             {
@@ -327,7 +332,7 @@ namespace PxPre.WASM
                                     vmgr.EmitValidationError("Stack mismatch for br");
 
                                 CtrlFrame cf = vmgr.GetCtrl(breakDepth);
-                                vmgr.PopOpds( vmgr.LabelTypes(cf));
+                                vmgr.PopOpds( cf.LabelTypes());
                                 vmgr.Unreachable();
 
                                 TransferInstruction(expanded, Instruction._goto);
@@ -344,8 +349,8 @@ namespace PxPre.WASM
                                 vmgr.PopOpd(StackOpd.i32);
 
                                 CtrlFrame cf = vmgr.GetCtrl(breakDepth);
-                                vmgr.PopOpds(vmgr.LabelTypes(cf));
-                                vmgr.PushOpds(vmgr.LabelTypes(cf));
+                                vmgr.PopOpds(cf.LabelTypes());
+                                vmgr.PushOpds(cf.LabelTypes());
 
                                 TransferInstruction(expanded, instr);
                                 cf.QueueEndWrite(expanded);
@@ -353,29 +358,69 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.br_table:
-                            { 
-                                int n = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
-                                int m = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
+                            {
+                                TransferInstruction(expanded, Instruction.br_table);
+                                int numBreaks = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                                if(vmgr.ctrls.Count < m)
-                                    vmgr.EmitValidationError("");
+                                // The table needs to know the offset, not only for validation, but for
+                                // hangling the default case.
+                                TransferInt32u(expanded, (uint)numBreaks);
 
-                                for(int i = 0; i < n; ++i)
-                                { 
-                                    if(vmgr.ctrls.Count < i || vmgr.LabelTypes(vmgr.GetCtrl(i)) != vmgr.LabelTypes(vmgr.GetCtrl(m)))
-                                        vmgr.EmitValidationError("");
+                                List<int> breakIDs = new List<int>();
+                                int maxBreak = -1;
+                                for (int i = 0; i < numBreaks + 1; ++i)
+                                {
+                                    int breakDepth = (int)BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                    breakIDs.Add(breakDepth);
+                                    maxBreak = System.Math.Max(maxBreak, breakDepth);
                                 }
-                                vmgr.PopOpd( StackOpd.i32);
-                                vmgr.PopOpds( vmgr.LabelTypes(vmgr.GetCtrl(m)));
-                                vmgr.Unreachable();
 
-                                TransferInstruction(expanded, instr);
+                                Instruction endInst = (Instruction)this.expression[idx];
+                                ++idx;
+
+                                if(endInst != Instruction.end)
+                                    throw new System.Exception("Table break jump table didn't end with expected end instruction.");
+
+                                if (maxBreak < 0)
+                                    throw new System.Exception("Table break resulted in incorrect maximum break value.");
+
+                                if(vmgr.ctrls.Count < maxBreak)
+                                    throw new System.Exception("Table break attempts to exceed number of control frames available.");
+
+                                for(int i = 0; i < numBreaks + 1; ++i)
+                                {
+                                    CtrlFrame breakFrame = vmgr.GetCtrl(breakIDs[i]);
+                                    if (breakFrame.MatchesLabelTypes(vmgr.GetCtrl(maxBreak)) == false)
+                                        throw new System.Exception("Table break stack types mismatch.");
+
+                                    breakFrame.QueueEnterWrite(expanded);
+                                }
+
+                                vmgr.PopOpd(StackOpd.i32);
+                                vmgr.PopOpds(vmgr.GetCtrl(maxBreak).LabelTypes());
+
+                                // If there were any breaks to frame 0, we won't get a change to pop-down
+                                // to the top frame, so we'll write the jump values here.
+                                vmgr.GetCtrl(0).FlushEnterWrites(expanded);
+
+                                vmgr.Unreachable();
                             }
                             break;
 
                         case Instruction.returnblock:
-                            { } // TODO: Figure out later
-                            TransferInstruction(expanded, instr);
+                            {
+                                // I'm pretty sure this isn't 100% right, but I had issues
+                                // deciphering the spec.
+                                // (wleu 03/07/2021)
+                                
+                                int arity = vmgr.opds.Count;
+                                if(arity < this.fnType.resultTypes.Count)
+                                    throw new System.Exception("Not enough argument on stack for the return value of a function's return statement.");
+
+                                AddFunctionExit(vmgr, expanded, this, functionReturnOps, vmgr.GetStackOpdSize());
+                                vmgr.GetCtrl(0).SetToRestoreOnPop();
+                                vmgr.Unreachable();
+                            }
                             break;
 
                         case Instruction.call:
@@ -384,10 +429,10 @@ namespace PxPre.WASM
                                 IndexEntry fie = parentModule.storeDecl.IndexingFunction[(int)fnidx];
 
                                 foreach(FunctionType.DataOrgInfo doi in parentModule.storeDecl.functions[(int)fnidx].fnType.paramTypes)
-                                    vmgr.PopOpd(ValiMgr.ConvertToStackType(doi.type));
+                                    vmgr.PopOpd(doi.type);
 
                                 foreach (FunctionType.DataOrgInfo doi in parentModule.storeDecl.functions[(int)fnidx].fnType.resultTypes)
-                                    vmgr.PushOpd(ValiMgr.ConvertToStackType(doi.type));
+                                    vmgr.PushOpd(doi.type);
 
                                 if (fie.type == IndexEntry.FnIdxType.Local)
                                 { 
@@ -395,7 +440,6 @@ namespace PxPre.WASM
 
                                     TransferInstruction(expanded, Instruction._call_local);
                                     TransferInt32u(expanded, (uint)fie.index);
-                                    TransferInt32u(expanded, (uint)fn.totalLocalsSize);
 
                                 }
                                 else
@@ -404,7 +448,6 @@ namespace PxPre.WASM
 
                                     TransferInstruction(expanded, Instruction._call_import);
                                     TransferInt32u(expanded, (uint)fie.index);
-                                    TransferInt32u(expanded, 0);
                                 }
 
                                 // For now we're going to be conservative about other functions 
@@ -418,16 +461,36 @@ namespace PxPre.WASM
                             break;
 
                         case Instruction.call_indirect:
-                            vmgr.PopOpd(StackOpd.i32);
-                            TransferInstruction(expanded, instr);
+                            {
+                                uint sigIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                uint tbldx = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                            // For now we're going to be conservative about other functions 
-                            // potentially changing the state of memory - especially if they
-                            // resize the memory buffer which could invalidate the current
-                            // memory we have cached.
-                            memoryStore.SetInvalid();
-                            globalStore.SetInvalid();
-                            tableStore.SetInvalid();
+                                // The table index is assumed to be 0 for now and while consumed, 
+                                // is currently never used.
+                                ValiMgr.EnsureDefaulTable(
+                                    this.parentModule.storeDecl.IndexingTable, 
+                                    expanded, 
+                                    ref globalStore);
+
+                                vmgr.PopOpd(StackOpd.i32);
+
+                                FunctionType fnTy = this.parentModule.types[(int)sigIdx];
+                                foreach (FunctionType.DataOrgInfo doi in fnTy.paramTypes)
+                                    vmgr.PopOpd(doi.type);
+
+                                foreach (FunctionType.DataOrgInfo doi in fnTy.resultTypes)
+                                    vmgr.PushOpd(doi.type);
+
+                                TransferInstruction(expanded, instr);
+
+                                // For now we're going to be conservative about other functions 
+                                // potentially changing the state of memory - especially if they
+                                // resize the memory buffer which could invalidate the current
+                                // memory we have cached.
+                                memoryStore.SetInvalid();
+                                globalStore.SetInvalid();
+                                tableStore.SetInvalid();
+                            }
                             break;
 
                         case Instruction.drop:
@@ -440,7 +503,23 @@ namespace PxPre.WASM
                             StackOpd selos1 = vmgr.PopOpd();
                             StackOpd selos2 = vmgr.PopOpd(selos1);
                             vmgr.PushOpd(selos2);
-                            TransferInstruction(expanded, instr);
+
+                            switch(selos1)
+                            { 
+                                case StackOpd.i32:
+                                case StackOpd.f32:
+                                    TransferInstruction(expanded, Instruction._select32);
+                                    break;
+
+                                case StackOpd.i64:
+                                case StackOpd.f64:
+                                    TransferInstruction(expanded, Instruction._select64);
+                                    break;
+
+                                default:
+                                    throw new System.Exception("Select of unknown type.");
+                            }
+                            
                             break;
 
                         case Instruction.local_get:
@@ -448,7 +527,7 @@ namespace PxPre.WASM
                                 uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
 
-                                vmgr.PushOpd(ValiMgr.ConvertToStackType(ty.type));
+                                vmgr.PushOpd(ty.type);
                                 if(ty.size == 4)
                                 {
                                     TransferInstruction(expanded, Instruction._local_get32);
@@ -471,7 +550,7 @@ namespace PxPre.WASM
                                 uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
 
-                                vmgr.PopOpd(ValiMgr.ConvertToStackType(ty.type));
+                                vmgr.PopOpd(ty.type);
                                 if (ty.size == 4)
                                 {
                                     TransferInstruction(expanded, Instruction._local_set32);
@@ -492,8 +571,8 @@ namespace PxPre.WASM
                                 uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
 
-                                vmgr.PopOpd(ValiMgr.ConvertToStackType(ty.type)); 
-                                vmgr.PushOpd(ValiMgr.ConvertToStackType(ty.type));
+                                vmgr.PopOpd(ty.type); 
+                                vmgr.PushOpd(ty.type);
                                 if (ty.size == 4)
                                 {
                                     TransferInstruction(expanded, Instruction._local_tee32);
@@ -514,7 +593,7 @@ namespace PxPre.WASM
                                 Bin.TypeID type = parentModule.storeDecl.globals[(int)globalIdx].type;
 
                                 // Validate the stack typing
-                                vmgr.PushOpd(ValiMgr.ConvertToStackType(type));
+                                vmgr.PushOpd(type);
 
                                 ValiMgr.DoDataStoreValidation(
                                     this.parentModule.storeDecl.IndexingGlobal, 
@@ -540,7 +619,7 @@ namespace PxPre.WASM
                                 Bin.TypeID type = parentModule.storeDecl.globals[(int)globalIdx].type;
 
                                 // Validate the stack typing
-                                vmgr.PopOpd(ValiMgr.ConvertToStackType(type));
+                                vmgr.PopOpd(type);
 
                                 ValiMgr.DoDataStoreValidation(
                                     this.parentModule.storeDecl.IndexingGlobal,
@@ -1382,20 +1461,51 @@ namespace PxPre.WASM
                     }
                 }
 
+                // Pop all the controls. The biggest reason we do this is to make sure
+                // all the queued jump tables are written.
                 while(vmgr.ctrls.Count > 0)
                     vmgr.PopCtrl(expanded);
 
-                if(this.fnType.totalResultSize > 0)
-                {
-                    TransferInstruction(expanded, Instruction._stackbackwrite);
-                    TransferInt32u(expanded, this.totalStackSize);   // How much to move the stack by to overwrite the parameters
-                    TransferInt32u(expanded, this.fnType.totalResultSize);  // How much bytes in the results payload that need to be transfered
-                }
-
-                TransferInstruction(expanded, Instruction.returnblock);
+                AddFunctionExit(vmgr, expanded, this, functionReturnOps, vmgr.GetStackOpdSize());
+                
 
                 this.expression = expanded.ToArray();
             }
+        }
+
+        public static void AddFunctionExit(ValiMgr vmgr, List<byte> expanded, Function fn, List<StackOpd> returnTypes, int stackLeft)
+        {
+            vmgr.PopOpds(returnTypes, true);
+
+            // If we have any return values, we need to move the, from the current 
+            // location right on top of where the stack will be when we pop this
+            // call frame.
+            if (fn.fnType.totalResultSize > 0)
+            {
+                // But if we don't have any stack items (local variables or parameters)
+                // then the return values are already where they need to be.
+                if (fn.totalStackSize > 0)
+                {
+                    // But if we do have return values, we copy the return data to overwrite 
+                    // the byte where they need to be.
+                    TransferInstruction(expanded, Instruction._stackbackwrite);
+                    TransferInt32u(expanded, fn.totalStackSize);   // How much to move the stack by to overwrite the parameters
+                    TransferInt32u(expanded, fn.fnType.totalResultSize);  // How much bytes in the results payload that need to be transfered
+                }
+            }
+            else if (fn.fnType.totalResultSize == 0)
+            {
+                // If we don't have return values, we don't have a _stackbackwrite to fix up the
+                // stack. So instead we'll explicitly add to the stack to erase the locals and
+                // function parameters.
+                if (fn.fnType.totalParamSize > 0 || stackLeft > 0)
+                {
+                    TransferInstruction(expanded, Instruction._addstk);
+                    TransferInt32u(expanded, (uint)(fn.fnType.totalParamSize + stackLeft));
+                }
+            }
+
+            TransferInstruction(expanded, Instruction.returnblock);
         }
 
         FunctionType.DataOrgInfo GetStackDataInfo(uint uidx)

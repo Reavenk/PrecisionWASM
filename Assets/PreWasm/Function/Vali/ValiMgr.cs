@@ -30,27 +30,36 @@ namespace PxPre.WASM.Vali
         public List<StackOpd> opds = new List<StackOpd>();
         public Stack<CtrlFrame> ctrls = new Stack<CtrlFrame>();
 
-        public void PushOpd(StackOpd os)
+        public void PushOpd(StackOpd so)
         {
-            this.opds.Add(os);
+            this.opds.Add(so);
         }
 
-        public StackOpd PopOpd()
+        public void PushOpd(Bin.TypeID ty)
         {
-            if (this.opds.Count == this.ctrls.Peek().height && this.ctrls.Peek().unreachable == true)
-                return StackOpd.Unknown;
+            StackOpd so = ConvertToStackType(ty);
+            this.PushOpd(so);
+        }
 
-            if (this.opds.Count == this.ctrls.Peek().height)
-                this.EmitValidationError("Operation stack mismatch.");
+        public StackOpd PopOpd(bool ending = false)
+        {
+            if(ending == false)
+            {
+                if (this.opds.Count == this.ctrls.Peek().height && this.ctrls.Peek().unreachable == true)
+                    return StackOpd.Unknown;
+
+                if (this.opds.Count == this.ctrls.Peek().height)
+                    this.EmitValidationError("Operation stack mismatch.");
+            }
 
             StackOpd ret = this.opds[this.opds.Count - 1];
             this.opds.RemoveAt(this.opds.Count - 1);
             return ret;
         }
 
-        public StackOpd PopOpd(StackOpd expect)
+        public StackOpd PopOpd(StackOpd expect, bool ending = false)
         {
-            StackOpd actual = this.PopOpd();
+            StackOpd actual = this.PopOpd(ending);
             if (actual == StackOpd.Unknown)
                 return expect;
 
@@ -63,15 +72,21 @@ namespace PxPre.WASM.Vali
             return actual;
         }
 
+        public StackOpd PopOpd(Bin.TypeID expect)
+        {
+            StackOpd soexp = ConvertToStackType(expect);
+            return this.PopOpd(soexp);
+        }
+
         public void PushOpds(List<StackOpd> types)
         {
             this.opds.AddRange(types);
         }
 
-        public void PopOpds(List<StackOpd> types)
+        public void PopOpds(List<StackOpd> types, bool ending = false)
         {
             for (int i = types.Count - 1; i >= 0; --i)
-                this.PopOpd(types[i]);
+                this.PopOpd(types[i], ending);
         }
 
         public CtrlFrame PushCtrl(
@@ -105,6 +120,11 @@ namespace PxPre.WASM.Vali
             CtrlFrame frame = this.ctrls.Peek();
             this.PopOpds(frame.endTypes);
 
+            if(frame.returnedInside == true)
+            { 
+                while(this.opds.Count > frame.height)
+                    this.PopOpd();
+            }
             if (this.opds.Count != frame.height)
             { } // TODO: Error
 
@@ -119,6 +139,12 @@ namespace PxPre.WASM.Vali
             else
                 frame.FlushEndWrites(expanded);
 
+            if(this.ctrls.Count > 0)
+            {
+                CtrlFrame entered = this.ctrls.Peek();
+                entered.FlushEnterWrites(expanded);
+            }
+
             return frame;
         }
 
@@ -132,14 +158,6 @@ namespace PxPre.WASM.Vali
                 --fromTop;
             }
             return null;
-        }
-
-        public List<StackOpd> LabelTypes(CtrlFrame frame)
-        {
-            if (frame.opcode == Instruction.loop)
-                return frame.startTypes;
-            else
-                return frame.endTypes;
         }
 
         public void Unreachable()
@@ -240,6 +258,65 @@ namespace PxPre.WASM.Vali
             }
 
             throw new System.Exception(); // TODO: Error message
+        }
+
+        public static bool EnsureDefaulTable(IReadOnlyList<IndexEntry> tableIndices, List<byte> expanded, ref DataStoreIdx dsIdx)
+        {
+            if (dsIdx.loc != DataStoreIdx.Location.Unknown)
+                return false;
+
+            if (tableIndices.Count == 0)
+                throw new System.Exception("No tables provided for a function that requires memory storage.");
+
+            IndexEntry ie = tableIndices[0];
+            if (ie.type == IndexEntry.FnIdxType.Local)
+            {
+                dsIdx.loc = DataStoreIdx.Location.Local;
+                dsIdx.index = ie.index;
+
+                Function.TransferInstruction(expanded, Instruction._SetTableStoreLoc);
+                Function.TransferInt32s(expanded, ie.index);
+
+                return true;
+            }
+            else
+            {
+                dsIdx.loc = DataStoreIdx.Location.Import;
+                dsIdx.index = ie.index;
+
+                Function.TransferInstruction(expanded, Instruction._SetTableStoreImp);
+                Function.TransferInt32s(expanded, ie.index);
+
+                return true;
+            }
+
+            throw new System.Exception(); // TODO: Error message
+        }
+
+        public int GetStackOpdSize()
+        { 
+            int ret = 0;
+
+            foreach(StackOpd so in this.opds)
+            { 
+                switch(so)
+                { 
+                    case StackOpd.Unknown:
+                        throw new System.Exception("Cannot get variable stack size of unknown type.");
+
+                    case StackOpd.i32:
+                    case StackOpd.f32:
+                        ret += 4;
+                        break;
+
+                    case StackOpd.i64:
+                    case StackOpd.f64:
+                        ret += 8;
+                        break;
+                }
+            }
+
+            return ret;
         }
     }
 }

@@ -379,5 +379,70 @@ namespace Tests
                 }
             }
         }
+
+        public static PxPre.WASM.Global ValidateAccessExportedGlobal(PxPre.WASM.ExecutionContext ex, string name)
+        {
+            PxPre.WASM.Global g = ex.GetExportedGlobal(name);
+            if (g == null)
+                throw new System.Exception($"Context missing global {name}.");
+
+            return g;
+        }
+
+        public static void ValidateExportedGlobal_i32(PxPre.WASM.ExecutionContext ex, string name, int value)
+        {
+            PxPre.WASM.Global g = ValidateAccessExportedGlobal(ex, name);
+            if(g.type != PxPre.WASM.Bin.TypeID.Int32)
+                throw new System.Exception($"Global {name} is unexpected type {g.type}");
+
+            PxPre.WASM.GlobalInt gtyed = g.CastGlobalInt();
+            if(gtyed == null)
+                throw new System.Exception($"Global {name} did not cast into an int type correctly.");
+
+            if (gtyed.Value != value)
+                throw new System.Exception($"Global {name} expected value of {value} but instead encountered {gtyed.Value}.");
+        }
+
+        public static void ValidateExportedGlobal_i64(PxPre.WASM.ExecutionContext ex, string name, long value)
+        {
+            PxPre.WASM.Global g = ValidateAccessExportedGlobal(ex, name);
+            if (g.type != PxPre.WASM.Bin.TypeID.Int64)
+                throw new System.Exception($"Global {name} is unexpected type {g.type}");
+
+            PxPre.WASM.GlobalInt64 gtyed = g.CastGlobalInt64();
+            if (gtyed == null)
+                throw new System.Exception($"Global {name} did not cast into an int64 type correctly.");
+
+            if(gtyed.Value != value)
+                throw new System.Exception($"Global {name} expected value of {value} but instead encountered {gtyed.Value}.");
+        }
+
+        public static void ValidateExportedGlobal_f32(PxPre.WASM.ExecutionContext ex, string name, float value)
+        {
+            PxPre.WASM.Global g = ValidateAccessExportedGlobal(ex, name);
+            if (g.type != PxPre.WASM.Bin.TypeID.Float32)
+                throw new System.Exception($"Global {name} is unexpected type {g.type}");
+
+            PxPre.WASM.GlobalFloat gtyed = g.CastGlobalFloat();
+            if (gtyed == null)
+                throw new System.Exception($"Global {name} did not cast into an float type correctly.");
+
+            if (gtyed.Value != value)
+                throw new System.Exception($"Global {name} expected value of {value} but instead encountered {gtyed.Value}.");
+        }
+
+        public static void ValidateExportedGlobal_f64(PxPre.WASM.ExecutionContext ex, string name, double value)
+        {
+            PxPre.WASM.Global g = ValidateAccessExportedGlobal(ex, name);
+            if (g.type != PxPre.WASM.Bin.TypeID.Float64)
+                throw new System.Exception($"Global {name} is unexpected type {g.type}");
+
+            PxPre.WASM.GlobalFloat64 gtyed = g.CastGlobalFloat64();
+            if (gtyed == null)
+                throw new System.Exception($"Global {name} did not cast into an float64 type correctly.");
+
+            if (gtyed.Value != value)
+                throw new System.Exception($"Global {name} expected value of {value} but instead encountered {gtyed.Value}.");
+        }
     }
 }

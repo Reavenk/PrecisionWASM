@@ -38,7 +38,7 @@ namespace PxPre.WASM
             get => this.limits.maxEntries;
         }
 
-        public Table(int initEntriesCt, Bin.TypeID type, LimitEntries limits)
+        public Table(int initEntriesCt, Bin.TypeID type, LimitEntries limits, byte [] defaultVal)
         {
             this.type = type;
             this.limits = limits;
@@ -48,6 +48,16 @@ namespace PxPre.WASM
                 throw new System.Exception(); // TODO: Error msg
 
             this.store = new DataStore(initEntriesCt, limits);
+
+            if(initEntriesCt > 0 && defaultVal != null)
+            { 
+                int dataSize = DataStore.GetTypeIDSize(type);
+                int defaultAligned = (defaultVal.Length / dataSize) * dataSize;
+                int numDefCpy = System.Math.Min(defaultAligned, this.store.data.Length);
+
+                for(int i = 0; i < numDefCpy; ++i)
+                    this.store.data[i] = defaultVal[i];
+            }
         }
 
         public DataStore.ExpandRet ExpandEntriesCt(int newEntriesCt)
