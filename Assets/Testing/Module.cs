@@ -445,21 +445,12 @@ namespace PxPre.WASM
                     { 
                         // TODO: Figure out header
                         uint segHeaderFlags = BinParse.LoadUnsignedLEB32(pb, ref idx);
-
-                        // TODO: What are these types for?
-                        List<byte> types = new List<byte>();
-                        while(pb[idx] != 0x0b)
-                        { 
-                            types.Add(pb[idx]);
-                            ++idx;
-                        }
-                        ++idx;
-
+                        uint offset = GetConstantUIntExpression(pb, ref idx);
                         uint dataSz = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
                         DefMem dmem = ret.storeDecl.memories[(int)i];
-                        dmem.defaultData = new byte[dataSz];
-                        ret.storeDecl.memories[(int)i] = dmem;
+
+                        byte [] defData = new byte[dataSz];
 
                         // Copy into runtime memory block.
                         //
@@ -467,7 +458,10 @@ namespace PxPre.WASM
                         // low-level copy function that also does this, that would be 
                         // prefered.
                         for(uint j = 0; j < dataSz; ++j)
-                            dmem.defaultData[j] = pb[idx + j];
+                            defData[j] = pb[idx + j];
+
+                        dmem.AddDefault((int)offset, defData);
+                        ret.storeDecl.memories[(int)i] = dmem;
 
                         idx += dataSz;
                     }

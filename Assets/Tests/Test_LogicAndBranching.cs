@@ -150,5 +150,39 @@ namespace Tests
             ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(-100), PxPre.Datum.Val.Make(3), PxPre.Datum.Val.Make(6), PxPre.Datum.Val.Make(9), PxPre.Datum.Val.Make(12));
             UnitUtil.CompareGaunletInt(-1, ret, "br_table", 0, -100, 3, 6, 9, 12);
         }
+
+        [Test]
+        public void Test_Switch()
+        {
+            // This is a misnomer - the C++ code used to generate the WAT was a siwtch, but 
+            // it's more of a table lookup. The code for Test_br_table is more of an authentic
+            // switch branching.
+
+            PxPre.WASM.Module mod = UnitUtil.LoadUnitTestModule($"TestSamples/Gauntlet/{TestTheme}/Switch.wasm");
+            PxPre.WASM.ExecutionContext ex = new PxPre.WASM.ExecutionContext(mod);
+            UnitUtil.AssertHasStart(mod, false);
+            ex.InvokeStart();
+
+            List<IntPair> testKeys = 
+                new List<IntPair>
+                { 
+                    new IntPair(0, 10),
+                    new IntPair(1, 13),
+                    new IntPair(2, 17),
+                    new IntPair(3, 20),
+                    new IntPair(4, 100),
+                    new IntPair(5, 1000),
+                    new IntPair(6, -1),
+                    new IntPair(-100, -1),
+                    new IntPair(100, -1)
+                };
+
+            int idx = 0;
+            foreach(IntPair ip in testKeys)
+            {
+                PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(ip.a));
+                UnitUtil.CompareGaunletInt(ip.b, ret, "Switch", idx++, ip.a);
+            }
+        }
     }
 }

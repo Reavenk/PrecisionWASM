@@ -27,11 +27,30 @@ namespace PxPre.WASM
 {
     public struct DefMem
     {
+        private struct Default
+        { 
+            public int offset;
+            public byte [] data;
+        }
+
         public readonly int index;
 
         public readonly uint initialPages;
         public LimitsPaged limits;
-        public byte [] defaultData;
+
+        List<Default> defaultData;
+
+        public void AddDefault(int offset, byte [] data)
+        {
+            Default def = new Default();
+            def.offset = offset;
+            def.data = data;
+
+            if(this.defaultData == null)
+                this.defaultData = new List<Default>();
+
+            this.defaultData.Add(def);
+        }
 
         public DefMem(int index, uint initialPages, uint minPages, uint maxPages )
         { 
@@ -48,8 +67,21 @@ namespace PxPre.WASM
 
             if(this.defaultData != null)
             { 
-                for(int i = 0; i < this.defaultData.Length; ++i)
-                    ret.store.data[i] = this.defaultData[i];
+                foreach(Default def in this.defaultData)
+                { 
+                    int max = (int)(def.offset + def.data.Length);
+                    int reqPages = (int)System.Math.Ceiling(max / (double)DataStore.PageSize);
+
+                    int curPageCt = (int)ret.CalculatePageCt();
+                    if ( curPageCt < reqPages)
+                    {
+                        if(ret.ExpandPageCt(reqPages) != DataStore.ExpandRet.Successful)
+                            throw new System.Exception("Could not initialize memory to the appropriate size.");
+                    }
+
+                    for(int i = 0; i < def.data.Length; ++i)
+                        ret.store.data[def.offset + i] = def.data[i];
+                }
             }
 
             return ret;
