@@ -293,28 +293,27 @@ namespace PxPre.WASM.Vali
             throw new System.Exception(); // TODO: Error message
         }
 
+        public static int GetSize(StackOpd so)
+        {
+            switch (so)
+            {
+                case StackOpd.i32:
+                case StackOpd.f32:
+                    return 4;
+
+                case StackOpd.i64:
+                case StackOpd.f64:
+                    return 8;
+            }
+            throw new System.Exception("Cannot get variable stack size of unknown type.");
+        }
+
         public int GetStackOpdSize()
         { 
             int ret = 0;
 
             foreach(StackOpd so in this.opds)
-            { 
-                switch(so)
-                { 
-                    case StackOpd.Unknown:
-                        throw new System.Exception("Cannot get variable stack size of unknown type.");
-
-                    case StackOpd.i32:
-                    case StackOpd.f32:
-                        ret += 4;
-                        break;
-
-                    case StackOpd.i64:
-                    case StackOpd.f64:
-                        ret += 8;
-                        break;
-                }
-            }
+                ret += GetSize(so);
 
             return ret;
         }

@@ -371,11 +371,14 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction.drop:
+                        case Instruction._drop32:
                             // Skip the next operation - Not sure if we need to do more
                             // since we could be skipping an op that has parameters.
-                            byte dropOpSz = pstk[this.stackPos - 1];
-                            this.stackPos += dropOpSz;
+                            this.stackPos += 4;
+                            break;
+
+                        case Instruction._drop64:
+                            this.stackPos += 8;
                             break;
 
                         case Instruction._select32:
