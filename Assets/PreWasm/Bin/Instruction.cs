@@ -38,10 +38,10 @@ namespace PxPre.WASM
         br_table            = 0x0E,
         returnblock         = 0x0F,
 
-        call                    = 0x10,
-        _call_local             = (call << 8) | 0,
-        _call_import            = (call << 8) | 1,
-        call_indirect           = 0x11,
+        call                = 0x10,
+        _call_local         = (call << 8) | 0,
+        _call_import        = (call << 8) | 1,
+        call_indirect       = 0x11,
 
         _popn               = (0xFF << 8) | 0,
         _pop4b              = (0xFF << 8) | 1,
@@ -50,9 +50,12 @@ namespace PxPre.WASM
         // This is a hack until we find a better way to handle return values
         // on the stack - this rewrites a few values on the stack 
         _stackbackwrite     = (0xFF << 8) | 4,
-        //
+        // Add to the stack pointer.
         _addstk             = (0xFF << 8) | 5,
+        // Subtract from the stack pointer
         _substk             = (0xFF << 8) | 6,
+        // Subtract from the stack pointer and make the new stack pointer the
+        // base position for local variables.
         _substkLocal        = (0xFF << 8) | 7,
 
         drop                = 0x1A,

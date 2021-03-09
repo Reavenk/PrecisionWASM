@@ -108,6 +108,8 @@ namespace PxPre.WASM
         {
             while (true)
             {
+                // Right now we just pluck out bytes, but doing an LEB128 might
+                // be more correct.
                 switch ((Bin.TypeID)pb[idx])
                 {
                     case Bin.TypeID.Int32:
@@ -175,13 +177,24 @@ namespace PxPre.WASM
             rb.AddRange(System.BitConverter.GetBytes(i));
         }
 
-        // Given an encoding, convert it to be usable. The biggest impeding factor
-        // is the LEB decoding required if we didn't do this. And since that changes
-        // alignment, indices may also need to be changed.
+        // Given an encoding, convert it to be usable. The bytecode is converted to
+        // a modified version of the program with a few changes:
+        // - Polymorphic instructions have their types deduced, and will have
+        // their instruction converted to specifialized version based on the
+        // type's bitwidth.
+        // - Things that use a store will check if the cached pointer needs to
+        // be updated first. If they do, extra niche instructions will be injected
+        // before the operator to set things up properly.
+        // - Jump locations are deduced.
+        // - Operators that have offets are broken off into two version, ones that
+        // have a zero-offset, and ones that have a non-zero offset. This is so
+        // zero-offset instructions shed a little bit of overhead.
         unsafe public void ExpandExpressionToBeUsable(Module session, int index)
         { 
             List<byte> expanded = new List<byte>();
 
+            // Tracking variables used to make sure pointer caches are setup
+            // correctly.
             DataStoreIdx memoryStore    = new DataStoreIdx();
             DataStoreIdx globalStore    = new DataStoreIdx();
             DataStoreIdx tableStore     = new DataStoreIdx();
@@ -195,7 +208,7 @@ namespace PxPre.WASM
                 functionReturnOps.Add(ValiMgr.ConvertToStackType(doi.type));
             
             vmgr.PushCtrl(
-                Instruction.nop, 
+                Instruction.nop, // Filler instruction type. All that matter is that it's not a loop
                 new List<StackOpd>(),
                 new List<StackOpd>(),
                 memoryStore,
@@ -204,6 +217,7 @@ namespace PxPre.WASM
 
             FunctionType ft = this.fnType;
 
+            // If the function has local variables, set up the stack space.
             if(this.totalLocalsSize > 0)
             { 
                 TransferInstruction(expanded, Instruction._substkLocal);
@@ -528,7 +542,6 @@ namespace PxPre.WASM
                                 default:
                                     throw new System.Exception("Select of unknown type.");
                             }
-                            
                             break;
 
                         case Instruction.local_get:
@@ -549,9 +562,6 @@ namespace PxPre.WASM
                                 }
                                 else
                                     vmgr.EmitValidationError("Retrieving parameter of illegal size.");
-
-                            
-
                             }
                             break;
                         case Instruction.local_set:
@@ -621,9 +631,6 @@ namespace PxPre.WASM
                             break;
                         case Instruction.global_set:
                             {
-                                // This function is incorrect in that it's a duplicate of local_set.
-                                // this eventually needs to pull from the global varable source.
-
                                 uint globalIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 Bin.TypeID type = parentModule.storeDecl.globals[(int)globalIdx].type;
 
