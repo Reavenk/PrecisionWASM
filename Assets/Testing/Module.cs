@@ -60,11 +60,11 @@ namespace PxPre.WASM
             fixed (byte * pb = rb)
             { 
                 uint idx = 0;
-                return LoadBinary(pb, ref idx);
+                return LoadBinary(pb, ref idx, rb.Length);
             }
         }
 
-        unsafe public static Module LoadBinary(byte * pb, ref uint idx)
+        unsafe public static Module LoadBinary(byte * pb, ref uint idx, int endIdx)
         {
             // https://www.reddit.com/r/WebAssembly/comments/9vq019/is_anyone_learning_webassembly_in_binary_im_stuck/
             // https://webassembly.github.io/wabt/demo/wat2wasm/
@@ -81,7 +81,7 @@ namespace PxPre.WASM
 
             Module ret = new Module();
 
-            while(true)
+            while(idx < endIdx)
             {
                 Bin.Section sectionCode = (Bin.Section)pb[idx];
                 ++idx;
