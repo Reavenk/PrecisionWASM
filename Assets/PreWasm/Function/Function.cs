@@ -130,7 +130,7 @@ namespace PxPre.WASM
                         ++idx;
                         break;
 
-                    case Bin.TypeID.Result: //void return type
+                    case Bin.TypeID.Empty: //void return type
                         ++idx;
                         return;
 

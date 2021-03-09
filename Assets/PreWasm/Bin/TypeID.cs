@@ -31,6 +31,7 @@ namespace PxPre.WASM.Bin
     /// </summary>
     public enum TypeID
     {
+        Empty       = 0x40,
         Result      = 0x40,
         Function    = 0x60,
         FuncRef     = 0x70,
