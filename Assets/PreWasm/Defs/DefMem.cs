@@ -25,11 +25,12 @@ using System.Collections.Generic;
 
 namespace PxPre.WASM
 {
+    // TODO: Rename to SegmentDef
     public struct DefMem
     {
         private struct Default
         { 
-            public int offset;
+            public uint offset;
             public byte [] data;
         }
 
@@ -40,7 +41,7 @@ namespace PxPre.WASM
 
         List<Default> defaultData;
 
-        public void AddDefault(int offset, byte [] data)
+        public void AddDefault(uint offset, byte [] data)
         {
             Default def = new Default();
             def.offset = offset;
@@ -57,20 +58,20 @@ namespace PxPre.WASM
             this.index = index;
 
             this.initialPages = initialPages;
-            this.limits = new LimitsPaged((int)minPages, (int)maxPages);
+            this.limits = new LimitsPaged(minPages, maxPages);
             this.defaultData = null;
         }
 
         public Memory CreateDefault()
         { 
-            Memory ret = new Memory((int)this.initialPages, this.limits);
+            Memory ret = new Memory(this.initialPages, this.limits);
 
             if(this.defaultData != null)
             { 
                 foreach(Default def in this.defaultData)
                 { 
-                    int max = (int)(def.offset + def.data.Length);
-                    int reqPages = (int)System.Math.Ceiling(max / (double)DataStore.PageSize);
+                    uint max = def.offset + (uint)def.data.Length;
+                    uint reqPages = (uint)System.Math.Ceiling(max / (double)DataStore.PageSize);
 
                     int curPageCt = (int)ret.CalculatePageCt();
                     if ( curPageCt < reqPages)

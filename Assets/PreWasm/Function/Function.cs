@@ -610,7 +610,7 @@ namespace PxPre.WASM
                                     expanded, 
                                     ref globalStore);
 
-                                int typeSize = DataStore.GetTypeIDSize(type);
+                                uint typeSize = DataStore.GetTypeIDSize(type);
                                 if (typeSize == 4)
                                     TransferInstruction(expanded, Instruction._global_get32);
                                 else if (typeSize == 8)
@@ -636,7 +636,7 @@ namespace PxPre.WASM
                                     expanded,
                                     ref globalStore);
 
-                                int typeSize = DataStore.GetTypeIDSize(type);
+                                uint typeSize = DataStore.GetTypeIDSize(type);
                                 if (typeSize == 4)
                                     TransferInstruction(expanded, Instruction._global_set32);
                                 else if (typeSize == 8)

@@ -223,7 +223,7 @@ namespace PxPre.WASM
 
                         uint flags = BinParse.LoadUnsignedLEB32(pb, ref idx);
                         uint initial = BinParse.LoadUnsignedLEB32(pb, ref idx); 
-                        uint max = initial;
+                        uint ? max = null;
                         
                         if((flags & 0x01) != 0)
                             max = BinParse.LoadUnsignedLEB32(pb, ref idx);
@@ -252,7 +252,7 @@ namespace PxPre.WASM
 
                         uint memFlags           = BinParse.LoadUnsignedLEB32(pb, ref idx);
                         uint memInitialPageCt   = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                        uint memMaxPageCt       = memInitialPageCt;
+                        uint ? memMaxPageCt     = null;
 
                         // TODO: More rigor for max size
                         if((memFlags & 0x01) != 0)
@@ -347,7 +347,7 @@ namespace PxPre.WASM
                         // Is the index that offset value? Or always hardcoded to zero for now?
                         byte [] rbTableDefs = ret.storeDecl.tables[0].defaultValue;
                         Bin.TypeID tabTy = ret.storeDecl.tables[0].type;
-                        int size = DataStore.GetTypeIDSize(tabTy);
+                        uint size = DataStore.GetTypeIDSize(tabTy);
                         fixed(byte * ptabdefs = rbTableDefs)
                         {
                             switch (tabTy)
@@ -460,7 +460,7 @@ namespace PxPre.WASM
                         for(uint j = 0; j < dataSz; ++j)
                             defData[j] = pb[idx + j];
 
-                        dmem.AddDefault((int)offset, defData);
+                        dmem.AddDefault(offset, defData);
                         ret.storeDecl.memories[(int)i] = dmem;
 
                         idx += dataSz;

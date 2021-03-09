@@ -24,10 +24,10 @@ namespace PxPre.WASM
 {
     public struct Limits
     { 
-        public int minBytes;
-        public int maxBytes;
+        public uint minBytes;
+        public uint maxBytes;
 
-        public Limits(int minBytes, int maxBytes)
+        public Limits(uint minBytes, uint maxBytes)
         { 
             this.minBytes = minBytes;
             this.maxBytes = maxBytes;

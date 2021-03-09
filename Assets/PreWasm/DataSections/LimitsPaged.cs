@@ -24,10 +24,10 @@ namespace PxPre.WASM
 {
     public struct LimitsPaged
     { 
-        public int minPages;
-        public int maxPages;
+        public uint minPages;
+        public uint maxPages;
 
-        public LimitsPaged(int minPages, int maxPages)
+        public LimitsPaged(uint minPages, uint maxPages)
         { 
             this.minPages = minPages;
             this.maxPages = maxPages;

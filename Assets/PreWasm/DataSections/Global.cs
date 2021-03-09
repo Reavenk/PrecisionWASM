@@ -41,7 +41,7 @@ namespace PxPre.WASM
             this.mutable = (mutable == true) ? Mutability.Variable : Mutability.Const;
             this.type = type;
 
-            int size = DataStore.GetTypeIDSize(type);
+            uint size = DataStore.GetTypeIDSize(type);
             this.store = new DataStore(size);
         }
 

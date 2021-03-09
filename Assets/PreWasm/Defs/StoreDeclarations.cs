@@ -136,21 +136,25 @@ namespace PxPre.WASM
         //
         ////////////////////////////////////////////////////////////////////////////////
 
-        public void AddMemoryLoc(uint initialPageCt, uint minPageCt, uint maxPageCt /*, uint flags*/)
+        public void AddMemoryLoc(uint initialPageCt, uint minPageCt, uint ? maxPageCt /*, uint flags*/)
         {
+            uint maxpg = maxPageCt ?? 64 * 1024;
+
             this.indexingMemory.Add(IndexEntry.CreateLocal(this.localMemsCt));
 
-            DefMem mem = new DefMem(this.memories.Count, initialPageCt, minPageCt, maxPageCt );
+            DefMem mem = new DefMem(this.memories.Count, initialPageCt, minPageCt, maxpg);
             this.memories.Add(mem);
 
             ++this.localMemsCt;
         }
 
-        public void AddMemoryImp(string module, string fieldname, uint initialPageCt, uint minPageCt, uint maxPageCt)
+        public void AddMemoryImp(string module, string fieldname, uint initialPageCt, uint minPageCt, uint ? maxPageCt)
         {
+            uint maxpg = maxPageCt ?? 64 * 1024;
+
             this.indexingMemory.Add(IndexEntry.CreateImport(this.importMemsCt, module, fieldname));
 
-            DefMem mem = new DefMem(this.memories.Count, initialPageCt, minPageCt, maxPageCt );
+            DefMem mem = new DefMem(this.memories.Count, initialPageCt, minPageCt, maxpg);
             this.memories.Add(mem);
 
             this.GetOrCreateRecord(module).memories.Add(fieldname, mem);
@@ -210,21 +214,25 @@ namespace PxPre.WASM
         //
         ////////////////////////////////////////////////////////////////////////////////
 
-        public void AddTableLoc(Bin.TypeID type, uint initialElements, uint maxElements)
+        public void AddTableLoc(Bin.TypeID type, uint initialElements, uint ? maxElements)
         { 
+            uint maxele = maxElements ?? uint.MaxValue;
+
             this.indexingTable.Add(IndexEntry.CreateLocal(this.localTablesCt));
 
-            DefTable table = new DefTable(this.tables.Count, type, initialElements, 0, maxElements);
+            DefTable table = new DefTable(this.tables.Count, type, initialElements, 0, maxele);
             this.tables.Add(table);
 
             ++this.localTablesCt;
         }
 
-        public void AddTableImp(string module, string fieldname, Bin.TypeID type, uint initialElements, uint maxElements)
+        public void AddTableImp(string module, string fieldname, Bin.TypeID type, uint initialElements, uint ? maxElements)
         {
+            uint maxele = maxElements ?? uint.MaxValue;
+
             this.indexingTable.Add(IndexEntry.CreateImport(this.importTablesCt, module, fieldname));
         
-            DefTable table = new DefTable(this.tables.Count, type, initialElements, 0, maxElements);
+            DefTable table = new DefTable(this.tables.Count, type, initialElements, 0, maxele);
             this.tables.Add(table);
 
             this.GetOrCreateRecord(module).tables.Add(fieldname, table);

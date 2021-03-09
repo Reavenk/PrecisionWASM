@@ -24,11 +24,11 @@ namespace PxPre.WASM
 {
     public struct LimitEntries
     {
-        public int dataTypeSize;
-        public int minEntries;
-        public int maxEntries;
+        public uint dataTypeSize;
+        public uint minEntries;
+        public uint maxEntries;
 
-        public LimitEntries(int dataTypeSize, int minEntries, int maxEntries)
+        public LimitEntries(uint dataTypeSize, uint minEntries, uint maxEntries)
         { 
             this.dataTypeSize   = dataTypeSize;
             this.minEntries     = minEntries;

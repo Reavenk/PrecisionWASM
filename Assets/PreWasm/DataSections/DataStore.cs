@@ -35,7 +35,7 @@ namespace PxPre.WASM
             Successful
         }
 
-        public const int PageSize = 64 * 1024;
+        public const uint PageSize = 64 * 1024;
 
         byte [] _data = null;
         byte * _pdata = null;
@@ -51,27 +51,27 @@ namespace PxPre.WASM
             } 
         }
 
-        public  DataStore(int initialByteSize, Limits limits)
+        public  DataStore(uint initialByteSize, Limits limits)
         {
             this.ExpandBytes(initialByteSize, limits);
         }
 
-        public  DataStore(int initialPageSize, LimitsPaged limits)
+        public  DataStore(uint initialPageSize, LimitsPaged limits)
         {   
             this.ExpandPages(initialPageSize, limits);
         }
 
-        public DataStore(int initialEntryCt, LimitEntries limits)
+        public DataStore(uint initialEntryCt, LimitEntries limits)
         {
             this.ExpandEntries(initialEntryCt, limits);
         }
 
-        public DataStore(int initalByteSize)
+        public DataStore(uint initalByteSize)
         { 
             this._ExpandInternal(initalByteSize);
         }
 
-        public ExpandRet ExpandBytes(int newByteSize, Limits limits)
+        public ExpandRet ExpandBytes(uint newByteSize, Limits limits)
         {
             return 
                 this._ExpandSize(
@@ -80,7 +80,7 @@ namespace PxPre.WASM
                     limits.maxBytes);
         }
 
-        public ExpandRet ExpandEntries(int newEntriesCt, LimitEntries limits)
+        public ExpandRet ExpandEntries(uint newEntriesCt, LimitEntries limits)
         {
             return
                 this._ExpandSize(
@@ -89,21 +89,23 @@ namespace PxPre.WASM
                     limits.maxEntries * limits.dataTypeSize);
         }
 
-        public ExpandRet ExpandPages(int newPageSize, LimitsPaged limits)
+        public ExpandRet ExpandPages(uint newPageSize, LimitsPaged limits)
         { 
+            uint maxSize = (uint)System.Math.Min( uint.MaxValue, (long)limits.maxPages * PageSize);
+
             return 
                 this._ExpandSize(
                     newPageSize * PageSize, 
                     limits.minPages * PageSize, 
-                    limits.maxPages * PageSize);
+                    maxSize);
         }
 
-        private ExpandRet _ExpandSize(int newByteSize, int minBytes, int maxBytes)
+        private ExpandRet _ExpandSize(uint newByteSize, uint minBytes, uint maxBytes)
         {
             if (newByteSize > maxBytes)
                 return ExpandRet.Err_TooLarge;
 
-            if (newByteSize < 0 || (this._data != null && newByteSize < _data.Length))
+            if (this._data != null && newByteSize < _data.Length)
                 return ExpandRet.Err_TooSmall;
 
             if (newByteSize == 0 && (this._data == null || this._data.Length == 0))
@@ -112,7 +114,7 @@ namespace PxPre.WASM
             return this._ExpandInternal(newByteSize);
         }
 
-        private ExpandRet _ExpandInternal(int newByteSize)
+        private ExpandRet _ExpandInternal(uint newByteSize)
         {
             ExpandRet ret = this.__ExpandInternal(newByteSize);
 
@@ -127,7 +129,7 @@ namespace PxPre.WASM
             return ret;
         }
 
-        private ExpandRet __ExpandInternal(int newByteSize)
+        private ExpandRet __ExpandInternal(uint newByteSize)
         { 
             if(this._data == null)
             { 
@@ -155,7 +157,7 @@ namespace PxPre.WASM
             return ExpandRet.Successful;
         }
 
-        public static int GetTypeIDSize(Bin.TypeID type)
+        public static uint GetTypeIDSize(Bin.TypeID type)
         { 
             switch(type)
             { 

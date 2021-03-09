@@ -954,7 +954,7 @@ namespace PxPre.WASM
 
                         case Instruction.MemoryGrow:
                             { 
-                                int newPages = *(int*)&pstk[this.stackPos];
+                                uint newPages = *(uint*)&pstk[this.stackPos];
 
                                 // The stackpop is popped, but another 32 bit values is put on the 
                                 // stack. No stack position modification.
@@ -965,15 +965,13 @@ namespace PxPre.WASM
                                 }
                                 else
                                 {
-                                    // The signed/unsigned mixing may need some review. It's pretty washy.
-
                                     uint oldPageSz = curMemStore.CalculatePageCt();
                                     if(newPages == 0)
-                                        *(int*)&pstk[this.stackPos] = (int)oldPageSz;
+                                        *(uint*)&pstk[this.stackPos] = oldPageSz;
                                     else
                                     { 
                                         DataStore.ExpandRet expRet = 
-                                            this.memories[0].ExpandPageCt((int)(oldPageSz + newPages));
+                                            this.memories[0].ExpandPageCt(oldPageSz + newPages);
 
                                         if (expRet == DataStore.ExpandRet.Successful)
                                         {

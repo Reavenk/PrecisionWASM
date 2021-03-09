@@ -36,15 +36,15 @@ namespace PxPre.WASM
         { 
             this.index = index;
 
-            int typeSize = DataStore.GetTypeIDSize(type);
+            uint typeSize = DataStore.GetTypeIDSize(type);
 
             this.type = type;
             this.elements = initialElements;
             this.limits = 
                 new LimitEntries(
                     typeSize, 
-                    (int)minEntries, 
-                    (int)maxEntries);
+                    minEntries, 
+                    maxEntries);
 
             this.defaultValue = new byte[initialElements * DataStore.GetTypeIDSize(type)];
             for(int i = 0; i < this.defaultValue.Length; ++i)
@@ -55,7 +55,7 @@ namespace PxPre.WASM
         public Table CreateDefault()
         { 
             return new Table(
-                (int)this.elements, 
+                this.elements, 
                 this.type, 
                 this.limits,
                 this.defaultValue);

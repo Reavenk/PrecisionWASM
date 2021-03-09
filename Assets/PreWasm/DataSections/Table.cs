@@ -33,17 +33,18 @@ namespace PxPre.WASM
             get => this.store.data != null ? this.store.data.Length : 0;
         }
 
-        public int MaxByteSize
+        public uint MaxByteSize
         {
+            // TODO: Check if the limits are based off element count
             get => this.limits.maxEntries;
         }
 
-        public Table(int initEntriesCt, Bin.TypeID type, LimitEntries limits, byte [] defaultVal)
+        public Table(uint initEntriesCt, Bin.TypeID type, LimitEntries limits, byte [] defaultVal)
         {
             this.type = type;
             this.limits = limits;
 
-            int typeSz = DataStore.GetTypeIDSize(type);
+            uint typeSz = DataStore.GetTypeIDSize(type);
             if(limits.dataTypeSize != typeSz)
                 throw new System.Exception(); // TODO: Error msg
 
@@ -51,16 +52,16 @@ namespace PxPre.WASM
 
             if(initEntriesCt > 0 && defaultVal != null)
             { 
-                int dataSize = DataStore.GetTypeIDSize(type);
-                int defaultAligned = (defaultVal.Length / dataSize) * dataSize;
-                int numDefCpy = System.Math.Min(defaultAligned, this.store.data.Length);
+                uint dataSize = DataStore.GetTypeIDSize(type);
+                uint defaultAligned = (uint)(defaultVal.Length / dataSize) * dataSize;
+                uint numDefCpy = System.Math.Min(defaultAligned, (uint)this.store.data.Length);
 
-                for(int i = 0; i < numDefCpy; ++i)
+                for(uint i = 0; i < numDefCpy; ++i)
                     this.store.data[i] = defaultVal[i];
             }
         }
 
-        public DataStore.ExpandRet ExpandEntriesCt(int newEntriesCt)
+        public DataStore.ExpandRet ExpandEntriesCt(uint newEntriesCt)
         { 
             return this.store.ExpandEntries(newEntriesCt, this.limits);
         }

@@ -36,12 +36,18 @@ namespace PxPre.WASM
             get => this.store.data != null ? this.store.data.Length : 0;
         }
 
-        public int MaxByteSize
+        public uint MaxByteSize
         {
-            get => this.limits.maxPages * DataStore.PageSize;
+            get
+            { 
+                return 
+                    (uint)System.Math.Min(
+                        uint.MaxValue,
+                        (long)this.limits.maxPages * DataStore.PageSize);
+            }
         }
 
-        public Memory(int initPageCt, LimitsPaged limits)
+        public Memory(uint initPageCt, LimitsPaged limits)
         {
             this.limits = limits;
             this.store = new DataStore(initPageCt, limits);
@@ -52,7 +58,7 @@ namespace PxPre.WASM
             return (uint)(this.CurByteSize / DataStore.PageSize);
         }
 
-        public DataStore.ExpandRet ExpandPageCt(int newPageSize)
+        public DataStore.ExpandRet ExpandPageCt(uint newPageSize)
         {
             return this.store.ExpandPages(newPageSize, this.limits);
         }
