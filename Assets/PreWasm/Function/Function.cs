@@ -177,19 +177,23 @@ namespace PxPre.WASM
             rb.AddRange(System.BitConverter.GetBytes(i));
         }
 
-        // Given an encoding, convert it to be usable. The bytecode is converted to
-        // a modified version of the program with a few changes:
-        // - Polymorphic instructions have their types deduced, and will have
-        // their instruction converted to specifialized version based on the
-        // type's bitwidth.
-        // - Things that use a store will check if the cached pointer needs to
-        // be updated first. If they do, extra niche instructions will be injected
-        // before the operator to set things up properly.
-        // - Jump locations are deduced.
-        // - Operators that have offets are broken off into two version, ones that
-        // have a zero-offset, and ones that have a non-zero offset. This is so
-        // zero-offset instructions shed a little bit of overhead.
-        unsafe public void ExpandExpressionToBeUsable(Module session, int index)
+        /// <summary>
+        /// Given an encoding, convert it to be usable. The bytecode is converted to
+        /// a modified version of the program with a few changes:
+        /// - Polymorphic instructions have their types deduced, and will have
+        /// their instruction converted to specifialized version based on the
+        /// type's bitwidth.
+        /// - Things that use a store will check if the cached pointer needs to
+        /// be updated first. If they do, extra niche instructions will be injected
+        /// before the operator to set things up properly.
+        /// - Jump locations are deduced.
+        /// - Operators that have offets are broken off into two version, ones that
+        /// have a zero-offset, and ones that have a non-zero offset. This is so
+        /// zero-offset instructions shed a little bit of overhead.
+        /// </summary>
+        /// <param name="session">The module the function belongs to.</param>
+        /// <param name="index">The function index.</param>
+        unsafe public void ExpandExpressionToBeUsable(Module session)
         { 
             List<byte> expanded = new List<byte>();
 

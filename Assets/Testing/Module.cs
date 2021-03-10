@@ -439,7 +439,7 @@ namespace PxPre.WASM
                     }
 
                     for (uint i = 0; i < numFunctions; ++i)
-                        ret.functions[(int)i].ExpandExpressionToBeUsable(ret, (int)i);
+                        ret.functions[(int)i].ExpandExpressionToBeUsable(ret);
                 }
                 else if(sectionCode == Bin.Section.DataSec)
                 {
