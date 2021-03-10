@@ -35,9 +35,10 @@ namespace PxPre.WASM
         /// Implement LEB128 decoding for unsigned 32bit unsigned integers.
         /// https://en.wikipedia.org/wiki/LEB128
         /// </summary>
-        /// <param name="pb"></param>
-        /// <param name="idx"></param>
-        /// <returns></returns>
+        /// <param name="pb">The source of bytes to parse.</param>
+        /// <param name="idx">The byte iterator.</param>
+        /// <returns>The unsigned int, starting at pb[idx] that was LEB128 decoded
+        /// for 32 bit unsigned integers.</returns>
         unsafe static public uint LoadUnsignedLEB32(byte* pb, ref uint idx)
         {
             uint ret = 0;
@@ -67,9 +68,10 @@ namespace PxPre.WASM
         /// Implement LEB128 decoding for unsigned 32bit signed integers.
         /// https://en.wikipedia.org/wiki/LEB128
         /// </summary>
-        /// <param name="pb"></param>
-        /// <param name="idx"></param>
-        /// <returns></returns>
+        /// <param name="pb">The source of bytes to parse.</param>
+        /// <param name="idx">The byte iterator.</param>
+        /// <returns>The unsigned int, starting at pb[idx] that was LEB128 decoded
+        /// for 32 bit signed integers.</returns>
         unsafe static public int LoadSignedLEB32(byte* pb, ref uint idx)
         {
             // https://en.wikipedia.org/wiki/LEB128

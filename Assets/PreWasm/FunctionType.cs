@@ -26,15 +26,38 @@ namespace PxPre.WASM
 {
     public class FunctionType
     {
-        // TODO: Comments
+
+        /// <summary>
+        /// A record of data organized for function locals (i.e., parameters
+        /// and local variables).
+        /// </summary>
         public struct DataOrgInfo
         {
+            /// <summary>
+            /// Currently unused. Intended to be the symbolic name in the WAT.
+            /// </summary>
             public string refName;
+
+            /// <summary>
+            /// The variable type.
+            /// </summary>
             public Bin.TypeID type;
+
+            /// <summary>
+            /// Cached record of if type is a float type.
+            /// </summary>
             public bool isFloat;
+
+            /// <summary>
+            /// Cached record of the byte count of type.
+            /// </summary>
             public uint size;
-            public uint offset;
-            public uint invOffset;
+
+            /// <summary>
+            /// The offset in bytes from the start. This is needed for figuring out
+            /// alignment, but is actually the opposite of what we need.
+            /// </summary>
+            public uint alignmentCtr;
         }
 
         /// <summary>
@@ -52,9 +75,27 @@ namespace PxPre.WASM
         /// A listing of the types for the function's return values.
         /// </summary>
         public List<DataOrgInfo> resultTypes = new List<DataOrgInfo>();
-        
 
+        /// <summary>
+        /// The byte alignment for return values.
+        /// </summary>
+        private List<uint> resultByteOffsets = new List<uint>();
+
+        /// <summary>
+        /// The byte alignment for parameters. Note that this should not be 
+        /// confused with local variable alignment, which includes variables
+        /// on the function stack.
+        /// </summary>
+        private List<uint> paramByteOffsets = new List<uint>();
+        
+        /// <summary>
+        /// The number of bytes needed for the parameter variables.
+        /// </summary>
         public uint totalParamSize = 0;
+
+        /// <summary>
+        /// The number of bytes needed for the return value.
+        /// </summary>
         public uint totalResultSize = 0;
 
         public void InitializeOrganization()
@@ -63,7 +104,6 @@ namespace PxPre.WASM
             this.totalResultSize = 0;
 
             // Pass 1. Get inverted offsets and get the total stack size
-
             for(int i = 0; i < this.paramTypes.Count; ++i)
             { 
                 DataOrgInfo doi = this.paramTypes[i];
@@ -77,11 +117,18 @@ namespace PxPre.WASM
                 FillInOrg(ref doi, ref this.totalResultSize);
                 this.resultTypes[i] = doi;
             }
+
+            foreach(DataOrgInfo doi in this.paramTypes)
+                this.paramByteOffsets.Add(this.totalParamSize - doi.alignmentCtr - doi.size);
+
+            foreach(DataOrgInfo doi in this.resultTypes)
+                this.resultByteOffsets.Add(this.totalResultSize - doi.alignmentCtr - doi.size);
+
         }
 
         public static void FillInOrg(ref DataOrgInfo doi, ref uint totalSize)
         {
-            doi.offset = totalSize;
+            doi.alignmentCtr = totalSize;
 
             switch (doi.type)
             {
@@ -109,5 +156,14 @@ namespace PxPre.WASM
             totalSize += doi.size;
         }
 
+        public uint GetResultStackOffset(int resultIdx)
+        { 
+            return this.resultByteOffsets[resultIdx];
+        }
+
+        public uint GetParamStackOffset(int paramIdx)
+        {
+            return this.paramByteOffsets[paramIdx];
+        }
     }
 }

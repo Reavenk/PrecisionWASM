@@ -37,7 +37,6 @@ namespace PxPre.WASM
 
         public uint MaxByteSize
         {
-            // TODO: Check if the limits are based off element count
             get => this.limits.maxEntries;
         }
 
@@ -48,7 +47,7 @@ namespace PxPre.WASM
 
             uint typeSz = DataStore.GetTypeIDSize(type);
             if(limits.dataTypeSize != typeSz)
-                throw new System.Exception(); // TODO: Error msg
+                throw new System.Exception("Creating table data with bit width mismatch." );
 
             this.store = new DataStore(initEntriesCt, limits, defs, globSrc);
         }

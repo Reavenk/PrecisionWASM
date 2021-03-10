@@ -41,14 +41,15 @@ namespace PxPre.WASM
         public int GetInt32(int paramIdx, bool throwIfNotStrongType = false)
         { 
             if(paramIdx >= functionType.paramTypes.Count )
-                throw new System.Exception(); // TODO: Provide error
+                throw new System.Exception("Attempting to access int parameter out of bounds.");
 
             FunctionType.DataOrgInfo doi = functionType.paramTypes[paramIdx];
 
             if(throwIfNotStrongType == true && doi.type != Bin.TypeID.Int32)
-                throw new System.Exception(); // TODO: provided error
+                throw new System.Exception("Attempting to access int parameter of different type.");
 
-            int memIdx = stackEnterIdx + (int)doi.offset;
+            // TODO: This needs to access the elements in reverse.
+            int memIdx = stackEnterIdx + (int)doi.alignmentCtr;
 
             switch (doi.type)
             { 
@@ -73,14 +74,14 @@ namespace PxPre.WASM
         public float GetFloat32(int paramIdx, bool throwIfNotStrongType = false)
         {
             if (paramIdx >= functionType.paramTypes.Count)
-                throw new System.Exception(); // TODO: Provide error
+                throw new System.Exception("Attempting to access int parameter out of bounds.");
 
             FunctionType.DataOrgInfo doi = functionType.paramTypes[paramIdx];
 
             if (throwIfNotStrongType == true && doi.type != Bin.TypeID.Float32)
-                throw new System.Exception(); // TODO: provided error
+                throw new System.Exception("Attempting to access float parameter of different type.");
 
-            int memIdx = stackEnterIdx + (int)doi.offset;
+            int memIdx = stackEnterIdx + (int)doi.alignmentCtr;
 
             switch (doi.type)
             {
@@ -104,14 +105,14 @@ namespace PxPre.WASM
         public long GetInt64(int paramIdx, bool throwIfNotStrongType = false)
         {
             if (paramIdx >= functionType.paramTypes.Count)
-                throw new System.Exception(); // TODO: Provide error
+                throw new System.Exception("Attempting to access int parameter out of bounds.");
 
             FunctionType.DataOrgInfo doi = functionType.paramTypes[paramIdx];
 
             if (throwIfNotStrongType == true && doi.type != Bin.TypeID.Int64)
-                throw new System.Exception(); // TODO: provided error
+                throw new System.Exception("Attempting to access int64 parameter of different type.");
 
-            int memIdx = stackEnterIdx + (int)doi.offset;
+            int memIdx = stackEnterIdx + (int)doi.alignmentCtr;
 
             switch (doi.type)
             {
@@ -135,14 +136,14 @@ namespace PxPre.WASM
         public double GetDouble64(int paramIdx, bool throwIfNotStrongType = false)
         {
             if (paramIdx >= functionType.paramTypes.Count)
-                throw new System.Exception(); // TODO: Provide error
+                throw new System.Exception("Attempting to access float64 parameter of different type.");
 
             FunctionType.DataOrgInfo doi = functionType.paramTypes[paramIdx];
 
             if (throwIfNotStrongType == true && doi.type != Bin.TypeID.Float64)
-                throw new System.Exception(); // TODO: provided error
+                throw new System.Exception("Attempting to access float64 parameter of different type.");
 
-            int memIdx = stackEnterIdx + (int)doi.offset;
+            int memIdx = stackEnterIdx + (int)doi.alignmentCtr;
 
             switch (doi.type)
             {

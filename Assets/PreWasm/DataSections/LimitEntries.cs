@@ -22,12 +22,32 @@
 
 namespace PxPre.WASM
 {
+    /// <summary>
+    /// The limits structure for tables.
+    /// </summary>
     public struct LimitEntries
     {
+        /// <summary>
+        /// The size, in bytes, for the data type of the table.
+        /// </summary>
         public uint dataTypeSize;
+
+        /// <summary>
+        /// The minimum number of table entries.
+        /// </summary>
         public uint minEntries;
+
+        /// <summary>
+        /// The maximum number of table entries.
+        /// </summary>
         public uint maxEntries;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="dataTypeSize">The size, in bytes, for the data type of the table.</param>
+        /// <param name="minEntries">The minimum number of table entries.</param>
+        /// <param name="maxEntries">The maximum number of table entries.</param>
         public LimitEntries(uint dataTypeSize, uint minEntries, uint maxEntries)
         { 
             this.dataTypeSize   = dataTypeSize;

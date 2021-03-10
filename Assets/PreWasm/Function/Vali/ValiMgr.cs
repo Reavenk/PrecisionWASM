@@ -115,7 +115,7 @@ namespace PxPre.WASM.Vali
         unsafe public CtrlFrame PopCtrl(List<byte> expanded)
         {
             if (this.ctrls.Count == 0)
-            { } // TODO: Error
+                throw new System.Exception("Error popping control frame, control frame stack mismatch.");
 
             CtrlFrame frame = this.ctrls.Peek();
             this.PopOpds(frame.endTypes);
@@ -125,8 +125,11 @@ namespace PxPre.WASM.Vali
                 while(this.opds.Count > frame.height)
                     this.PopOpd();
             }
-            if (this.opds.Count != frame.height)
-            { } // TODO: Error
+
+            // We don't do return value checking here - just stack matching for
+            // all other logic nesting.
+            if (this.ctrls.Count != 1 && this.opds.Count != frame.height)
+                throw new System.Exception("Error popping control frame, variable stack mismatch.");
 
             this.ctrls.Pop();
 
@@ -138,12 +141,6 @@ namespace PxPre.WASM.Vali
             }
             else
                 frame.FlushEndWrites(expanded);
-
-            if(this.ctrls.Count > 0)
-            {
-                CtrlFrame entered = this.ctrls.Peek();
-                entered.FlushEnterWrites(expanded);
-            }
 
             return frame;
         }
@@ -246,7 +243,7 @@ namespace PxPre.WASM.Vali
 
                 return true;
             }
-            else
+            else if(ie.type == IndexEntry.FnIdxType.Import)
             {
                 dsIdx.loc = DataStoreIdx.Location.Import;
                 dsIdx.index = ie.index;
@@ -257,7 +254,7 @@ namespace PxPre.WASM.Vali
                 return true;
             }
 
-            throw new System.Exception(); // TODO: Error message
+            throw new System.Exception("Encountered memory from unknown source.");
         }
 
         public static bool EnsureDefaulTable(IReadOnlyList<IndexEntry> tableIndices, List<byte> expanded, ref DataStoreIdx dsIdx)
@@ -279,7 +276,7 @@ namespace PxPre.WASM.Vali
 
                 return true;
             }
-            else
+            else if(ie.type == IndexEntry.FnIdxType.Import)
             {
                 dsIdx.loc = DataStoreIdx.Location.Import;
                 dsIdx.index = ie.index;
@@ -290,7 +287,7 @@ namespace PxPre.WASM.Vali
                 return true;
             }
 
-            throw new System.Exception(); // TODO: Error message
+            throw new System.Exception("Encountered table from unknown source.");
         }
 
         public static int GetSize(StackOpd so)

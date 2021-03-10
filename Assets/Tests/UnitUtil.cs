@@ -100,12 +100,12 @@ namespace Tests
         {
             if (hasStart == false)
             {
-                if (mod.startFnIndex != 0xFFFFFFFF)
+                if (mod.startFnIndex != PxPre.WASM.Module.UnloadedStartIndex)
                     throw new System.Exception("Module expected to not have a starting function, but does.");
             }
             else
             {
-                if (mod.startFnIndex == 0xFFFFFFFF)
+                if (mod.startFnIndex == PxPre.WASM.Module.UnloadedStartIndex)
                     throw new System.Exception("Module expected to have a starting function, but doesn't.");
             }
         }

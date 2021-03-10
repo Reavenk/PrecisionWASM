@@ -135,9 +135,6 @@ namespace PxPre.WASM
                                 fty.resultTypes.Add(resultInfo);
                             }
 
-                            //uint fixup = LoadUnsignedLEB32(pb, ref idx);
-                            //idx += fixup;
-
                             fty.InitializeOrganization();
                         }
                         else
@@ -221,24 +218,22 @@ namespace PxPre.WASM
 
                     for(uint i = 0; i < numTables; ++i)
                     { 
+                        const int FLAG_HASMAX = 0x01;
+                        const int FLAG_OTHERS = ~(FLAG_HASMAX);
+
                         Bin.TypeID ty = (Bin.TypeID)BinParse.LoadUnsignedLEB32(pb, ref idx);
 
                         uint flags = BinParse.LoadUnsignedLEB32(pb, ref idx);
                         uint initial = BinParse.LoadUnsignedLEB32(pb, ref idx); 
                         uint ? max = null;
                         
-                        if((flags & 0x01) != 0)
+                        if((flags & FLAG_HASMAX) != 0)
                             max = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                        ret.storeDecl.AddTableLoc(ty, initial, max);
+                        if((flags & FLAG_OTHERS) != 0)
+                            throw new System.Exception("Table section contains unsupported flags.");
 
-                        // TODO: Transfer table values
-                        // if (ty == Bin.TypeID.FuncRef)
-                        // {
-                        // }
-                        // else
-                        // { 
-                        // }
+                        ret.storeDecl.AddTableLoc(ty, initial, max);
                     }
                 }
                 else if(sectionCode == Bin.Section.MemorySec)
@@ -251,14 +246,18 @@ namespace PxPre.WASM
                     
                     for (uint i = 0; i < numMems; ++i)
                     {
+                        const int FLAG_HASMAX = 0x01;
+                        const int FLAG_OTHERS = ~(FLAG_HASMAX);
 
                         uint memFlags           = BinParse.LoadUnsignedLEB32(pb, ref idx);
                         uint memInitialPageCt   = BinParse.LoadUnsignedLEB32(pb, ref idx);
                         uint ? memMaxPageCt     = null;
 
-                        // TODO: More rigor for max size
-                        if((memFlags & 0x01) != 0)
+                        if((memFlags & FLAG_HASMAX) != 0)
                             memMaxPageCt = BinParse.LoadUnsignedLEB32(pb, ref idx);
+
+                        if((memFlags & FLAG_OTHERS) != 0)
+                            throw new System.Exception("Memory section contains unsupported flags.");
 
                         ret.storeDecl.AddMemoryLoc( memInitialPageCt,  memInitialPageCt, memMaxPageCt);
                     }
@@ -268,8 +267,15 @@ namespace PxPre.WASM
                     uint numGlobals = BinParse.LoadUnsignedLEB32(pb, ref idx);
                     for(uint i = 0; i < numGlobals; ++i)
                     {
+                        const int FLAG_MUTABLE = 0x01;
+                        const int FLAG_OTHERS = ~(FLAG_MUTABLE);
+
                         uint globType = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                        bool mutable = (BinParse.LoadUnsignedLEB32(pb, ref idx) & 0x01) != 0;
+                        uint globFlags = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                        bool mutable = (globFlags & FLAG_MUTABLE) != 0;
+
+                        if((globFlags & FLAG_OTHERS) != 0)
+                            throw new System.Exception("Global section contains unsupported flags.");
 
                         // For now we're just going to assume they do a type.const, then the value,
                         // and then an end.
@@ -334,14 +340,15 @@ namespace PxPre.WASM
                 else if(sectionCode == Bin.Section.StartSec)
                 {
                     ret.startFnIndex = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                    ret.ValidateStartFunction(true);
                 }
                 else if(sectionCode == Bin.Section.ElementSec) 
                 {
                     uint numSegments = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                    if(ret.storeDecl.tables.Count < 0)
-                    { 
-                    }
+                    if(ret.storeDecl.tables.Count < 1)
+                        throw new System.Exception("Element(s) specified when no tables are defined.");
+                    
                     DefTable defTable = ret.storeDecl.tables[0];
 
                     for(uint i = 0; i < numSegments; ++i)
@@ -433,9 +440,6 @@ namespace PxPre.WASM
                             (int)size);
 
                         idx = end;
-
-                        //uint fixup = LoadUnsignedLEB32(pb, ref idx);
-                        //idx += fixup;
                     }
 
                     for (uint i = 0; i < numFunctions; ++i)
@@ -445,16 +449,13 @@ namespace PxPre.WASM
                 {
                     uint numData = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                    // This check might not be correct - especially if other things are putting data
-                    // in this section instead of just the memory.
-                    if(numData != ret.storeDecl.memories.Count)
-                        throw new System.Exception();   // TODO: Error msg
+                    if(ret.storeDecl.memories.Count < 1)
+                        throw new System.Exception("Data(s) specified when no mems are defined.");
 
                     for(uint i = 0; i < numData; ++i)
                     {
                         uint segHeaderFlags = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                        //DefMem dmem = ret.storeDecl.memories[(int)i];
                         DefMem dmem = ret.storeDecl.memories[0];
 
                         DefSegment ds = new DefSegment(pb, ref idx, false);
@@ -483,13 +484,8 @@ namespace PxPre.WASM
             }
             ++idx;
 
-            // TODO: Decide when to run the start function (if specified)
-            // TODO: Check if start function is nullary (no parameters, no return values)
-
             return ret;
         }
-
-        
 
         unsafe static string LoadString(byte * pb, uint len, ref uint idx)
         { 
@@ -551,6 +547,9 @@ namespace PxPre.WASM
 
         public bool Validate(bool throwOnError = false)
         { 
+            if(this.ValidateStartFunction(throwOnError) == false)
+                return false;
+
             HashSet<string> encounteredNames = new HashSet<string>();
             foreach(Export e in this.exports)
             { 
@@ -561,6 +560,24 @@ namespace PxPre.WASM
 
                     return false;
                 }
+            }
+            return true;
+        }
+
+        public bool ValidateStartFunction(bool throwOnError = false)
+        {
+            if(this.startFnIndex == UnloadedStartIndex)
+                return true;
+
+            IndexEntry fie = this.storeDecl.IndexingFunction[(int)this.startFnIndex];
+            Function startFn = this.functions[fie.index];
+
+            if (startFn.fnType.resultTypes.Count > 0 || startFn.fnType.paramTypes.Count > 0)
+            {
+                if(throwOnError == true)
+                    throw new System.Exception("Start function is invalid function type.");
+
+                return false;
             }
             return true;
         }

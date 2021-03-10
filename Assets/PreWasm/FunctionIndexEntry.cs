@@ -25,20 +25,58 @@ using System.Collections.Generic;
 
 namespace PxPre.WASM
 {
-    // TODO: Comment
+    /// <summary>
+    /// In some instances, local and imported objects will share the same index space,
+    /// even though they're stored in seperate containers. An IndexEntry will take
+    /// a shared index space and point to their correct container index.
+    /// </summary>
     public class IndexEntry
     {
+        /// <summary>
+        /// The source location where the actual object is stored.
+        /// </summary>
         public enum FnIdxType
         { 
+            /// <summary>
+            /// The object exists in a local container.
+            /// </summary>
             Local,
+
+            /// <summary>
+            /// The object exists in an import container.
+            /// </summary>
             Import
         }
 
+        /// <summary>
+        /// The object source location.
+        /// </summary>
         public FnIdxType type;
+
+        /// <summary>
+        /// The index in the object's source location.
+        /// </summary>
         public int index;
+
+        /// <summary>
+        /// If the object is imported, what object does the module
+        /// come from?
+        /// </summary>
         public string module;
+
+        /// <summary>
+        /// If the object is imported, what is the field name in the
+        /// module that it comes from?
+        /// </summary>
         public string fieldname;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="type">The object source location.</param>
+        /// <param name="index">The index in the source location.</param>
+        /// <param name="module">If an imported reference, the module the object came from.</param>
+        /// <param name="fieldname">If an imported reference, the field name of the object.</param>
         protected IndexEntry(FnIdxType type, int index, string module, string fieldname)
         { 
             this.type = type;
@@ -47,12 +85,24 @@ namespace PxPre.WASM
             this.fieldname = fieldname;
         }
 
+        /// <summary>
+        /// Construction function for a local IndexEntry.
+        /// </summary>
+        /// <param name="index">The local container index.</param>
+        /// <returns>The constructed local IndexEntry.</returns>
         public static IndexEntry CreateLocal(int index)
         {
             return 
                 new IndexEntry(FnIdxType.Local, index, string.Empty, string.Empty);
         }
 
+        /// <summary>
+        /// Construction function for 
+        /// </summary>
+        /// <param name="index">The imported container index.</param>
+        /// <param name="module">The module object came from.</param>
+        /// <param name="fieldname">The field name of the object.</param>
+        /// <returns>The constructed imported IndexEntry.</returns>
         public static IndexEntry CreateImport(int index, string module, string fieldname)
         {
             return 

@@ -122,13 +122,13 @@ namespace PxPre.WASM
                 this.RunFunction( this.importData.importFn[fie.index]);
             }
             else
-                throw new System.Exception(); // TODO: Error msg
+                throw new System.Exception("Attempting to run function from unknown source.");
         }
 
         public void RunFunction(ImportFunction ifn)
         { 
             if(ifn == null)
-                throw new System.Exception(); // TODO: Error msg
+                throw new System.Exception("Attempting to run null imported function.");
 
 
             ImportFunctionUtil ifu = 
@@ -2011,9 +2011,6 @@ namespace PxPre.WASM
 
                         case Instruction.i32_wrap_i64:
                             {
-                                // TODO: Test if we can just chop off the high bytes and get the 
-                                // same results without the explicit modulus.
-
                                 ulong val = *(ulong*)(&pstk[stackPos]); 
                                 stackPos += 4; // -8 to pop off the parameter, and then +4 to add the 32 bit result.
                                 *(uint*)(&pstk[stackPos]) = (uint)val % 0xFFFFFFFF;
@@ -2517,7 +2514,10 @@ namespace PxPre.WASM
             if(this.initialized == true && allowRecall == false)
                 return false;
 
-            if(this.instancer.startFnIndex == 0xFFFFFFFF)
+            if(this.instancer.ValidateStartFunction() == false)
+                return false;
+
+            if(this.instancer.startFnIndex == Module.UnloadedStartIndex)
             { 
                 this.initialized = true;
                 return true;
@@ -2529,9 +2529,8 @@ namespace PxPre.WASM
             {
                 Function startFn = this.instancer.functions[fie.index];
 
-                // TODO: Check this earlier during compile
                 if (startFn.fnType.resultTypes.Count > 0 || startFn.fnType.paramTypes.Count > 0)
-                    throw new System.Exception("Start function is invalid function type."); // TODO: Error message
+                    throw new System.Exception("Start function is invalid function type.");
 
                 // Start function should have no parameters or return values
                 // so no outside stack preparations should be needed.
@@ -2539,19 +2538,23 @@ namespace PxPre.WASM
             }
             else if(fie.type == IndexEntry.FnIdxType.Import)
             { 
-                ImportFunction startIFn = this.importData.importFn[fie.index];
-                if(startIFn == null)
-                    throw new System.Exception("Imported start function not set.");
+                throw new System.Exception("Start function cannot be an imported function.");
 
-                // TODO: Check this earlier during compile
-                if(startIFn.functionType.resultTypes.Count > 0 || startIFn.functionType.paramTypes.Count > 0)
-                    throw new System.Exception("Start function is invalid function type.");
-
-                ImportFunctionUtil ifn = new ImportFunctionUtil(startIFn.functionType, this, this.stackPos);
-                startIFn.InvokeImpl(ifn);
+                // I'll leave this old code here in case we're feeling FANCY about 
+                // letting imported functions being run as start functions. 
+                //
+                // ImportFunction startIFn = this.importData.importFn[fie.index];
+                // if(startIFn == null)
+                //     throw new System.Exception("Imported start function not set.");
+                // 
+                // if(startIFn.functionType.resultTypes.Count > 0 || startIFn.functionType.paramTypes.Count > 0)
+                //     throw new System.Exception("Start function is invalid function type.");
+                // 
+                // ImportFunctionUtil ifn = new ImportFunctionUtil(startIFn.functionType, this, this.stackPos);
+                // startIFn.InvokeImpl(ifn);
             }
             else
-                throw new System.Exception(); // TODO: Error message
+                throw new System.Exception("Attempting to run start function from unknown source.");
 
             this.initialized = false;
 

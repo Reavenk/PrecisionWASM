@@ -60,6 +60,10 @@ namespace PxPre.WASM
         /// </summary>
         public uint totalStackSize;
 
+        /// <summary>
+        /// How many bytes are needed for the local variables on the stack. This 
+        /// excludes function parameters.
+        /// </summary>
         public uint totalLocalsSize;
 
         /// <summary>
@@ -72,6 +76,12 @@ namespace PxPre.WASM
         /// the executable processed bytecode.
         /// </summary>
         public byte [] expression;
+
+        /// <summary>
+        /// The offset from the stack base to retrieve local variables from. This includes
+        /// both parameters and local stack variables.
+        /// </summary>
+        public List<uint> localByteOffsets = new List<uint>();
 
         /// <summary>
         /// Constructor.
@@ -102,6 +112,17 @@ namespace PxPre.WASM
             }
 
             this.totalLocalsSize = totalStackSize - this.fnType.totalParamSize;
+
+            foreach(FunctionType.DataOrgInfo doi in this.fnType.paramTypes)
+                this.localByteOffsets.Add(this.totalStackSize - doi.alignmentCtr - doi.size);
+
+            foreach(FunctionType.DataOrgInfo doi in  this.localTypes)
+                this.localByteOffsets.Add(this.totalStackSize - doi.alignmentCtr - doi.size);
+        }
+
+        public uint GetLocalStackOffset(int localIndex)
+        { 
+            return this.localByteOffsets[localIndex];
         }
 
         unsafe public static void ConsumeTypes(byte * pb, ref uint idx, List<StackOpd> stk)
@@ -212,7 +233,7 @@ namespace PxPre.WASM
                 functionReturnOps.Add(ValiMgr.ConvertToStackType(doi.type));
             
             vmgr.PushCtrl(
-                Instruction.nop, // Filler instruction type. All that matter is that it's not a loop
+                Instruction.nop, // Filler instruction type. All that matters is that it's not a loop
                 new List<StackOpd>(),
                 new List<StackOpd>(),
                 memoryStore,
@@ -340,7 +361,6 @@ namespace PxPre.WASM
                         case Instruction.end:
                             CtrlFrame endf = vmgr.PopCtrl(expanded);
                             vmgr.PushOpds(endf.endTypes);
-                            //TransferInstruction(expanded, instr);
                             break;
 
                         case Instruction.br:
@@ -542,17 +562,18 @@ namespace PxPre.WASM
                             {
                                 uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
+                                uint localStkOff = this.GetLocalStackOffset((int)paramIdx);
 
                                 vmgr.PushOpd(ty.type);
                                 if(ty.size == 4)
                                 {
                                     TransferInstruction(expanded, Instruction._local_get32);
-                                    TransferInt32u(expanded, this.totalStackSize - ty.offset - 4);
+                                    TransferInt32u(expanded, localStkOff);
                                 }
                                 else if(ty.size == 8)
                                 {
                                     TransferInstruction(expanded, Instruction._local_get64);
-                                    TransferInt32u(expanded, this.totalStackSize - ty.offset - 8);
+                                    TransferInt32u(expanded, localStkOff);
                                 }
                                 else
                                     vmgr.EmitValidationError("Retrieving parameter of illegal size.");
@@ -562,17 +583,18 @@ namespace PxPre.WASM
                             {
                                 uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
+                                uint localStkOff = this.GetLocalStackOffset((int)paramIdx);
 
                                 vmgr.PopOpd(ty.type);
                                 if (ty.size == 4)
                                 {
                                     TransferInstruction(expanded, Instruction._local_set32);
-                                    TransferInt32u(expanded, this.totalStackSize - ty.offset - 4);
+                                    TransferInt32u(expanded, localStkOff);
                                 }
                                 else if (ty.size == 8)
                                 {
                                     TransferInstruction(expanded, Instruction._local_set64);
-                                    TransferInt32u(expanded, this.totalStackSize - ty.offset - 8);
+                                    TransferInt32u(expanded, localStkOff);
                                 }
                                 else
                                     vmgr.EmitValidationError("Setting parameter of illegal size.");
@@ -583,18 +605,19 @@ namespace PxPre.WASM
                             {
                                 uint paramIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 FunctionType.DataOrgInfo ty = this.GetStackDataInfo(paramIdx);
+                                uint localStkOff = this.GetLocalStackOffset((int)paramIdx);
 
                                 vmgr.PopOpd(ty.type); 
                                 vmgr.PushOpd(ty.type);
                                 if (ty.size == 4)
                                 {
                                     TransferInstruction(expanded, Instruction._local_tee32);
-                                    TransferInt32u(expanded, this.totalStackSize - ty.offset - 4);
+                                    TransferInt32u(expanded, localStkOff);
                                 }
                                 else if (ty.size == 8)
                                 {
                                     TransferInstruction(expanded, Instruction._local_tee64);
-                                    TransferInt32u(expanded, this.totalStackSize - ty.offset - 8);
+                                    TransferInt32u(expanded, localStkOff);
                                 }
                                 else
                                     vmgr.EmitValidationError("Setting parameter of illegal size.");

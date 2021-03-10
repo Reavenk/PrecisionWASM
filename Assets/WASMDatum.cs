@@ -105,20 +105,21 @@ public static class WASMDatum
             for (int i = 0; i < fnty.paramTypes.Count; ++i)
             {
                 FunctionType.DataOrgInfo doi = fnty.paramTypes[i];
+                uint paramStkOff = fnty.GetParamStackOffset(i);
 
                 if (doi.size == 4)
                 {
                     if (doi.isFloat == true)
-                        *(float*)(&pstk[ex.stackPos + fn.fnType.totalParamSize - doi.offset - 4]) = ps[i].GetFloat();
+                        *(float*)(&pstk[ex.stackPos + paramStkOff]) = ps[i].GetFloat();
                     else
-                        *(int*)(&pstk[ex.stackPos + fn.fnType.totalParamSize - doi.offset - 4]) = ps[i].GetInt();
+                        *(int*)(&pstk[ex.stackPos + paramStkOff]) = ps[i].GetInt();
                 }
                 else if (doi.size == 8)
                 {
                     if (doi.isFloat == true)
-                        *(double*)(&pstk[ex.stackPos + fn.fnType.totalParamSize - doi.offset - 8]) = ps[i].GetFloat64();
+                        *(double*)(&pstk[ex.stackPos + paramStkOff]) = ps[i].GetFloat64();
                     else
-                        *(long*)(&pstk[ex.stackPos + fn.fnType.totalParamSize - doi.offset - 8]) = ps[i].GetInt64();
+                        *(long*)(&pstk[ex.stackPos + paramStkOff]) = ps[i].GetInt64();
                 }
                 else
                     throw new System.Exception("Invoking function with unknown parameter size.");
@@ -131,21 +132,22 @@ public static class WASMDatum
             for (int i = 0; i < fnty.resultTypes.Count; ++i)
             {
                 FunctionType.DataOrgInfo doi = fnty.resultTypes[i];
+                uint resStkOff = fnty.GetResultStackOffset(i);
 
                 PxPre.Datum.Val v = null;
                 if (doi.size == 4)
                 {
                     if (doi.isFloat == true)
-                        v = new PxPre.Datum.ValFloat(*(float*)(&pstk[ex.stackPos + fnty.totalResultSize - doi.offset - 4]));
+                        v = new PxPre.Datum.ValFloat(*(float*)(&pstk[ex.stackPos + resStkOff]));
                     else
-                        v = new PxPre.Datum.ValInt(*(int*)(&pstk[ex.stackPos + fnty.totalResultSize - doi.offset - 4]));
+                        v = new PxPre.Datum.ValInt(*(int*)(&pstk[ex.stackPos + resStkOff]));
                 }
                 else if (doi.size == 8)
                 {
                     if (doi.isFloat == true)
-                        v = new PxPre.Datum.ValFloat64(*(double*)(&pstk[ex.stackPos + fnty.totalResultSize - doi.offset - 8]));
+                        v = new PxPre.Datum.ValFloat64(*(double*)(&pstk[ex.stackPos + resStkOff]));
                     else
-                        v = new PxPre.Datum.ValInt64(*(long*)(&pstk[ex.stackPos + fnty.totalResultSize - doi.offset - 8]));
+                        v = new PxPre.Datum.ValInt64(*(long*)(&pstk[ex.stackPos + resStkOff]));
                 }
                 else
                     throw new System.Exception("Invoking function with unknown return size.");
