@@ -452,9 +452,6 @@ namespace PxPre.WASM
 
                     for(uint i = 0; i < numData; ++i)
                     {
-                        
-
-                        // TODO: Figure out header
                         uint segHeaderFlags = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
                         //DefMem dmem = ret.storeDecl.memories[(int)i];
@@ -481,6 +478,7 @@ namespace PxPre.WASM
                 }
                 else
                 { 
+                    throw new System.Exception("Encountered unknown Module section.");
                 }
             }
             ++idx;
