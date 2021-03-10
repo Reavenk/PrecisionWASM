@@ -76,7 +76,8 @@ namespace PxPre.WASM
                 if (ie.type == IndexEntry.FnIdxType.Import)
                     continue;
 
-                this.memories[ie.index] = module.storeDecl.memories[i].CreateDefault();
+                this.memories[ie.index] = 
+                    module.storeDecl.memories[i].CreateDefault(this);
             }
 
             for(int i = 0; i < module.storeDecl.localGlobalCt; ++i)
@@ -100,7 +101,8 @@ namespace PxPre.WASM
                 if(ie.type == IndexEntry.FnIdxType.Import)
                     continue;
 
-                this.tables[ie.index] = module.storeDecl.tables[i].CreateDefault();
+                this.tables[ie.index] = 
+                    module.storeDecl.tables[i].CreateDefault(this);
             }
 
             if(start == true)

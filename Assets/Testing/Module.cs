@@ -25,6 +25,8 @@ using System.Collections.Generic;
 
 namespace PxPre.WASM
 {
+    // TODO: Look into the name. This may not be the best classname to describe its
+    // purpose and to differentiate itself from imported modules.
     public class Module
     {
         // TODO: Remove elsewhere - possibly into Bin?
@@ -335,33 +337,40 @@ namespace PxPre.WASM
                 }
                 else if(sectionCode == Bin.Section.ElementSec) 
                 {
-                    uint numElements = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                    uint numSegments = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                    for(uint i = 0; i < numElements; ++i)
+                    if(ret.storeDecl.tables.Count < 0)
+                    { 
+                    }
+                    DefTable defTable = ret.storeDecl.tables[0];
+
+                    for(uint i = 0; i < numSegments; ++i)
                     {
                         // Table index
                         uint flags = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                        uint offset = GetConstantUIntExpression(pb, ref idx); // no idea what this is for
-                        uint numElems = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                        // Is the index that offset value? Or always hardcoded to zero for now?
-                        byte [] rbTableDefs = ret.storeDecl.tables[0].defaultValue;
+                        DefSegment ds = new DefSegment(pb, ref idx, false);
+
                         Bin.TypeID tabTy = ret.storeDecl.tables[0].type;
-                        uint size = DataStore.GetTypeIDSize(tabTy);
-                        fixed(byte * ptabdefs = rbTableDefs)
+                        uint tySize = DataStore.GetTypeIDSize(tabTy);
+
+                        uint elemCt = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                        ds.data = new byte[elemCt * tySize];
+                        
+                        fixed(byte * ptabdefs = ds.data)
                         {
                             switch (tabTy)
                             { 
                                 case Bin.TypeID.FuncRef:
                                 case Bin.TypeID.Int32:
-                                    for (int j = 0; j < numElems; ++j)
+                                    for (int j = 0; j < elemCt; ++j)
                                     {
                                         ((int*)ptabdefs)[j] = BinParse.LoadSignedLEB32(pb, ref idx);
                                     }
                                     break;
 
                                 case Bin.TypeID.Float32:
-                                    for (int j = 0; j < numElems; ++j)
+                                    for (int j = 0; j < elemCt; ++j)
                                     {
                                         ((float*)ptabdefs)[j] = *(float*)pb;
                                         idx += 4;
@@ -369,14 +378,14 @@ namespace PxPre.WASM
                                     break;
 
                                 case Bin.TypeID.Int64:
-                                    for (int j = 0; j < numElems; ++j)
+                                    for (int j = 0; j < elemCt; ++j)
                                     {
                                         ((long*)ptabdefs)[j] = BinParse.LoadSignedLEB64(pb, ref idx);
                                     }
                                     break;
 
                                 case Bin.TypeID.Float64:
-                                    for (int j = 0; j < numElems; ++j)
+                                    for (int j = 0; j < elemCt; ++j)
                                     {
                                         ((double*)ptabdefs)[j] = *(double*)pb;
                                         idx += 8;
@@ -442,26 +451,30 @@ namespace PxPre.WASM
                         throw new System.Exception();   // TODO: Error msg
 
                     for(uint i = 0; i < numData; ++i)
-                    { 
+                    {
+                        
+
                         // TODO: Figure out header
                         uint segHeaderFlags = BinParse.LoadUnsignedLEB32(pb, ref idx);
-                        uint offset = GetConstantUIntExpression(pb, ref idx);
+
+                        //DefMem dmem = ret.storeDecl.memories[(int)i];
+                        DefMem dmem = ret.storeDecl.memories[0];
+
+                        DefSegment ds = new DefSegment(pb, ref idx, false);
                         uint dataSz = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                        DefMem dmem = ret.storeDecl.memories[(int)i];
+                        ds.data = new byte[dataSz];
 
-                        byte [] defData = new byte[dataSz];
-
-                        // Copy into runtime memory block.
-                        //
                         // We're going to do the copy manually, but if there's a C#
                         // low-level copy function that also does this, that would be 
                         // prefered.
-                        for(uint j = 0; j < dataSz; ++j)
-                            defData[j] = pb[idx + j];
+                        for (uint j = 0; j < dataSz; ++j)
+                            ds.data[j] = pb[idx + j];
 
-                        dmem.AddDefault(offset, defData);
-                        ret.storeDecl.memories[(int)i] = dmem;
+                        dmem.AddDefault(ds);
+
+                        //ret.storeDecl.memories[(int)i] = dmem;
+                        ret.storeDecl.memories[0] = dmem;
 
                         idx += dataSz;
                     }
@@ -536,22 +549,6 @@ namespace PxPre.WASM
                 throw new System.Exception($"Unexpected byte. Expecting {match} but encountered {pb[idx]}.");
 
             ++idx;
-        }
-
-        unsafe private static uint GetConstantUIntExpression(byte * pb, ref uint idx)
-        { 
-            if(pb[idx] != (byte)Instruction.i32_const)
-                throw new System.Exception("Only constant int instructions are supported for format expressions.");
-
-            ++idx;
-
-            uint ret = BinParse.LoadUnsignedLEB32(pb, ref idx);
-
-            if(pb[idx] != (byte)Instruction.end)
-                throw new System.Exception("Constant int expression did not end with the expected end instruction.");
-
-            ++idx;
-            return ret;
         }
 
         //public static Session LoadString(string str)

@@ -138,8 +138,9 @@ namespace PxPre.WASM
 
         public void AddMemoryLoc(uint initialPageCt, uint minPageCt, uint ? maxPageCt /*, uint flags*/)
         {
-            uint maxpg = maxPageCt ?? 64 * 1024;
+            this._CheckMemoriesEmptyBeforeAdding();
 
+            uint maxpg = maxPageCt ?? 64 * 1024;
             this.indexingMemory.Add(IndexEntry.CreateLocal(this.localMemsCt));
 
             DefMem mem = new DefMem(this.memories.Count, initialPageCt, minPageCt, maxpg);
@@ -150,6 +151,8 @@ namespace PxPre.WASM
 
         public void AddMemoryImp(string module, string fieldname, uint initialPageCt, uint minPageCt, uint ? maxPageCt)
         {
+            this._CheckMemoriesEmptyBeforeAdding();
+
             uint maxpg = maxPageCt ?? 64 * 1024;
 
             this.indexingMemory.Add(IndexEntry.CreateImport(this.importMemsCt, module, fieldname));
@@ -162,6 +165,11 @@ namespace PxPre.WASM
             ++this.importMemsCt;
         }
 
+        private void _CheckMemoriesEmptyBeforeAdding()
+        {
+            if (this.memories.Count != 0)
+                throw new System.Exception("Attempting to define multiple memories. WASM spec specifies only 1 memory is allowed.");
+        }
 
         ////////////////////////////////////////////////////////////////////////////////
         //
@@ -216,6 +224,8 @@ namespace PxPre.WASM
 
         public void AddTableLoc(Bin.TypeID type, uint initialElements, uint ? maxElements)
         { 
+            this._CheckTablesEmptyBeforeAdding();
+
             uint maxele = maxElements ?? uint.MaxValue;
 
             this.indexingTable.Add(IndexEntry.CreateLocal(this.localTablesCt));
@@ -228,16 +238,24 @@ namespace PxPre.WASM
 
         public void AddTableImp(string module, string fieldname, Bin.TypeID type, uint initialElements, uint ? maxElements)
         {
+            this._CheckTablesEmptyBeforeAdding();
+
             uint maxele = maxElements ?? uint.MaxValue;
 
             this.indexingTable.Add(IndexEntry.CreateImport(this.importTablesCt, module, fieldname));
-        
+
             DefTable table = new DefTable(this.tables.Count, type, initialElements, 0, maxele);
             this.tables.Add(table);
 
             this.GetOrCreateRecord(module).tables.Add(fieldname, table);
         
             ++this.importTablesCt;
+        }
+
+        private void _CheckTablesEmptyBeforeAdding()
+        {
+            if (this.tables.Count != 0)
+                throw new System.Exception("Attempting to define multiple tables. WASM spec specifies only 1 table is allowed.");
         }
 
         ////////////////////////////////////////////////////////////////////////////////

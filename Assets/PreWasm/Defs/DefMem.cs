@@ -25,32 +25,18 @@ using System.Collections.Generic;
 
 namespace PxPre.WASM
 {
-    // TODO: Rename to SegmentDef
     public struct DefMem
     {
-        private struct Default
-        { 
-            public uint offset;
-            public byte [] data;
-        }
-
         public readonly int index;
 
         public readonly uint initialPages;
         public LimitsPaged limits;
 
-        List<Default> defaultData;
+        List<DefSegment> defSegments;
 
-        public void AddDefault(uint offset, byte [] data)
+        public void AddDefault(DefSegment ds)
         {
-            Default def = new Default();
-            def.offset = offset;
-            def.data = data;
-
-            if(this.defaultData == null)
-                this.defaultData = new List<Default>();
-
-            this.defaultData.Add(def);
+            this.defSegments.Add(ds);
         }
 
         public DefMem(int index, uint initialPages, uint minPages, uint maxPages )
@@ -59,31 +45,17 @@ namespace PxPre.WASM
 
             this.initialPages = initialPages;
             this.limits = new LimitsPaged(minPages, maxPages);
-            this.defaultData = null;
+            this.defSegments = new List<DefSegment>();
         }
 
-        public Memory CreateDefault()
+        public Memory CreateDefault(ExecutionContext globScr)
         { 
-            Memory ret = new Memory(this.initialPages, this.limits);
-
-            if(this.defaultData != null)
-            { 
-                foreach(Default def in this.defaultData)
-                { 
-                    uint max = def.offset + (uint)def.data.Length;
-                    uint reqPages = (uint)System.Math.Ceiling(max / (double)DataStore.PageSize);
-
-                    int curPageCt = (int)ret.CalculatePageCt();
-                    if ( curPageCt < reqPages)
-                    {
-                        if(ret.ExpandPageCt(reqPages) != DataStore.ExpandRet.Successful)
-                            throw new System.Exception("Could not initialize memory to the appropriate size.");
-                    }
-
-                    for(int i = 0; i < def.data.Length; ++i)
-                        ret.store.data[def.offset + i] = def.data[i];
-                }
-            }
+            Memory ret = 
+                new Memory(
+                    this.initialPages, 
+                    this.limits, 
+                    this.defSegments, 
+                    globScr);
 
             return ret;
         }

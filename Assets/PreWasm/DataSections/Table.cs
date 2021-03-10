@@ -20,6 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System.Collections.Generic;
+
 namespace PxPre.WASM
 {
     unsafe public class Table
@@ -39,7 +41,7 @@ namespace PxPre.WASM
             get => this.limits.maxEntries;
         }
 
-        public Table(uint initEntriesCt, Bin.TypeID type, LimitEntries limits, byte [] defaultVal)
+        public Table(uint initEntriesCt, Bin.TypeID type, LimitEntries limits, List<DefSegment> defs, ExecutionContext globSrc)
         {
             this.type = type;
             this.limits = limits;
@@ -48,17 +50,7 @@ namespace PxPre.WASM
             if(limits.dataTypeSize != typeSz)
                 throw new System.Exception(); // TODO: Error msg
 
-            this.store = new DataStore(initEntriesCt, limits);
-
-            if(initEntriesCt > 0 && defaultVal != null)
-            { 
-                uint dataSize = DataStore.GetTypeIDSize(type);
-                uint defaultAligned = (uint)(defaultVal.Length / dataSize) * dataSize;
-                uint numDefCpy = System.Math.Min(defaultAligned, (uint)this.store.data.Length);
-
-                for(uint i = 0; i < numDefCpy; ++i)
-                    this.store.data[i] = defaultVal[i];
-            }
+            this.store = new DataStore(initEntriesCt, limits, defs, globSrc);
         }
 
         public DataStore.ExpandRet ExpandEntriesCt(uint newEntriesCt)

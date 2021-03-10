@@ -47,10 +47,10 @@ namespace PxPre.WASM
             }
         }
 
-        public Memory(uint initPageCt, LimitsPaged limits)
+        public Memory(uint initPageCt, LimitsPaged limits, List<DefSegment> defaults, ExecutionContext globSrc)
         {
             this.limits = limits;
-            this.store = new DataStore(initPageCt, limits);
+            this.store = new DataStore(initPageCt, limits, defaults, globSrc);
         }
 
         public uint CalculatePageCt()

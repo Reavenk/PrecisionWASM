@@ -109,7 +109,7 @@ namespace PxPre.WASM
                     continue;
 
                 this.memories[ie.index] = 
-                    this.storeDecl.GetImportMemDef(ie.module, ie.fieldname).Value.CreateDefault();
+                    this.storeDecl.GetImportMemDef(ie.module, ie.fieldname).Value.CreateDefault(null);
             }
 
             foreach (IndexEntry ie in this.storeDecl.IndexingGlobal)
@@ -127,7 +127,7 @@ namespace PxPre.WASM
                     continue;
 
                 this.tables[ie.index] = 
-                    this.storeDecl.GetImportTableDef(ie.module, ie.fieldname).Value.CreateDefault();
+                    this.storeDecl.GetImportTableDef(ie.module, ie.fieldname).Value.CreateDefault(null);
             }
         }
 
@@ -396,7 +396,7 @@ namespace PxPre.WASM
             IndexEntry ie = this.storeDecl.IndexingMemory[dm.index];
 
             if(this.memories[ie.index] == null)
-                this.memories[ie.index] = dm.CreateDefault();
+                this.memories[ie.index] = dm.CreateDefault(null);
 
             return this.memories[ie.index];
         }
@@ -431,7 +431,7 @@ namespace PxPre.WASM
 
             IndexEntry ie = this.storeDecl.IndexingTable[dt.index];
             if(this.tables[ie.index] == null)
-                this.tables[ie.index] = dt.CreateDefault();
+                this.tables[ie.index] = dt.CreateDefault(null);
 
             return this.tables[ie.index];
         }

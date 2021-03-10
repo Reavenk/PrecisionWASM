@@ -20,6 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System.Collections.Generic;
+
 namespace PxPre.WASM
 {
     public struct DefTable
@@ -30,11 +32,12 @@ namespace PxPre.WASM
         public readonly uint elements;
         public readonly LimitEntries limits;
 
-        public byte [] defaultValue;
+        public List<DefSegment> defSegments;
 
         public DefTable(int index, Bin.TypeID type, uint initialElements, uint minEntries, uint maxEntries )
         { 
             this.index = index;
+            this.defSegments = new List<DefSegment>();
 
             uint typeSize = DataStore.GetTypeIDSize(type);
 
@@ -45,20 +48,19 @@ namespace PxPre.WASM
                     typeSize, 
                     minEntries, 
                     maxEntries);
-
-            this.defaultValue = new byte[initialElements * DataStore.GetTypeIDSize(type)];
-            for(int i = 0; i < this.defaultValue.Length; ++i)
-                this.defaultValue[i] = 0;
-
         }
 
-        public Table CreateDefault()
-        { 
-            return new Table(
-                this.elements, 
-                this.type, 
-                this.limits,
-                this.defaultValue);
+        public Table CreateDefault(ExecutionContext mod)
+        {
+            Table ret = 
+                new Table(
+                    this.elements, 
+                    this.type, 
+                    this.limits,
+                     defSegments,
+                    mod);
+
+            return ret;
         }
     }
 }
