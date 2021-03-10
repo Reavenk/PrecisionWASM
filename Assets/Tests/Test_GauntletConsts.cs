@@ -46,7 +46,7 @@ namespace Tests
             ex.InvokeStart();
 
             PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test");
-            UnitUtil.CompareGaunletLong(12345678901234, ret, "i64.const(12345678901234).wasm", 0);
+            UnitUtil.CompareGaunletInt64(12345678901234, ret, "i64.const(12345678901234).wasm", 0);
         }
 
         [Test]

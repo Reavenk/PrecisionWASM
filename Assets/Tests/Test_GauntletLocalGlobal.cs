@@ -112,9 +112,9 @@ namespace Tests
                 for (long j = 123456789012350; j < 123456789012360; ++j)
                 {
                     List<PxPre.Datum.Val> rets = ex.Invoke(mod, "Testi64", PxPre.Datum.Val.Make(i), PxPre.Datum.Val.Make(j));
-                    UnitUtil.CompareGaunletLong(i + j, rets[0], "Testi64[0]", idx, i, j);
-                    UnitUtil.CompareGaunletLong(i, rets[1], "Testi64[1]", idx, i, j);
-                    UnitUtil.CompareGaunletLong(i, rets[2], "Testi64[2]", idx, i, j);
+                    UnitUtil.CompareGaunletInt64(i + j, rets[0], "Testi64[0]", idx, i, j);
+                    UnitUtil.CompareGaunletInt64(i, rets[1], "Testi64[1]", idx, i, j);
+                    UnitUtil.CompareGaunletInt64(i, rets[2], "Testi64[2]", idx, i, j);
                     ++idx;
                 }
             }

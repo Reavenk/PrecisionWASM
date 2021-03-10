@@ -84,7 +84,7 @@ namespace Tests
             for (int i = 0; i < 10; ++i)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(i));
-                UnitUtil.CompareGaunletLong(System.BitConverter.ToInt64(rb, i), ret, "i64.load(gineral).wasm", i, i);
+                UnitUtil.CompareGaunletInt64(System.BitConverter.ToInt64(rb, i), ret, "i64.load(gineral).wasm", i, i);
             }
         }
 
@@ -205,7 +205,7 @@ namespace Tests
             for (int i = 0; i < 10; ++i)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(i));
-                UnitUtil.CompareGaunletLong((sbyte)rb[i], ret, "i64.load8s(gineral).wasm", i, i);
+                UnitUtil.CompareGaunletInt64((sbyte)rb[i], ret, "i64.load8s(gineral).wasm", i, i);
             }
         }
 
@@ -222,7 +222,7 @@ namespace Tests
             for (int i = 0; i < 10; ++i)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(i));
-                UnitUtil.CompareGaunletLong(rb[i], ret, "i64.load8u(gineral).wasm", i, i);
+                UnitUtil.CompareGaunletInt64(rb[i], ret, "i64.load8u(gineral).wasm", i, i);
             }
         }
 
@@ -240,7 +240,7 @@ namespace Tests
             for (int i = 0; i < 10; ++i)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(i));
-                UnitUtil.CompareGaunletLong(System.BitConverter.ToInt16(rb, i), ret, "i64.load16_s(gineral).wasm", i, i);
+                UnitUtil.CompareGaunletInt64(System.BitConverter.ToInt16(rb, i), ret, "i64.load16_s(gineral).wasm", i, i);
             }
         }
 
@@ -257,7 +257,7 @@ namespace Tests
             for (int i = 0; i < 10; ++i)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(i));
-                UnitUtil.CompareGaunletLong(System.BitConverter.ToUInt16(rb, i), ret, "i64.load16_s(gineral).wasm", i, i);
+                UnitUtil.CompareGaunletInt64(System.BitConverter.ToUInt16(rb, i), ret, "i64.load16_s(gineral).wasm", i, i);
             }
         }
 
@@ -274,7 +274,7 @@ namespace Tests
             for (int i = 0; i < 10; ++i)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(i));
-                UnitUtil.CompareGaunletLong(System.BitConverter.ToInt32(rb, i), ret, "i64.load32_s(gineral)", i, i);
+                UnitUtil.CompareGaunletInt64(System.BitConverter.ToInt32(rb, i), ret, "i64.load32_s(gineral)", i, i);
             }
         }
 
@@ -291,7 +291,7 @@ namespace Tests
             for (int i = 0; i < 10; ++i)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(i));
-                UnitUtil.CompareGaunletLong(System.BitConverter.ToUInt32(rb, i), ret, "i64.load32_u(gineral)", i, i);
+                UnitUtil.CompareGaunletInt64(System.BitConverter.ToUInt32(rb, i), ret, "i64.load32_u(gineral)", i, i);
             }
         }
 

@@ -176,7 +176,7 @@ namespace Tests
                 }
 
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t));
-                UnitUtil.CompareGaunletLong(lz, ret, "i64.clz", idx++, t);
+                UnitUtil.CompareGaunletInt64(lz, ret, "i64.clz", idx++, t);
             }
         }
             
@@ -199,7 +199,7 @@ namespace Tests
                 }
 
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t));
-                UnitUtil.CompareGaunletLong(rz, ret, "i64.ctz", idx++, t);
+                UnitUtil.CompareGaunletInt64(rz, ret, "i64.ctz", idx++, t);
             }
         }
             
@@ -222,7 +222,7 @@ namespace Tests
                 }
 
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t));
-                UnitUtil.CompareGaunletLong(zct, ret, "i64.popcnt", idx++, t);
+                UnitUtil.CompareGaunletInt64(zct, ret, "i64.popcnt", idx++, t);
             }
         }
             
@@ -613,7 +613,7 @@ namespace Tests
             foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
-                UnitUtil.CompareGaunletLong(t.a + t.b, ret, "i64.add", idx++, t.a, t.b);
+                UnitUtil.CompareGaunletInt64(t.a + t.b, ret, "i64.add", idx++, t.a, t.b);
             }
         }
             
@@ -629,7 +629,7 @@ namespace Tests
             foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
-                UnitUtil.CompareGaunletLong(t.a - t.b, ret, "i64.sub", idx++, t.a, t.b);
+                UnitUtil.CompareGaunletInt64(t.a - t.b, ret, "i64.sub", idx++, t.a, t.b);
             }
         }
             
@@ -645,7 +645,7 @@ namespace Tests
             foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
-                UnitUtil.CompareGaunletLong(t.a * t.b, ret, "i64.mul", idx++, t.a, t.b);
+                UnitUtil.CompareGaunletInt64(t.a * t.b, ret, "i64.mul", idx++, t.a, t.b);
             }
         }
             
@@ -745,7 +745,7 @@ namespace Tests
             foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
-                UnitUtil.CompareGaunletLong(t.a & t.b, ret, "i64.and", idx++, t.a, t.b);
+                UnitUtil.CompareGaunletInt64(t.a & t.b, ret, "i64.and", idx++, t.a, t.b);
             }
         }
             
@@ -761,7 +761,7 @@ namespace Tests
             foreach (Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
-                UnitUtil.CompareGaunletLong(t.a | t.b, ret, "i64.or", idx++, t.a, t.b);
+                UnitUtil.CompareGaunletInt64(t.a | t.b, ret, "i64.or", idx++, t.a, t.b);
             }
         }
             
@@ -777,7 +777,7 @@ namespace Tests
             foreach(Int64Pair t in UnitUtil.PermuZipLongToInt64(testSamples, testSamples))
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a), PxPre.Datum.Val.Make(t.b));
-                UnitUtil.CompareGaunletLong(t.a ^ t.b, ret, "i64.or", idx++, t.a, t.b);
+                UnitUtil.CompareGaunletInt64(t.a ^ t.b, ret, "i64.or", idx++, t.a, t.b);
             }
         }
             
@@ -796,7 +796,7 @@ namespace Tests
                 long nv = testSamples[idx];
 
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(nv), PxPre.Datum.Val.Make(shiftL));
-                UnitUtil.CompareGaunletLong(nv << (int)shiftL, ret, "i64.shl", idx++, nv, shiftL);
+                UnitUtil.CompareGaunletInt64(nv << (int)shiftL, ret, "i64.shl", idx++, nv, shiftL);
 
                 ++shiftL;
                 if (shiftL > 40)
@@ -816,7 +816,7 @@ namespace Tests
             foreach (LongTripplet lt in extraTests) 
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(lt.a), PxPre.Datum.Val.Make(lt.b));
-                UnitUtil.CompareGaunletLong(lt.c, ret, "i64.shl", idx++, lt.a, lt.b);
+                UnitUtil.CompareGaunletInt64(lt.c, ret, "i64.shl", idx++, lt.a, lt.b);
             }
         }
             
@@ -838,7 +838,7 @@ namespace Tests
                 long nv = testSamples[idx];
 
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(nv), PxPre.Datum.Val.Make(shiftR));
-                UnitUtil.CompareGaunletLong(nv >> (int)shiftR, ret, "i64.shr_s", idx++, nv, shiftR);
+                UnitUtil.CompareGaunletInt64(nv >> (int)shiftR, ret, "i64.shr_s", idx++, nv, shiftR);
             }
 
             LongTripplet[] extraTests =
@@ -859,7 +859,7 @@ namespace Tests
             foreach (LongTripplet it in extraTests)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(it.a), PxPre.Datum.Val.Make(it.b));
-                UnitUtil.CompareGaunletLong(it.c, ret, "i64.shr_s", idx++, it.a, it.b);
+                UnitUtil.CompareGaunletInt64(it.c, ret, "i64.shr_s", idx++, it.a, it.b);
             }
         }
             
@@ -878,7 +878,7 @@ namespace Tests
                 ulong nv = (ulong)t;
 
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(nv), PxPre.Datum.Val.Make(shiftR));
-                UnitUtil.CompareGaunletLong((long)(nv >> (int)shiftR), ret, "i64.shr_u", idx++, (long)nv, shiftR);
+                UnitUtil.CompareGaunletInt64((long)(nv >> (int)shiftR), ret, "i64.shr_u", idx++, (long)nv, shiftR);
 
                 ++shiftR;
                 if (shiftR > 40)
@@ -903,7 +903,7 @@ namespace Tests
             foreach (LongTripplet it in extraTests)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(it.a), PxPre.Datum.Val.Make(it.b));
-                UnitUtil.CompareGaunletLong(it.c, ret, "i64.shr_s", idx++, it.a, it.b);
+                UnitUtil.CompareGaunletInt64(it.c, ret, "i64.shr_s", idx++, it.a, it.b);
             }
         }
             
@@ -934,7 +934,7 @@ namespace Tests
             foreach (LongTripplet lt in extraTests)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(lt.a), PxPre.Datum.Val.Make(lt.b));
-                UnitUtil.CompareGaunletLong(lt.c, ret, "i64.rotl", idx++, lt.a, lt.b);
+                UnitUtil.CompareGaunletInt64(lt.c, ret, "i64.rotl", idx++, lt.a, lt.b);
             }
         }
             
@@ -965,7 +965,7 @@ namespace Tests
             foreach (LongTripplet lt in extraTests)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(lt.a), PxPre.Datum.Val.Make(lt.b));
-                UnitUtil.CompareGaunletLong(lt.c, ret, "i64.rotr", idx++, lt.a, lt.b);
+                UnitUtil.CompareGaunletInt64(lt.c, ret, "i64.rotr", idx++, lt.a, lt.b);
             }
         }                                                                                                                                        
     

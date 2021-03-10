@@ -194,7 +194,7 @@ namespace Tests
             foreach (int tv in intTestValues)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tv));
-                UnitUtil.CompareGaunletLong((long)tv, ret, "i64.extend_i32_s.wasm", idx++, tv);
+                UnitUtil.CompareGaunletInt64((long)tv, ret, "i64.extend_i32_s.wasm", idx++, tv);
             }
         }
 
@@ -210,7 +210,7 @@ namespace Tests
             foreach (uint tv in uintTestValues)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tv));
-                UnitUtil.CompareGaunletLong((long)tv, ret, "i64.extend_i32_u", idx++, tv);
+                UnitUtil.CompareGaunletInt64((long)tv, ret, "i64.extend_i32_u", idx++, tv);
             }
         }
 
@@ -226,7 +226,7 @@ namespace Tests
             foreach (float tv in floatTestValues)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tv));
-                UnitUtil.CompareGaunletLong((long)tv, ret, "i64.trunc_f32_s", idx++, tv);
+                UnitUtil.CompareGaunletInt64((long)tv, ret, "i64.trunc_f32_s", idx++, tv);
             }
         }
 
@@ -285,7 +285,7 @@ namespace Tests
             foreach (double tv in doubleTestValues)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet( mod, "Test", PxPre.Datum.Val.Make(tv));
-                UnitUtil.CompareGaunletLong((long)tv, ret, "i64.trunc_f64_s", idx++, tv);
+                UnitUtil.CompareGaunletInt64((long)tv, ret, "i64.trunc_f64_s", idx++, tv);
             }
         }
 
@@ -530,7 +530,7 @@ namespace Tests
                 byte[] rb = System.BitConverter.GetBytes(tv);
                 long l = System.BitConverter.ToInt64(rb, 0);
 
-                UnitUtil.CompareGaunletLong(l, ret, "i64.reinterpret_f64", ++idx, tv);
+                UnitUtil.CompareGaunletInt64(l, ret, "i64.reinterpret_f64", ++idx, tv);
             }
         }
 
@@ -624,7 +624,7 @@ namespace Tests
                 byte[] rb = System.BitConverter.GetBytes(i);
                 sbyte low = (sbyte)rb[0];
 
-                UnitUtil.CompareGaunletLong(low, ret, "i64.extend8_s", idx++, i);
+                UnitUtil.CompareGaunletInt64(low, ret, "i64.extend8_s", idx++, i);
             }
         }
 
@@ -646,7 +646,7 @@ namespace Tests
                 byte[] rb = System.BitConverter.GetBytes(val);
                 short low = System.BitConverter.ToInt16(rb, 0);
 
-                UnitUtil.CompareGaunletLong(low, ret, "i64.extend16_s", idx++, val);
+                UnitUtil.CompareGaunletInt64(low, ret, "i64.extend16_s", idx++, val);
             }
         }
 
@@ -668,7 +668,7 @@ namespace Tests
                 byte[] rb = System.BitConverter.GetBytes(val);
                 int low = System.BitConverter.ToInt32(rb, 0);
 
-                UnitUtil.CompareGaunletLong(low, ret, "i64.extend32_s", idx++, val);
+                UnitUtil.CompareGaunletInt64(low, ret, "i64.extend32_s", idx++, val);
             }
         }
     }

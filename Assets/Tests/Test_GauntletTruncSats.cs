@@ -180,7 +180,7 @@ namespace Tests
             foreach (var t in testKeys)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a));
-                UnitUtil.CompareGaunletLong(t.b, ret, "i64.trunc_sat_f32_s", idx++, 0 /*operand listing supported*/);
+                UnitUtil.CompareGaunletInt64(t.b, ret, "i64.trunc_sat_f32_s", idx++, 0 /*operand listing supported*/);
             }
         }
 
@@ -211,7 +211,7 @@ namespace Tests
             foreach (var t in testKeys)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a));
-                UnitUtil.CompareGaunletLong((long)t.b, ret, "i64.trunc_sat_f32_s", idx++, 0 /*operand listing supported*/);
+                UnitUtil.CompareGaunletInt64((long)t.b, ret, "i64.trunc_sat_f32_s", idx++, 0 /*operand listing supported*/);
             }
         }
 
@@ -242,7 +242,7 @@ namespace Tests
             foreach (var t in testKeys)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a));
-                UnitUtil.CompareGaunletLong(t.b, ret, "i64.trunc_sat_f64_s", idx++, 0 /*operand listing supported*/);
+                UnitUtil.CompareGaunletInt64(t.b, ret, "i64.trunc_sat_f64_s", idx++, 0 /*operand listing supported*/);
             }
         }
 
@@ -273,7 +273,7 @@ namespace Tests
             foreach (var t in testKeys)
             {
                 PxPre.Datum.Val ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(t.a));
-                UnitUtil.CompareGaunletLong((long)t.b, ret, "i64.trunc_sat_f64_u", idx++, 0 /*operand listing supported*/);
+                UnitUtil.CompareGaunletInt64((long)t.b, ret, "i64.trunc_sat_f64_u", idx++, 0 /*operand listing supported*/);
             }
         }
     }

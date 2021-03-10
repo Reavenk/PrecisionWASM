@@ -211,8 +211,7 @@ namespace Tests
             CompareGaunlet(expected, valRes.GetFloat(), testName, testId, operands);
         }
 
-        // TODO: Rename to *Int64
-        public static void CompareGaunletLong(long expected, PxPre.Datum.Val valRes, string testName, int testId, params object [] operands)
+        public static void CompareGaunletInt64(long expected, PxPre.Datum.Val valRes, string testName, int testId, params object [] operands)
         {
             if (valRes.wrapType != PxPre.Datum.Val.Type.Int64)
                 ThrowGauntletError(testName, testId, "Incorrect type, expected int64.", expected, valRes.GetInt(), operands);
@@ -333,7 +332,7 @@ namespace Tests
             else if (testException != null)
                 ThrowGauntletError(testName, testId, "Uncountered unexpected exception.", null, null, operandStr.ToString());
 
-            CompareGaunletLong(truth, ret, testName, testId, operandStr.ToArray());
+            CompareGaunletInt64(truth, ret, testName, testId, operandStr.ToArray());
         }
 
         public static IEnumerable<IntPair> PermuZipLongToInt(List<long> lstA, List<long> lstB)
