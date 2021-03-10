@@ -230,7 +230,7 @@ namespace PxPre.WASM
 
             this.indexingTable.Add(IndexEntry.CreateLocal(this.localTablesCt));
 
-            DefTable table = new DefTable(this.tables.Count, type, initialElements, 0, maxele);
+            DefTable table = new DefTable(this.tables.Count, type, initialElements, initialElements, maxele);
             this.tables.Add(table);
 
             ++this.localTablesCt;
@@ -244,7 +244,7 @@ namespace PxPre.WASM
 
             this.indexingTable.Add(IndexEntry.CreateImport(this.importTablesCt, module, fieldname));
 
-            DefTable table = new DefTable(this.tables.Count, type, initialElements, 0, maxele);
+            DefTable table = new DefTable(this.tables.Count, type, initialElements, initialElements, maxele);
             this.tables.Add(table);
 
             this.GetOrCreateRecord(module).tables.Add(fieldname, table);

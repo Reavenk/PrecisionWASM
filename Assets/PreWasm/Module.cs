@@ -167,28 +167,51 @@ namespace PxPre.WASM
 
                             case ImportType.TableType:
                                 {
-                                    uint tableIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                    const int FLAG_HASMAX = 0x01;
+                                    const int FLAG_OTHERS = ~(FLAG_HASMAX);
 
-                                    // TODO:
-                                    //ret.storeDecl.AddTableImp(modName, fieldName,  
+                                    // We may be able top unify parts of this code with non-imported tables
+                                    uint type       = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                    uint flags      = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                    uint initial    = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                    uint ? max      = null;
+
+                                    if((flags & FLAG_HASMAX) != 0)
+                                        max = BinParse.LoadUnsignedLEB32(pb, ref idx);
+
+                                    if((flags & FLAG_OTHERS) != 0)
+                                        throw new System.Exception("Encountered unknown flags for imported table.");
+
+                                    ret.storeDecl.AddTableImp(modName, fieldName, (Bin.TypeID)type, initial, max);
                                 }
                                 break;
 
                             case ImportType.MemType:
                                 {
-                                    uint memIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                    const int FLAG_HASMAX = 0x01;
+                                    const int FLAG_OTHERS = ~(FLAG_HASMAX);
 
-                                    // TODO:
-                                    //ret.storeDecl.AddMemoryImp(
+                                    // We may be able to unify parts of this code with non-imported memory
+                                    uint flags      = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                    uint initial    = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                    uint ? max      = null;
+
+                                    if((flags & FLAG_HASMAX) != 0)
+                                        max = BinParse.LoadUnsignedLEB32(pb, ref idx);
+
+                                    if ((flags & FLAG_OTHERS) != 0)
+                                        throw new System.Exception("Encountered unknown flags for imported memory.");
+
+                                    ret.storeDecl.AddMemoryImp(modName, fieldName, initial, initial, max);
                                 }
                                 break;
 
                             case ImportType.GlobalType:
                                 {
-                                    uint globalIdx = BinParse.LoadUnsignedLEB32(pb, ref idx);
+                                    uint type = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                     uint mutability = BinParse.LoadUnsignedLEB32(pb, ref idx);
 
-                                    ret.storeDecl.AddGlobalImp(modName, fieldName, (Bin.TypeID)globalIdx, mutability != 0);
+                                    ret.storeDecl.AddGlobalImp(modName, fieldName, (Bin.TypeID)type, mutability != 0);
                                 }
                                 break;
                         }

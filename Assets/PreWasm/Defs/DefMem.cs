@@ -29,6 +29,8 @@ namespace PxPre.WASM
     {
         public readonly int index;
 
+        // NOTE: The initialPages variable probably should be removed. The initialSize
+        // is probably the same as the minimum limits.
         public readonly uint initialPages;
         public LimitsPaged limits;
 
