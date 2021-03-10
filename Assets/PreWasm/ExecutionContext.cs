@@ -2533,7 +2533,9 @@ namespace PxPre.WASM
                 if (startFn.fnType.resultTypes.Count > 0 || startFn.fnType.paramTypes.Count > 0)
                     throw new System.Exception("Start function is invalid function type."); // TODO: Error message
 
-                this.Invoke(startFn);
+                // Start function should have no parameters or return values
+                // so no outside stack preparations should be needed.
+                this.RunFunction(startFn);
             }
             else if(fie.type == IndexEntry.FnIdxType.Import)
             { 
