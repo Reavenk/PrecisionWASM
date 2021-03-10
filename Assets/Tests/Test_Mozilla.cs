@@ -25,7 +25,11 @@ using NUnit.Framework;
 
 namespace Tests
 {
-    // Unit tests derived from WATs on Mozilla's WASM documentation
+    /// <summary>
+    /// Unit tests derived from WATs on Mozilla's WASM documentation
+    /// 
+    /// https://developer.mozilla.org/en-US/docs/WebAssembly/Understanding_the_text_format
+    /// </summary>
     public class Test_Mozilla
     {
         const string TestTheme = "Mozilla";

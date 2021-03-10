@@ -18,9 +18,11 @@ using NUnit.Framework;
 using UnityEngine.TestTools;
 using UnityEngine;
 
-
 namespace Tests
 {
+    /// <summary>
+    /// Unit tests for const operators.
+    /// </summary>
     public class Test_GauntletConsts
     {
         const string TestTheme = "Consts";

@@ -25,6 +25,9 @@ using NUnit.Framework;
 
 namespace Tests
 {
+    /// <summary>
+    /// Unit tests for integer number math operators.
+    /// </summary>
     public class Test_GauntletIntMath
     {
         const string TestTheme = "IntMath";

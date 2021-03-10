@@ -25,6 +25,9 @@ using NUnit.Framework;
 
 namespace Tests
 {
+    /// <summary>
+    /// Unit tests for local and global operators.
+    /// </summary>
     public class Test_GauntletLocalGlobal
     {
         const string TestTheme = "LocalGlobal";

@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace Tests
 {
+    /// <summary>
+    /// Unit tests derived from the WAT2WASM samples.
+    /// </summary>
     public class Test_Wat2WASM_Demo
     {
         const string TestTheme = "WAT2WASM";

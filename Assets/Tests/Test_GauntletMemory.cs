@@ -25,6 +25,9 @@ using NUnit.Framework;
 
 namespace Tests
 {
+    /// <summary>
+    /// Unit test for memory store operators.
+    /// </summary>
     public class Test_GauntletMemory
     {
         const string TestTheme = "Memory";

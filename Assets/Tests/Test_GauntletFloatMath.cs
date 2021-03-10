@@ -25,6 +25,9 @@ using NUnit.Framework;
 
 namespace Tests
 {
+    /// <summary>
+    /// Unit tests for floating number math operators.
+    /// </summary>
     public class Test_GauntletFloatMath
     {
         const string TestTheme = "FloatMath";

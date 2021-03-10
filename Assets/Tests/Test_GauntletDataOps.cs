@@ -24,23 +24,20 @@ using NUnit.Framework;
 
 namespace Tests
 {
+    /// <summary>
+    /// Unit tests for data movement operators.
+    /// </summary>
     public class Test_GauntletDataOps
     {
         const string TestTheme = "DataOps";
-
-        
 
         // A prime number used to deterministicly generate pseuo-random numbers.
         // The method to generate random numbers also allows (encourages) bit overflows.
         const int LargePrime = 35317; // https://en.wikipedia.org/wiki/List_of_prime_numbers
 
-        
-
         const int BytesIn_8_Bits = 1;
         const int BytesIn_16_Bits = 2;
-        const int BytesIn_32_Bits = 4;
-
-        
+        const int BytesIn_32_Bits = 4;        
 
         public static void WriteBytes(byte [] dst, byte [] src, int offset)
         { 

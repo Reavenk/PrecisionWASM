@@ -23,6 +23,9 @@
 using NUnit.Framework;
 namespace Tests
 {
+    /// <summary>
+    /// Unit tests for type conversion operators.
+    /// </summary>
     public class Test_GauntletConversions
     {
         const string TestTheme = "Conversions";

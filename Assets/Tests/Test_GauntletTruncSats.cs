@@ -25,6 +25,9 @@ using NUnit.Framework;
 
 namespace Tests
 {
+    /// <summary>
+    /// Unit tests for float to int saturated truncation operations.
+    /// </summary>
     public class Test_GauntletTruncSats
     {
         const string TestTheme = "TruncSats";

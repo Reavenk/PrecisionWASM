@@ -25,6 +25,10 @@ using NUnit.Framework;
 
 namespace Tests
 {
+    /// <summary>
+    /// Unit tests for logic operators, and operations that jump the instruction
+    /// pointer.
+    /// </summary>
     public class Test_LogicAndBranching
     {
         const string TestTheme = "Branching";
