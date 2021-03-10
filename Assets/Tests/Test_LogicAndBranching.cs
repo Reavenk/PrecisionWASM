@@ -138,17 +138,17 @@ namespace Tests
             ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(0), PxPre.Datum.Val.Make(3), PxPre.Datum.Val.Make(6), PxPre.Datum.Val.Make(9), PxPre.Datum.Val.Make(12));
             UnitUtil.CompareGaunletInt(3, ret, "br_table", 0, 0, 3, 6, 9, 12);
             ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(1), PxPre.Datum.Val.Make(3), PxPre.Datum.Val.Make(6), PxPre.Datum.Val.Make(9), PxPre.Datum.Val.Make(12));
-            UnitUtil.CompareGaunletInt(6, ret, "br_table", 0, 1, 3, 6, 9, 12);
+            UnitUtil.CompareGaunletInt(6, ret, "br_table", 1, 1, 3, 6, 9, 12);
             ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(2), PxPre.Datum.Val.Make(3), PxPre.Datum.Val.Make(6), PxPre.Datum.Val.Make(9), PxPre.Datum.Val.Make(12));
-            UnitUtil.CompareGaunletInt(9, ret, "br_table", 0, 2, 3, 6, 9, 12);
+            UnitUtil.CompareGaunletInt(9, ret, "br_table", 2, 2, 3, 6, 9, 12);
             ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(3), PxPre.Datum.Val.Make(3), PxPre.Datum.Val.Make(6), PxPre.Datum.Val.Make(9), PxPre.Datum.Val.Make(12));
-            UnitUtil.CompareGaunletInt(12, ret, "br_table", 0, 3, 3, 6, 9, 12);
+            UnitUtil.CompareGaunletInt(12, ret, "br_table", 3, 3, 3, 6, 9, 12);
             ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(4), PxPre.Datum.Val.Make(3), PxPre.Datum.Val.Make(6), PxPre.Datum.Val.Make(9), PxPre.Datum.Val.Make(12));
-            UnitUtil.CompareGaunletInt(-1, ret, "br_table", 0, 4, 3, 6, 9, 12);
+            UnitUtil.CompareGaunletInt(-1, ret, "br_table", 4, 4, 3, 6, 9, 12);
             ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(100), PxPre.Datum.Val.Make(3), PxPre.Datum.Val.Make(6), PxPre.Datum.Val.Make(9), PxPre.Datum.Val.Make(12));
-            UnitUtil.CompareGaunletInt(-1, ret, "br_table", 0, 100, 3, 6, 9, 12);
+            UnitUtil.CompareGaunletInt(-1, ret, "br_table", 5, 100, 3, 6, 9, 12);
             ret = ex.Invoke_SingleRet(mod, "Test", PxPre.Datum.Val.Make(-100), PxPre.Datum.Val.Make(3), PxPre.Datum.Val.Make(6), PxPre.Datum.Val.Make(9), PxPre.Datum.Val.Make(12));
-            UnitUtil.CompareGaunletInt(-1, ret, "br_table", 0, -100, 3, 6, 9, 12);
+            UnitUtil.CompareGaunletInt(-1, ret, "br_table", 6, -100, 3, 6, 9, 12);
         }
 
         [Test]
