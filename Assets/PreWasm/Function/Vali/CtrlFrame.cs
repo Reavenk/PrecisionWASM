@@ -40,7 +40,6 @@ namespace PxPre.WASM.Vali
         public uint loopStart = uint.MaxValue;
 
         public List<uint> writePopped;
-        public List<uint> writeEntered;
 
         public bool returnedInside = false;
 
@@ -66,28 +65,6 @@ namespace PxPre.WASM.Vali
             this.writePopped.Add(loc);
         }
 
-        public void QueueEnterWrite(List<byte> expanded)
-        {
-            if (this.writeEntered == null)
-                this.writeEntered = new List<uint>();
-
-            this.writeEntered.Add((uint)expanded.Count);
-
-            // Add an int into expanded
-            expanded.Add(0);
-            expanded.Add(0);
-            expanded.Add(0);
-            expanded.Add(0);
-        }
-
-        public void QueueEnterWrite(uint loc)
-        { 
-            if(this.writeEntered == null)
-                this.writeEntered = new List<uint>();
-
-            this.writeEntered.Add(loc);
-        }
-
         unsafe public void FlushEndWrites(List<byte> expanded)
         {
             this.FlushEndWrites(expanded, (uint)expanded.Count);
@@ -110,32 +87,6 @@ namespace PxPre.WASM.Vali
                 expanded[(int)u + 2] = rb[2];
                 expanded[(int)u + 3] = rb[3];
             }
-        }
-
-        unsafe public void FlushEnterWrites(List<byte> expanded)
-        {
-            this.FlushEnterWrites(expanded, (uint)expanded.Count);
-        }
-
-        unsafe public void FlushEnterWrites(List<byte> expanded, uint jumpValue)
-        {
-            if (this.writeEntered == null)
-                return;
-
-            uint idx = jumpValue;
-
-            // Write the current end position (idx) in every position queued
-            // to have it written to.
-            byte[] rb = System.BitConverter.GetBytes(idx);
-            foreach (uint u in this.writeEntered)
-            {
-                expanded[(int)u + 0] = rb[0];
-                expanded[(int)u + 1] = rb[1];
-                expanded[(int)u + 2] = rb[2];
-                expanded[(int)u + 3] = rb[3];
-            }
-
-            this.writeEntered.Clear();
         }
 
         public List<StackOpd> LabelTypes()

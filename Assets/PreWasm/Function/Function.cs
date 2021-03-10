@@ -393,12 +393,6 @@ namespace PxPre.WASM
                                     maxBreak = System.Math.Max(maxBreak, breakDepth);
                                 }
 
-                                Instruction endInst = (Instruction)this.expression[idx];
-                                ++idx;
-
-                                if(endInst != Instruction.end)
-                                    throw new System.Exception("Table break jump table didn't end with expected end instruction.");
-
                                 if (maxBreak < 0)
                                     throw new System.Exception("Table break resulted in incorrect maximum break value.");
 
@@ -411,15 +405,11 @@ namespace PxPre.WASM
                                     if (breakFrame.MatchesLabelTypes(vmgr.GetCtrl(maxBreak)) == false)
                                         throw new System.Exception("Table break stack types mismatch.");
 
-                                    breakFrame.QueueEnterWrite(expanded);
+                                    breakFrame.QueueEndWrite(expanded);
                                 }
 
                                 vmgr.PopOpd(StackOpd.i32);
                                 vmgr.PopOpds(vmgr.GetCtrl(maxBreak).LabelTypes());
-
-                                // If there were any breaks to frame 0, we won't get a change to pop-down
-                                // to the top frame, so we'll write the jump values here.
-                                vmgr.GetCtrl(0).FlushEnterWrites(expanded);
 
                                 vmgr.Unreachable();
                             }
