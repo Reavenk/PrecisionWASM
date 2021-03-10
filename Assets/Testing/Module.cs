@@ -551,6 +551,22 @@ namespace PxPre.WASM
             ++idx;
         }
 
+        public bool Validate(bool throwOnError = false)
+        { 
+            HashSet<string> encounteredNames = new HashSet<string>();
+            foreach(Export e in this.exports)
+            { 
+                if(encounteredNames.Add(e.name) == false)
+                { 
+                    if(throwOnError == true)
+                        throw new System.Exception($"Multiple exports found with the same name {e.name}");
+
+                    return false;
+                }
+            }
+            return true;
+        }
+
         //public static Session LoadString(string str)
         //{ }
     }

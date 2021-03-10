@@ -2636,5 +2636,24 @@ namespace PxPre.WASM
 
             return this.memories[meid];
         }
+
+        public bool Validate(bool throwOnError = false)
+        { 
+            if(this.instancer.Validate(throwOnError) == false)
+                return false;
+
+            if (this.importData.Validate(throwOnError) == false)
+                return false;
+
+            if (this.initialized == false)
+            { 
+                if(throwOnError == true)
+                    throw new System.Exception("ExecutionContext not valid because it has not been explicitly initialized.");
+
+                return false;
+            }
+
+            return true;
+        }
     }
 }
