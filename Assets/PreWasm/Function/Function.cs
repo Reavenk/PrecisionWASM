@@ -1530,6 +1530,9 @@ namespace PxPre.WASM
 
         FunctionType.DataOrgInfo GetStackDataInfo(uint uidx)
         {
+            if(uidx >= this.localTypes.Count + this.fnType.paramTypes.Count)
+                throw new System.Exception("Attempting to get local value out of bounds.");
+
             if (uidx < this.fnType.paramTypes.Count)
                 return this.fnType.paramTypes[(int)uidx];
             else
