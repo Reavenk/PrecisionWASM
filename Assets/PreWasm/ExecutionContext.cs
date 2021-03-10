@@ -373,13 +373,11 @@ namespace PxPre.WASM
                             }
                             break;
 
-                        case Instruction._drop32:
-                            // Skip the next operation - Not sure if we need to do more
-                            // since we could be skipping an op that has parameters.
+                        case Instruction._pop4b:
                             this.stackPos += 4;
                             break;
 
-                        case Instruction._drop64:
+                        case Instruction._pop8b:
                             this.stackPos += 8;
                             break;
 

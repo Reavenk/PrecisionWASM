@@ -512,9 +512,9 @@ namespace PxPre.WASM
                                 StackOpd dropTy = vmgr.PopOpd();
                                 int size = ValiMgr.GetSize(dropTy);
                                 if(size == 4)
-                                    TransferInstruction(expanded, Instruction._drop32);
+                                    TransferInstruction(expanded, Instruction._pop4b);
                                 else if(size == 8)
-                                    TransferInstruction(expanded, Instruction._drop64);
+                                    TransferInstruction(expanded, Instruction._pop8b);
                                 else
                                     throw new System.Exception("Encountered instruction to drop stack data of unknown size.");
                                 
