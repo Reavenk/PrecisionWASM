@@ -121,7 +121,7 @@ public static class WASMDatum
                         *(long*)(&pstk[ex.stackPos + fn.fnType.totalParamSize - doi.offset - 8]) = ps[i].GetInt64();
                 }
                 else
-                { } // TODO: Error
+                    throw new System.Exception("Invoking function with unknown parameter size.");
 
             }
 
@@ -148,7 +148,7 @@ public static class WASMDatum
                         v = new PxPre.Datum.ValInt64(*(long*)(&pstk[ex.stackPos + fnty.totalResultSize - doi.offset - 8]));
                 }
                 else
-                { } // TODO: Error
+                    throw new System.Exception("Invoking function with unknown return size.");
 
                 if (v != null)
                     ret.Add(v);
