@@ -293,7 +293,7 @@ namespace PxPre.WASM
                     return 8;
             }
 
-            throw new System.Exception(); // TODO: Error message
+            throw new System.Exception($"Attempting to query size of type of unknown size {type}");
         }
     }
 }
