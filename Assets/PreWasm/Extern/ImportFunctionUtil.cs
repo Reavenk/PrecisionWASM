@@ -40,30 +40,29 @@ namespace PxPre.WASM
 
         public int GetInt32(int paramIdx, bool throwIfNotStrongType = false)
         { 
-            if(paramIdx >= functionType.paramTypes.Count )
+            if(paramIdx >= this.functionType.paramTypes.Count )
                 throw new System.Exception("Attempting to access int parameter out of bounds.");
 
-            FunctionType.DataOrgInfo doi = functionType.paramTypes[paramIdx];
+            FunctionType.DataOrgInfo doi = this.functionType.paramTypes[paramIdx];
 
             if(throwIfNotStrongType == true && doi.type != Bin.TypeID.Int32)
                 throw new System.Exception("Attempting to access int parameter of different type.");
 
-            // TODO: This needs to access the elements in reverse.
-            int memIdx = stackEnterIdx + (int)doi.alignmentCtr;
+            int paramOnStack = this.stackEnterIdx + (int)this.functionType.GetParamStackOffset(paramIdx);
 
             switch (doi.type)
             { 
                 case Bin.TypeID.Int32:
-                    return System.BitConverter.ToInt32(executionContext.stack, memIdx);
+                    return System.BitConverter.ToInt32(executionContext.stack, paramOnStack);
 
                 case Bin.TypeID.Float32:
-                    return (int)System.BitConverter.ToSingle(executionContext.stack, memIdx);
+                    return (int)System.BitConverter.ToSingle(executionContext.stack, paramOnStack);
 
                 case Bin.TypeID.Int64:
-                    return (int)System.BitConverter.ToInt64(executionContext.stack, memIdx);
+                    return (int)System.BitConverter.ToInt64(executionContext.stack, paramOnStack);
 
                 case Bin.TypeID.Float64:
-                    return (int)System.BitConverter.ToDouble(executionContext.stack, memIdx);
+                    return (int)System.BitConverter.ToDouble(executionContext.stack, paramOnStack);
 
             }
 
@@ -73,29 +72,29 @@ namespace PxPre.WASM
 
         public float GetFloat32(int paramIdx, bool throwIfNotStrongType = false)
         {
-            if (paramIdx >= functionType.paramTypes.Count)
+            if (paramIdx >= this.functionType.paramTypes.Count)
                 throw new System.Exception("Attempting to access int parameter out of bounds.");
 
-            FunctionType.DataOrgInfo doi = functionType.paramTypes[paramIdx];
+            FunctionType.DataOrgInfo doi = this.functionType.paramTypes[paramIdx];
 
             if (throwIfNotStrongType == true && doi.type != Bin.TypeID.Float32)
                 throw new System.Exception("Attempting to access float parameter of different type.");
 
-            int memIdx = stackEnterIdx + (int)doi.alignmentCtr;
+            int paramOnStack = this.stackEnterIdx + (int)this.functionType.GetParamStackOffset(paramIdx);
 
             switch (doi.type)
             {
                 case Bin.TypeID.Int32:
-                    return System.BitConverter.ToInt32(executionContext.stack, memIdx);
+                    return System.BitConverter.ToInt32(executionContext.stack, paramOnStack);
 
                 case Bin.TypeID.Float32:
-                    return System.BitConverter.ToSingle(executionContext.stack, memIdx);
+                    return System.BitConverter.ToSingle(executionContext.stack, paramOnStack);
 
                 case Bin.TypeID.Int64:
-                    return System.BitConverter.ToInt64(executionContext.stack, memIdx);
+                    return System.BitConverter.ToInt64(executionContext.stack, paramOnStack);
 
                 case Bin.TypeID.Float64:
-                    return (float)System.BitConverter.ToDouble(executionContext.stack, memIdx);
+                    return (float)System.BitConverter.ToDouble(executionContext.stack, paramOnStack);
 
             }
 
@@ -112,22 +111,21 @@ namespace PxPre.WASM
             if (throwIfNotStrongType == true && doi.type != Bin.TypeID.Int64)
                 throw new System.Exception("Attempting to access int64 parameter of different type.");
 
-            int memIdx = stackEnterIdx + (int)doi.alignmentCtr;
+            int paramOnStack = this.stackEnterIdx + (int)this.functionType.GetParamStackOffset(paramIdx);
 
             switch (doi.type)
             {
                 case Bin.TypeID.Int32:
-                    return System.BitConverter.ToInt32(executionContext.stack, memIdx);
+                    return System.BitConverter.ToInt32(executionContext.stack, paramOnStack);
 
                 case Bin.TypeID.Float32:
-                    return (long)System.BitConverter.ToSingle(executionContext.stack, memIdx);
+                    return (long)System.BitConverter.ToSingle(executionContext.stack, paramOnStack);
 
                 case Bin.TypeID.Int64:
-                    return System.BitConverter.ToInt64(executionContext.stack, memIdx);
+                    return System.BitConverter.ToInt64(executionContext.stack, paramOnStack);
 
                 case Bin.TypeID.Float64:
-                    return (long)System.BitConverter.ToDouble(executionContext.stack, memIdx);
-
+                    return (long)System.BitConverter.ToDouble(executionContext.stack, paramOnStack);
             }
 
             throw new System.Exception("Attempt to access imported function parameter of unknown type.");
@@ -135,30 +133,57 @@ namespace PxPre.WASM
 
         public double GetDouble64(int paramIdx, bool throwIfNotStrongType = false)
         {
-            if (paramIdx >= functionType.paramTypes.Count)
-                throw new System.Exception("Attempting to access float64 parameter of different type.");
+            if (paramIdx >= this.functionType.paramTypes.Count)
+                throw new System.Exception("Attempting to access float64 parameter out of bounds.");
 
-            FunctionType.DataOrgInfo doi = functionType.paramTypes[paramIdx];
+            FunctionType.DataOrgInfo doi = this.functionType.paramTypes[paramIdx];
 
             if (throwIfNotStrongType == true && doi.type != Bin.TypeID.Float64)
                 throw new System.Exception("Attempting to access float64 parameter of different type.");
 
-            int memIdx = stackEnterIdx + (int)doi.alignmentCtr;
+            int paramOnStack = this.stackEnterIdx + (int)this.functionType.GetParamStackOffset(paramIdx);
 
             switch (doi.type)
             {
                 case Bin.TypeID.Int32:
-                    return System.BitConverter.ToInt32(executionContext.stack, memIdx);
+                    return System.BitConverter.ToInt32(executionContext.stack, paramOnStack);
 
                 case Bin.TypeID.Float32:
-                    return (long)System.BitConverter.ToSingle(executionContext.stack, memIdx);
+                    return System.BitConverter.ToSingle(executionContext.stack, paramOnStack);
 
                 case Bin.TypeID.Int64:
-                    return System.BitConverter.ToInt64(executionContext.stack, memIdx);
+                    return System.BitConverter.ToInt64(executionContext.stack, paramOnStack);
 
                 case Bin.TypeID.Float64:
-                    return (long)System.BitConverter.ToDouble(executionContext.stack, memIdx);
+                    return System.BitConverter.ToDouble(executionContext.stack, paramOnStack);
 
+            }
+
+            throw new System.Exception("Attempt to access imported function parameter of unknown type.");
+        }
+
+        public object GetObject(int paramIdx)
+        {
+            if (paramIdx >= this.functionType.paramTypes.Count)
+                throw new System.Exception("Attempting to access parameter out of bounds.");
+
+            FunctionType.DataOrgInfo doi = this.functionType.paramTypes[paramIdx];
+
+            int paramOnStack = this.stackEnterIdx + (int)this.functionType.GetParamStackOffset(paramIdx);
+
+            switch (doi.type)
+            {
+                case Bin.TypeID.Int32:
+                    return System.BitConverter.ToInt32(executionContext.stack, paramOnStack);
+
+                case Bin.TypeID.Float32:
+                    return System.BitConverter.ToSingle(executionContext.stack, paramOnStack);
+
+                case Bin.TypeID.Int64:
+                    return System.BitConverter.ToInt64(executionContext.stack, paramOnStack);
+
+                case Bin.TypeID.Float64:
+                    return System.BitConverter.ToDouble(executionContext.stack, paramOnStack);
             }
 
             throw new System.Exception("Attempt to access imported function parameter of unknown type.");
@@ -173,15 +198,90 @@ namespace PxPre.WASM
         { 
              return this.functionType.resultTypes;
         }
-    }
 
-    public abstract class ImportFunction
-    {
-        // Encapsulate better
-        //
-        // Also, should this be readonly?
-        public FunctionType functionType; 
+        public List<object> GetParamsAsObjects()
+        {
+            List<object> ret = new List<object>();
 
-        public abstract byte [] InvokeImpl(ImportFunctionUtil utils);
+            for (int i = 0; i < this.functionType.paramTypes.Count; ++i)
+            {
+                FunctionType.DataOrgInfo doi = this.functionType.paramTypes[i];
+                int paramOnStack = this.stackEnterIdx + (int)this.functionType.GetParamStackOffset(i);
+
+                switch(doi.type)
+                {
+                    case Bin.TypeID.Int32:
+                        ret.Add(System.BitConverter.ToInt32(executionContext.stack, paramOnStack));
+                        break;
+
+                    case Bin.TypeID.Float32:
+                        ret.Add(System.BitConverter.ToSingle(executionContext.stack, paramOnStack));
+                        break;
+
+                    case Bin.TypeID.Int64:
+                        ret.Add(System.BitConverter.ToInt64(executionContext.stack, paramOnStack));
+                        break;
+
+                    case Bin.TypeID.Float64:
+                        ret.Add(System.BitConverter.ToDouble(executionContext.stack, paramOnStack));
+                        break;
+
+                    default:
+                        throw new System.Exception("Attempt to access imported function parameter of unknown type.");
+                }
+            }
+            return ret;
+        }
+
+        public byte [] ConvertObjectsToResult(List<object> lstObjs)
+        { 
+            int retCt = this.functionType.resultTypes.Count;
+            if(retCt == 0 && lstObjs == null || lstObjs.Count == 0)
+                return new byte[0];
+
+            if(retCt != lstObjs.Count)
+                throw new System.Exception("Result count mismatch while converting objects to results buffer.");
+
+            byte [] ret = new byte[this.functionType.totalResultSize];
+
+            for(int i = 0; i < retCt; ++i)
+            {
+                FunctionType.DataOrgInfo doi = this.functionType.resultTypes[i];
+                int resultPos = (int)this.functionType.GetResultStackOffset(i);
+
+                byte[] rb;
+                switch (doi.type)
+                { 
+                case Bin.TypeID.Int32:
+                    rb = System.BitConverter.GetBytes((int)lstObjs[i]);
+                    break;
+
+                case Bin.TypeID.Float32:
+                    rb = System.BitConverter.GetBytes((float)lstObjs[i]);
+                    break;
+
+                case Bin.TypeID.Int64:
+                    rb = System.BitConverter.GetBytes((long)lstObjs[i]);
+                    break;
+
+                case Bin.TypeID.Float64:
+                    rb = System.BitConverter.GetBytes((double)lstObjs[i]);
+                    break;
+
+                default:
+                    throw new System.Exception();
+                }
+
+                // We're making somewhat's quirky rules where the ImportFunctionUtil isn't 
+                // categorized as the core low-level part, so we're going to keep the code
+                // safe. And AFAICT, there isn't a safe byte conversion that writes directly
+                // in a byte array - so we write to an array and then transfer it, which has
+                // quite a few places where overhead is incurred.
+                for(int j = 0; j < rb.Length; ++j)
+                    ret[resultPos + j] = rb[j];
+            }
+
+            return ret;
+        }
     }
 }

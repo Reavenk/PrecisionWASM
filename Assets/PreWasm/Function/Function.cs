@@ -228,9 +228,8 @@ namespace PxPre.WASM
             // The algorithm in the appendix of the spec didn't say how vu should be initialized,
             // but an initial ctrl is required on the stack.
             // (wleu 02/18/2021)
-            List<StackOpd> functionReturnOps = new List<StackOpd>();
-            foreach(FunctionType.DataOrgInfo doi in this.fnType.resultTypes)
-                functionReturnOps.Add(ValiMgr.ConvertToStackType(doi.type));
+            List<StackOpd> functionReturnOps = 
+                ValiMgr.ConvertTypesToStackTypes(this.fnType.GetResultTypesList());
             
             vmgr.PushCtrl(
                 Instruction.nop, // Filler instruction type. All that matters is that it's not a loop
@@ -456,11 +455,9 @@ namespace PxPre.WASM
                                 uint fnidx = BinParse.LoadUnsignedLEB32(pb, ref idx);
                                 IndexEntry fie = parentModule.storeDecl.IndexingFunction[(int)fnidx];
 
-                                foreach(FunctionType.DataOrgInfo doi in parentModule.storeDecl.functions[(int)fnidx].fnType.paramTypes)
-                                    vmgr.PopOpd(doi.type);
-
-                                foreach (FunctionType.DataOrgInfo doi in parentModule.storeDecl.functions[(int)fnidx].fnType.resultTypes)
-                                    vmgr.PushOpd(doi.type);
+                                FunctionType callFnTy = parentModule.storeDecl.functions[(int)fnidx].fnType;
+                                vmgr.PopOpds(callFnTy.GetParamTypesList());
+                                vmgr.PushOpds(callFnTy.GetResultTypesList());
 
                                 if (fie.type == IndexEntry.FnIdxType.Local)
                                 { 

@@ -165,5 +165,25 @@ namespace PxPre.WASM
         {
             return this.paramByteOffsets[paramIdx];
         }
+
+        public List<Bin.TypeID> GetParamTypesList()
+        { 
+            List<Bin.TypeID> ret = new List<Bin.TypeID>();
+
+            foreach(DataOrgInfo doi in this.paramTypes)
+                ret.Add(doi.type);
+
+            return ret;
+        }
+
+        public List<Bin.TypeID> GetResultTypesList()
+        { 
+            List<Bin.TypeID> ret = new List<Bin.TypeID>();
+
+            foreach (DataOrgInfo doi in this.resultTypes)
+                ret.Add(doi.type);
+
+            return ret;
+        }
     }
 }

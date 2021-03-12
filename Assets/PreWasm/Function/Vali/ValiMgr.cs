@@ -89,6 +89,18 @@ namespace PxPre.WASM.Vali
                 this.PopOpd(types[i], ending);
         }
 
+        public void PushOpds(List<Bin.TypeID> types)
+        { 
+            List<StackOpd> lst = ConvertTypesToStackTypes(types);
+            this.PushOpds(lst);
+        }
+
+        public void PopOpds(List<Bin.TypeID> types, bool ending = false)
+        {
+            List<StackOpd> lst = ConvertTypesToStackTypes(types);
+            this.PopOpds(lst, ending);
+        }
+
         public CtrlFrame PushCtrl(
             Instruction opcode, 
             List<StackOpd> instk, 
@@ -311,6 +323,16 @@ namespace PxPre.WASM.Vali
 
             foreach(StackOpd so in this.opds)
                 ret += GetSize(so);
+
+            return ret;
+        }
+
+        public static List<StackOpd> ConvertTypesToStackTypes(List<Bin.TypeID> lst)
+        {
+            List<StackOpd> ret = new List<StackOpd>();
+
+            foreach (Bin.TypeID ty in lst)
+                ret.Add(ValiMgr.ConvertToStackType(ty));
 
             return ret;
         }

@@ -234,7 +234,7 @@ namespace PxPre.WASM
             if(mr.functions.TryGetValue(field, out df) == false)
                 return false;
 
-            // There is currently no reliable way to typecheck the function.
+            ifn.SetFunctionType(df.fnType);
 
             IndexEntry ie = this.storeDecl.IndexingFunction[df.index];
 

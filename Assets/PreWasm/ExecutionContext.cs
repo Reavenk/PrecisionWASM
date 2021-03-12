@@ -130,11 +130,26 @@ namespace PxPre.WASM
             if(ifn == null)
                 throw new System.Exception("Attempting to run null imported function.");
 
-
             ImportFunctionUtil ifu = 
                 new ImportFunctionUtil(ifn.functionType, this, this.stackPos);
 
-            ifn.InvokeImpl(ifu);
+            byte [] ret = ifn.InvokeImpl(ifu);
+
+            int totalRetSz = (int)ifn.functionType.totalResultSize;
+            if( totalRetSz > 0)
+            { 
+                if(ret == null || ret.Length != totalRetSz)
+                    throw new System.Exception("Host function returned unexpected return value size.");
+
+                this.stackPos += (int)ifn.functionType.totalParamSize - totalRetSz;
+
+                for (int i = 0; i < totalRetSz; ++i)
+                    this.stack[this.stackPos + i] = ret[i];
+            }
+            else
+                this.stackPos += (int)ifn.functionType.totalParamSize;
+
+
         }
 
         unsafe public void RunLocalFunction(Module module, int localIndex)
@@ -311,12 +326,8 @@ namespace PxPre.WASM
                             {
                                 uint fnid = *(uint*)&pb[ip];
                                 ip += 4;
-                                //int stkSz = *(int*)&pb[ip];
-                                //ip += 4;
 
-                                //this.stackPos -= stkSz;
                                 RunLocalFunction(fn.parentModule, (int)fnid);
-                                //this.stackPos += stkSz;
                             }
                             break;
 
@@ -324,12 +335,8 @@ namespace PxPre.WASM
                             {
                                 uint fnid = *(uint*)&pb[ip];
                                 ip += 4;
-                                int stkSz = *(int*)&pb[ip];
-                                ip += 4;
 
-                                //this.stackPos -= stkSz; 
                                 RunFunction(this.importData.importFn[(int)fnid]);
-                                //this.stackPos += stkSz;
                             }
                             break;
 

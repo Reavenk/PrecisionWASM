@@ -78,8 +78,16 @@ public static class WASMDatum
         int index, 
         params PxPre.Datum.Val[] ps)
     {
-        Function fn = module.functions[index];
-        return Invoke(ex, fn, ps);
+        IndexEntry ie = module.storeDecl.IndexingFunction[index];
+        if(ie.type == IndexEntry.FnIdxType.Local)
+        { 
+            Function fn = module.functions[ie.index];
+            return Invoke(ex, fn, ps);
+        }
+        else if(ie.type == IndexEntry.FnIdxType.Import)
+            throw new System.Exception("Running imported function directly is not supported in WASM Datum.");
+        else
+            throw new System.Exception("Attemping to Invoke function with an index of unknown origin.");
     }
 
     public static unsafe List<PxPre.Datum.Val> Invoke(
