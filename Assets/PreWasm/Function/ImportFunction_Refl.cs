@@ -25,17 +25,43 @@ using System.Collections.Generic;
 
 namespace PxPre.WASM
 {
+    /// <summary>
+    /// An implementation of a host function that relies on C# reflection
+    /// to call a native function.
+    /// </summary>
     public class ImportFunction_Refl : ImportFunction
     {
+        /// <summary>
+        /// A duplicate of the function type to ensure the function
+        /// has been validated before the first time it's used, and 
+        /// that's it's being used consistently for a single function type.
+        /// </summary>
         FunctionType fnTyVali = null;
 
+        /// <summary>
+        /// The invoking object for invoking the function MethodInfo. Or
+        /// null if the function is static.
+        /// </summary>
         object invokingObject;
+
+        /// <summary>
+        /// The function to Invoke as the host function.
+        /// </summary>
         System.Reflection.MethodInfo function;
 
+        /// <summary>
+        /// Constructor that takes in an object reference, as well as a 
+        /// class method name to search for.
+        /// </summary>
+        /// <param name="fn">The invoking object.</param>
+        /// <param name="functionName">The name of the object's class method.</param>
         public ImportFunction_Refl(object fn, string functionName)
         { 
             System.Type ty = fn.GetType();
-            this.function = ty.GetMethod(functionName);
+            this.function = 
+                ty.GetMethod(
+                    functionName, 
+                    System.Reflection.BindingFlags.Public| System.Reflection.BindingFlags.NonPublic);
 
             if(this.function == null)
                 throw new System.Exception("Could not find a function matching the requested name for the host function.");
@@ -43,6 +69,12 @@ namespace PxPre.WASM
             this.ValidateFunction_Init();
         }
 
+        /// <summary>
+        /// Constructor that takes in an object reference, as well as a 
+        /// class method.
+        /// </summary>
+        /// <param name="fn">The invoking object.</param>
+        /// <param name="mi">The object's class method.</param>
         public ImportFunction_Refl(object fn, System.Reflection.MethodInfo mi)
         { 
             this.invokingObject = fn;
@@ -51,6 +83,10 @@ namespace PxPre.WASM
             this.ValidateFunction_Init();
         }
 
+        /// <summary>
+        /// Constructor for a static function.
+        /// </summary>
+        /// <param name="staticMeth">Static method.</param>
         public ImportFunction_Refl(System.Reflection.MethodInfo staticMeth)
         {
             this.invokingObject = null;
@@ -59,12 +95,22 @@ namespace PxPre.WASM
             this.ValidateFunction_Init();
         }
 
+        /// <summary>
+        /// Utility function to validate the internals when the class is 
+        /// constructed.
+        /// </summary>
         private void ValidateFunction_Init()
         { 
             if(this.function == null)
                 throw new System.Exception("Attempting to set null as host function.");
         }
 
+        /// <summary>
+        /// Utility function that lazily validates the host function the first
+        /// time it's used.
+        /// </summary>
+        /// <param name="fnTy">The function type the ImportFunction is expected to
+        /// implement, used to compare against our current assertions.</param>
         private void ValidateFunction_FirstUse(FunctionType fnTy)
         { 
             if(fnTy == null)

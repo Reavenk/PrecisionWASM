@@ -20,26 +20,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 namespace PxPre.WASM
 {
+    /// <summary>
+    /// A base class that can be derived to hold implementations of 
+    /// imported functions (aka., host functions).
+    /// 
+    /// See ImportFunction_Lam and ImportFunction_Refl for examples
+    /// of implementations.
+    /// </summary>
     public abstract class ImportFunction
     {
-        // Encapsulate better
-        //
-        // Also, should this be readonly?
+        /// <summary>
+        /// A cache of the function type. See SetFunctionType() for 
+        /// more details.
+        /// </summary>
         public FunctionType functionType {get; private set; } = null;
+
+        /// <summary>
+        /// The seal for setting functionType.
+        /// </summary>
         private bool setFnTy = false;
 
+        /// <summary>
+        /// The function for 
+        /// </summary>
+        /// <param name="utils">Liason class to grab function parameters, 
+        /// as well as other utilities.</param>
+        /// <returns>The return value of the function. This must match the
+        /// number of bytes the return value takes up in WASM.</returns>
         public abstract byte[] InvokeImpl(ImportFunctionUtil utils);
 
+        /// <summary>
+        /// Set the cached function type.
+        /// This can only be set once, andd is expected to be set
+        /// within ImportModule.SetFunction().
+        /// </summary>
+        /// <param name="fnty">The function type.</param>
         public void SetFunctionType(FunctionType fnty)
         {
-            // This can only be set once. It is expect to be set
-            // by ImportModule.SetFunction().
+            // This can only be set once.
             if (this.setFnTy == true)
                 return;
 

@@ -25,12 +25,33 @@ using System.Collections.Generic;
 
 namespace PxPre.WASM
 {
+    /// <summary>
+    /// An implementation of a host function that uses delegates for the
+    /// function representation. While it's a bit more clunky to use than
+    /// ImportFunction_Refl, it allows assigning lambda functions.
+    /// </summary>
     public class ImportFunction_Lam : ImportFunction
     {
+        /// <summary>
+        /// Delegate type for implementing a host function.
+        /// </summary>
+        /// <param name="fnParams">The parameters.</param>
+        /// <returns>The return values, these must match the correct types
+        /// and order of the expected function type being implemented.</returns>
+        /// <remarks>The objects for the parameters and return values will
+        /// be boxed intrinsic types used for WASM: int, uint, long, ulong,
+        /// float, double.</remarks>
         public delegate List<object> fn(List<object> fnParams);
 
+        /// <summary>
+        /// Reference to the delegate to invoke.
+        /// </summary>
         public fn function = null;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="function">The delegate to assign.</param>
         public ImportFunction_Lam(fn function)
         { 
             this.function = function;
