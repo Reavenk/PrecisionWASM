@@ -1,3 +1,6 @@
 [submodule "Assets/Refs/Datum"]
 	path = Assets/Refs/Datum
 	url = https://github.com/Reavenk/Datum.git
+[submodule "Assets/PrecisionWASM_Core"]
+	path = Assets/PrecisionWASM_Core
+	url = https://github.com/Reavenk/PrecisionWASM_Core.git

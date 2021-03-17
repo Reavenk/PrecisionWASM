@@ -36,7 +36,7 @@ namespace Tests
             // Tests to make sure nothing in PreWASM's core source code
             // contains explicit references to Unity.
 
-            string rootDirectory = "Assets/PreWasm";
+            string rootDirectory = "Assets/PrecisionWASM_Core";
 
             Queue<System.IO.DirectoryInfo> toScan = new Queue<System.IO.DirectoryInfo>();
 
